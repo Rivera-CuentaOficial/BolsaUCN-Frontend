@@ -5,7 +5,7 @@ import { CheckCircle, Settings, UserCog, Sparkles } from 'lucide-react';
 
 const Footer = () => (
   // CORRECCIÓN 1: Agregamos 'text-slate-600' para forzar texto oscuro en todo el footer
-  <footer className="border-t border-[var(--border)] bg-white py-6 px-6 mt-auto relative z-10 text-slate-600">
+  <footer className="border-t border-(--border) bg-white py-6 px-6 mt-auto relative z-10 text-slate-600">
     <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-4">
       
       <div>

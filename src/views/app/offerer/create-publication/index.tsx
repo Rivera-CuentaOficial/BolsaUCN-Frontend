@@ -35,17 +35,17 @@ export default function PublicationFormView() {
   } = usePublicationForm();
 
   // Flags para renderizado condicional de secciones del formulario
-  const isJobOffer = formData.offerType === "0";
-  const isProduct = formData.offerType === "1";
+  const isJobOffer = formData.type === "0";
+  const isProduct = formData.type === "1";
 
   // Efecto para asegurar que "Voluntariado" esté seleccionado visualmente por defecto
   useEffect(() => {
-    if (isJobOffer && !formData.jobType) {
+    if (isJobOffer && !formData.offerType) {
       handleInputChange({
-        target: { name: "jobType", value: "JobOffer" },
+        target: { name: "offerType", value: "JobOffer" },
       } as any);
     }
-  }, [isJobOffer, formData.jobType, handleInputChange]);
+  }, [isJobOffer, formData.offerType, handleInputChange]);
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -178,10 +178,10 @@ export default function PublicationFormView() {
               <div className="relative">
                 <input
                   type="text"
-                  name="contactInfo"
-                  value={formData.contactInfo}
+                  name="additionalContactInfo"
+                  value={formData.additionalContactInfo}
                   onChange={handleInputChange}
-                  className={inputClass(!!errors.contactInfo)}
+                  className={inputClass(!!errors.additionalContactInfo)}
                   placeholder="Ej: correo@ucn.cl"
                 />
                 <Mail
@@ -189,9 +189,9 @@ export default function PublicationFormView() {
                   size={18}
                 />
               </div>
-              {errors.contactInfo && (
+              {errors.additionalContactInfo && (
                 <p className="text-red-500 text-xs mt-2 font-medium">
-                  {errors.contactInfo}
+                  {errors.additionalContactInfo}
                 </p>
               )}
             </div>
@@ -290,7 +290,7 @@ export default function PublicationFormView() {
                         className={`
                                     cursor-pointer rounded-xl border p-3 text-center transition-all
                                     ${
-                                      formData.jobType === type.id
+                                      formData.offerType === type.id
                                         ? "bg-purple-600 text-white border-purple-600 font-bold shadow-lg scale-105"
                                         : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
                                     }
@@ -298,9 +298,9 @@ export default function PublicationFormView() {
                       >
                         <input
                           type="radio"
-                          name="jobType"
+                          name="offerType"
                           value={type.id}
-                          checked={formData.jobType === type.id}
+                          checked={formData.offerType === type.id}
                           onChange={handleInputChange}
                           className="hidden"
                         />
@@ -308,9 +308,9 @@ export default function PublicationFormView() {
                       </label>
                     ))}
                   </div>
-                  {errors.jobType && (
+                  {errors.offerType && (
                     <p className="text-red-500 text-xs mt-2 font-medium">
-                      {errors.jobType}
+                      {errors.offerType}
                     </p>
                   )}
                 </div>
@@ -321,19 +321,19 @@ export default function PublicationFormView() {
                     <div className="relative">
                       <input
                         type="date"
-                        name="deadlineDate"
-                        value={formData.deadlineDate}
+                        name="applicationDeadline"
+                        value={formData.applicationDeadline}
                         onChange={handleInputChange}
-                        className={inputClass(!!errors.deadlineDate)}
+                        className={inputClass(!!errors.applicationDeadline)}
                       />
                       <Calendar
                         className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
                         size={18}
                       />
                     </div>
-                    {errors.deadlineDate && (
+                    {errors.applicationDeadline && (
                       <p className="text-red-500 text-xs mt-2 font-medium">
-                        {errors.deadlineDate}
+                        {errors.applicationDeadline}
                       </p>
                     )}
                   </div>
@@ -374,11 +374,11 @@ export default function PublicationFormView() {
                         onChange={handleInputChange}
                         className={inputClass(!!errors.remuneration) + " pl-8"}
                         placeholder="0.00"
-                        disabled={formData.jobType === "Volunteering"}
-                        min={formData.jobType === "JobOffer" ? "1" : "0"}
+                        disabled={formData.offerType === "Volunteering"}
+                        min={formData.offerType === "JobOffer" ? "1" : "0"}
                       />
                     </div>
-                    {formData.jobType === "Volunteering" && (
+                    {formData.offerType === "Volunteering" && (
                       <p className="text-yellow-600 text-xs mt-2 font-medium">
                         * Un voluntariado no puede tener remuneración
                       </p>

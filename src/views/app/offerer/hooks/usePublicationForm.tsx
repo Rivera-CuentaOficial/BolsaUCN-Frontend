@@ -14,20 +14,20 @@ import { useNotification } from "@/hooks/common/use-notification";
 export interface PublicationFormData {
   title: string;
   description: string;
-  offerType: string; // '1' = Trabajo, '2' = Venta
+  type: string; // '1' = Trabajo, '2' = Venta
   // Campos Oferta Trabajo
   endDate: string;
-  deadlineDate: string;
+  applicationDeadline: string;
   remuneration: string;
   location: string;
   requirements: string;
   isCvRequired: boolean;
-  jobType: string; // Full Time, Part Time, etc.
+  offerType: string; // Full Time, Part Time, etc.
   // Campos Venta
   category: string;
   price: string;
   // Comunes
-  contactInfo: string;
+  additionalContactInfo: string;
 }
 
 /**
@@ -47,15 +47,15 @@ export const usePublicationForm = () => {
   const [formData, setFormData] = useState<PublicationFormData>({
     title: "",
     description: "",
-    offerType: "0", // Por defecto Oferta Laboral
+    type: "0", // Por defecto Oferta Laboral
     endDate: "",
-    deadlineDate: "",
+    applicationDeadline: "",
     remuneration: "",
     location: "",
     requirements: "",
-    contactInfo: "",
+    additionalContactInfo: "",
     isCvRequired: false,
-    jobType: "",
+    offerType: "",
     category: "",
     price: "",
   });
@@ -88,18 +88,18 @@ export const usePublicationForm = () => {
         [name]: type === "checkbox" ? checked : value,
       };
       // Regla de negocio: Si es voluntariado, la remuneración debe ser 0.
-      if (name === "jobType" && value === "Volunteering") {
+      if (name === "offerType" && value === "Volunteering") {
         newData.remuneration = "0";
       }
       return newData;
     });
     // Limpiar error al escribir
-    if (errors[name as keyof PublicationFormData] || name === "jobType") {
+    if (errors[name as keyof PublicationFormData] || name === "offerType") {
       setErrors((prev) => ({
         ...prev,
         [name]: "",
         // Si cambia el tipo de trabajo, limpiamos también el error de remuneración
-        ...(name === "jobType" ? { remuneration: "" } : {}),
+        ...(name === "offerType" ? { remuneration: "" } : {}),
       }));
     }
   };
@@ -111,46 +111,46 @@ export const usePublicationForm = () => {
    */
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof PublicationFormData, string>> = {};
-    const isJobOffer = formData.offerType === "0";
-    const isProduct = formData.offerType === "1";
+    const isJobOffer = formData.type === "0";
+    const isProduct = formData.type === "1";
 
     // Validaciones Comunes
     if (!formData.title.trim()) newErrors.title = "El título es requerido";
     if (!formData.description.trim())
       newErrors.description = "La descripción es requerida";
-    if (!formData.contactInfo.trim())
-      newErrors.contactInfo = "El contacto es requerido";
+    if (!formData.additionalContactInfo.trim())
+      newErrors.additionalContactInfo = "El contacto es requerido";
 
     // --- VALIDACIONES SOLO PARA OFERTA LABORAL (TIPO 1) ---
     if (isJobOffer) {
       const today = new Date();
       today.setHours(0, 0, 0, 0); // Normalizar fecha actual
 
-      if (!formData.deadlineDate)
-        newErrors.deadlineDate = "Cierre de postulaciones requerido";
+      if (!formData.applicationDeadline)
+        newErrors.applicationDeadline = "Cierre de postulaciones requerido";
       if (!formData.location.trim())
         newErrors.location = "La ubicación es requerida";
       if (!formData.endDate) newErrors.endDate = "Fecha de término requerida";
 
       // Validar coherencia de fechas
-      if (formData.deadlineDate && new Date(formData.deadlineDate) < today)
-        newErrors.deadlineDate = "La fecha no puede ser pasada";
+      if (formData.applicationDeadline && new Date(formData.applicationDeadline) < today)
+        newErrors.applicationDeadline = "La fecha no puede ser pasada";
 
       if (
         formData.endDate &&
-        formData.deadlineDate &&
-        new Date(formData.endDate) <= new Date(formData.deadlineDate)
+        formData.applicationDeadline &&
+        new Date(formData.endDate) <= new Date(formData.applicationDeadline)
       ) {
         newErrors.endDate =
           "El término debe ser después del cierre de postulaciones";
       }
 
-      if (!formData.jobType)
-        newErrors.jobType = "Selecciona el tipo de jornada";
+      if (!formData.offerType)
+        newErrors.offerType = "Selecciona el tipo de oferta";
 
       // Validación específica: Voluntariado sin remuneración
       if (
-        formData.jobType === "Volunteering" &&
+        formData.offerType === "Volunteering" &&
         parseFloat(formData.remuneration || "0") > 0
       ) {
         newErrors.remuneration =
@@ -158,7 +158,7 @@ export const usePublicationForm = () => {
       }
 
       if (
-        formData.jobType === "JobOffer" &&
+        formData.offerType === "JobOffer" &&
         parseFloat(formData.remuneration || "0") <= 0
       ) {
         newErrors.remuneration =
@@ -192,24 +192,24 @@ export const usePublicationForm = () => {
     setIsSubmitting(true);
 
     try {
-      const isJobOffer = formData.offerType === "0";
+      const isJobOffer = formData.type === "0";
 
       if (isJobOffer) {
         // --- LÓGICA PARA OFERTA LABORAL (TIPO 1) ---
         await offererPublicationService.create({
           Title: formData.title,
           Description: formData.description,
-          OfferType: formData.jobType === "JobOffer" ? 0 : 1,
+          OfferType: formData.offerType === "JobOffer" ? 0 : 1,
           EndDate: formData.endDate,
-          DeadlineDate: formData.deadlineDate,
+          ApplicationDeadline: formData.applicationDeadline,
           Remuneration: formData.remuneration
             ? parseFloat(formData.remuneration)
             : 0,
           Location: formData.location,
           Requirements: formData.requirements,
-          ContactInfo: formData.contactInfo,
+          AdditionalContactInfo: formData.additionalContactInfo,
           IsCvRequired: formData.isCvRequired,
-          ImagesURL: [],
+          //ImagesURL: [],
         });
       } else {
         // --- LÓGICA PARA VENTA (TIPO 2) ---
@@ -220,7 +220,7 @@ export const usePublicationForm = () => {
           Category: formData.category,
           Price: parseFloat(formData.price || "0"),
           Location: formData.location,
-          ContactInfo: formData.contactInfo,
+          ContactInfo: formData.additionalContactInfo,
           ImagesURL: [],
         };
 

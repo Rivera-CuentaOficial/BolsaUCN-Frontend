@@ -139,13 +139,13 @@ export interface CreatePublicationData {
   Title: string;
   Description: string;
   EndDate?: string; // Fecha de término de la oferta/pasantía
-  DeadlineDate?: string; // Fecha límite para postular
+  ApplicationDeadline?: string; // Fecha límite para postular
   Remuneration?: number;
   OfferType: number; // 0 para Trabajo, 1 para Voluntariado/Pasantía
   Location?: string;
   Requirements?: string;
-  ContactInfo?: string;
-  ImagesURL: string[];
+  AdditionalContactInfo?: string;
+  //ImagesURL: string[];
   IsCvRequired: boolean;
 }
 export interface CreateBuySellData 
