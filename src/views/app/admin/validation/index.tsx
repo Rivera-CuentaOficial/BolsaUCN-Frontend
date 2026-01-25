@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect } from "react";
-import { AlertCircle, ArrowLeft, CheckCircle2, Sparkles } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle2, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui";
@@ -29,6 +29,8 @@ export default function ValidationView() {
   const {
     pendingPublications,
     totalCount,
+    currentPage,
+    totalPages,
     isLoading,
     error,
     hasOffers,
@@ -49,7 +51,7 @@ export default function ValidationView() {
         "success"
       );
       router.replace("/admin/publications/validate", { scroll: false });
-    } 
+    }
     else if (notificationParam === "rejected") {
       show(
         "Publicación Descartada con exito",
@@ -59,7 +61,40 @@ export default function ValidationView() {
       router.replace("/admin/publications/validate", { scroll: false });
     }
   }, [searchParams, show, router]);
+  
   const apiErrorDetails = error ? handleApiError(error).details : null;
+  
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+    return (
+      <nav className="flex items-center justify-between text-sm gap-4 mt-8">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => actions.handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="bg-white/20 text-white hover:bg-white/30 border-white/50"
+        >
+          <ChevronLeft size={16} /> Anterior
+        </Button>
+
+        <span className="text-white font-medium text-sm">
+          Página {currentPage} de {totalPages}
+        </span>
+
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => actions.handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="bg-white/20 text-white hover:bg-white/30 border-white/50"
+        >
+          Siguiente <ChevronRight size={16} />
+        </Button>
+      </nav>
+    );
+  };
+  
   const renderContent = () => {
     if (pendingPublications === null || isLoading) {
       return (
@@ -106,15 +141,18 @@ export default function ValidationView() {
     }
 
     return (
-      <section className="mt-8 grid gap-4 pb-20">
-        {pendingPublications.map((o) => (
-          <ValidationRowLink
-            key={o.id}
-            itemId={o.id}
-            item={o.item as any}
-          />
-        ))}
-      </section>
+      <>
+        <section className="mt-8 grid gap-4">
+          {pendingPublications.map((o: any) => (
+            <ValidationRowLink
+              key={o.id}
+              itemId={o.id}
+              item={o.item as any}
+            />
+          ))}
+        </section>
+        {renderPagination()}
+      </>
     );
   };
 
@@ -137,7 +175,7 @@ export default function ValidationView() {
           onClose={close}
         />
 
-        <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
+        <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 pb-20">
           <header className="mb-10">
             <Link href="/admin/publications">
               <button className="mb-8 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all font-bold text-sm backdrop-blur-sm border border-white/10">

@@ -23,7 +23,7 @@ export function useNotification() {
     setIsVisible(true);
     timerRef.current = setTimeout(() => {
       close();
-    }, 5000); 
+    }, 8000); 
   }, [close]);
   return {
     notification,

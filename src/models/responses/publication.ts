@@ -1,3 +1,4 @@
+import { toOfferTypeForAdmin } from "@/lib";
 
 export interface PendingOffersForAdmin {
     title: string;
@@ -285,4 +286,35 @@ export interface MyBuySell {
   userName: string;
   userEmail: string;
   statusValidation: number;
+}
+
+export interface ValidationResponse {
+    publicationId: number;
+    rejectionReason?: string | null;
+}
+
+//? NEW ENDPOINT RESPONSE INTERFACE
+export interface PublicationForValidationDTO {
+    publicationId: number;
+    title: string;
+    type: 'Oferta' | 'CompraVenta';
+    createdAt: string;
+    CreatedBy: string;
+    status: 'Publicado' | 'EnProceso' | 'Rechazado';
+    offerType?: number; // Solo para ofertas
+    price?: number;     // Solo para compras/ventas
+}
+export interface PublicationsForValidationDTO {
+    publications: PublicationForValidationDTO[];
+    totalPages: number;
+    currentPage: number;
+    pageSize: number;
+    totalCount: number;
+}
+export interface PaginatedValidationItems {
+    publications: ValidationItemFull[];
+    totalPages: number;
+    currentPage: number;
+    pageSize: number;
+    totalCount: number;
 }

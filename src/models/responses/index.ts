@@ -26,6 +26,8 @@ export {
   type PostulantDetailForAdmin,
   type MyBuySell,
   type OfferDetail,
-  type CreateBuySellData
+  type CreateBuySellData,
+  type ValidationResponse,
+  type PublicationsForValidationDTO
 
 } from "./publication";

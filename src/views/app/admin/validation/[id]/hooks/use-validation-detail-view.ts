@@ -21,8 +21,21 @@ export function useAdminPublicationDetailView(id: string): UseAdminDetailValidat
     const handleAction = (action: 'publish' | 'reject') => {
         const publicationId = detailQuery.data?.id;
        
-        if (!publicationId || validationMutation.isPending) return;
-        
+        if (!publicationId || validationMutation.isPending) {
+            return Promise.reject( new Error('Acción no permitida en este momento.') );
+        }
+        return new Promise<void>((resolve, reject) => {
+            validationMutation.mutate({ id: publicationId, action }, {
+                    onSuccess: () => {
+                        resolve();
+                    },
+                    onError: (error) => {
+                        reject(error);
+                    },
+                }
+            );
+        });
+        /*
         validationMutation.mutate({ id: publicationId, action }, {
             onSuccess: () => {
                 const actionText = action === 'publish' ? 'publicada' : 'rechazada';
@@ -35,6 +48,7 @@ export function useAdminPublicationDetailView(id: string): UseAdminDetailValidat
                 toast.error(apiError.details || `Fallo al ${actionText} la publicación.`);
             },
         });
+        */
     };
     
     const handleRetry = () => {

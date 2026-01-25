@@ -33,12 +33,12 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
     try {
       await handleAction("publish");
       toast.dismiss(toastId);
-      // Redirección explícita con el parámetro de notificación
-      router.push(`${backRoute}?notification=published`); 
+      router.push(`${backRoute}?notification=published`);
     } catch (e) {
+      const apiError = handleApiError(e);
       toast.error("Error al publicar", {
         id: toastId,
-        description: "No se pudo completar la acción.",
+        description: apiError.details || "No se pudo completar la acción.",
       });
     }
   };
@@ -142,16 +142,16 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
                             className="flex-1 px-6 py-4 bg-red-50 text-red-600 border border-red-100 rounded-xl font-bold hover:bg-red-100 transition disabled:opacity-50 flex justify-center items-center gap-2"
                         >
                             <XCircle className="w-5 h-5" />
-                            No Publicar
+                            Rechazar publicacion
                         </button>
 
                         <button
                             onClick={() => setIsPublishDialogOpen(true)}
                             disabled={isMutating}
-                            className="flex-[2] px-6 py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition shadow-lg hover:shadow-green-200 flex justify-center items-center gap-2"
+                            className="flex-2 px-6 py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition shadow-lg hover:shadow-green-200 flex justify-center items-center gap-2"
                         >
                             <CheckCircle2 className="w-5 h-5" />
-                            {isMutating ? "Procesando..." : "Publicar Oferta"}
+                            {isMutating ? "Procesando..." : "Validar publicacion"}
                         </button>
                     </div>
                 </div>
@@ -171,7 +171,7 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
             onOpenChange={setIsPublishDialogOpen}
             title="¿Publicar esta oferta?"
             description="La oferta será visible inmediatamente para todos los usuarios."
-            confirmText="Sí, Publicar"
+            confirmText="Validar"
             cancelText="Cancelar"
             onConfirm={handlePublishConfirm}
             onCancel={() => setIsPublishDialogOpen(false)}
