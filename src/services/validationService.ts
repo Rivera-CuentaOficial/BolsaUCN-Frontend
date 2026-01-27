@@ -1,7 +1,7 @@
 import { BaseApiService } from "@/services/base-api-service";
 import { ApiResponse } from "@/models/generics";
 import type { BuySellBasic, PendingOffersForAdmin, ValidationResponse } from "src/models/responses";
-import { PublicationsForValidationDTO } from "@/models/responses/publication";
+import { PublicationDetailsForApprovalDTO, PublicationsForValidationDTO } from "@/models/responses/publication";
 
 export interface ValidationActionRequest {
   action: "publish" | "reject";
@@ -12,19 +12,6 @@ export class ValidationService extends BaseApiService {
     super("/publications");
   }
 
-  getPendingOffers() {
-    return this.httpClient.get<ApiResponse<PendingOffersForAdmin[]>>(
-      `${this.baseURL}/offers/pending`
-    );
-  }
-
-  getPendingBuySells() {
-    return this.httpClient.get<ApiResponse<BuySellBasic[]>>(
-      `${this.baseURL}/buysells/pending`
-    );
-  }
-
-  //! NEW ENDPOINT TESTING
   getPendingPublications(params?:
     {
       searchTerm?: string;
@@ -48,6 +35,22 @@ export class ValidationService extends BaseApiService {
     );
   }
 
+  /**
+   * Obtiene los detalles completos de una publicación pendiente de aprobación.
+   * @param publicationId - ID de la publicación (no usa el prefijo bs-)
+   * @returns Detalles de la publicación para aprobación.
+   */
+  getPublicationDetailForApproval(
+    publicationId: string | number
+  ) {
+    return this.httpClient.get<ApiResponse<PublicationDetailsForApprovalDTO>>(
+      `${this.baseURL}/pending/${publicationId}`
+    );
+  }
+
+  /**
+   * @deprecated Use getPublicationDetailForApproval instead
+   */
   getPublicationDetail(typePath: "buysells" | "offers", entityId: string) {
     const endpoint = `${this.baseURL}/${typePath}/${entityId}/validation`;
     return this.httpClient.get<any>(endpoint);

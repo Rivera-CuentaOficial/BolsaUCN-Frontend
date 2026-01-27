@@ -293,7 +293,7 @@ export interface ValidationResponse {
     rejectionReason?: string | null;
 }
 
-//? NEW ENDPOINT RESPONSE INTERFACE
+//! NEW ENDPOINTs RESPONSE INTERFACES
 export interface PublicationForValidationDTO {
     publicationId: number;
     title: string;
@@ -317,4 +317,38 @@ export interface PaginatedValidationItems {
     currentPage: number;
     pageSize: number;
     totalCount: number;
+}
+export interface PublicationDetailsForApprovalDTO {
+    publicationId: number;
+    userId: number;
+    userEmail: string;
+    userName: string;
+    title: string;
+    description: string;
+    images: string[];
+    publicationDate: string;
+    endDate: string;
+    publicationType: string;
+    isOpen: boolean;
+    approvalStatus: string;
+    location: string;
+    additionalContactInfo: string;
+    aboutMe: string;
+    rating: number;
+
+    // Offer attributes
+    deadlineDate: string;
+    requirements: string;
+    remuneration: number;
+    offerType: string;
+
+    // BuySell attributes
+    category: string;
+    price: number;
+
+    // Legacy attributes for frontend compatibility
+    active: boolean;
+    isActive: boolean;
+    imageUrls: string[];
+    companyName: string;
 }

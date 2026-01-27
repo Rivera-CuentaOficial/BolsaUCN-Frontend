@@ -18,9 +18,10 @@ interface ValidationDetailPageProps {
 async function getPublicationDetailForServer(id: string): Promise<AdminDetail> {
   const isBuySell = id.startsWith('bs-');
   const entityId = isBuySell ? id.split('-')[1] : id;
-  const typePath: "buysells" | "offers" = isBuySell ? "buysells" : "offers";
 
-  const response = await validationService.getPublicationDetail(typePath, entityId);
+  const response = await validationService.getPublicationDetailForApproval(
+    entityId
+  );
   const detailDto = response.data?.data ?? response.data;
 
   if (!detailDto) {

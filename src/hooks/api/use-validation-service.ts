@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ValidationActionVariables } from "@/models/requests";
-import { useParams } from 'next/navigation';
-import { mapOfferDtoToValidate, mapBuySellDtoToValidate, mapBuySellToDetail, mapOfferToDetail, handleApiError, toOfferTypeForAdmin } from "@/lib";
+import { mapBuySellToDetail, mapOfferToDetail, handleApiError, toOfferTypeForAdmin } from "@/lib";
 import { validationService } from "@/services/validationService";
-import { PendingOffersForAdmin, BuySellBasic, AdminDetail, UseAdminDetailValidateResult, ValidationItemFull, ValidationResponse } from "@/models/responses";
+import { AdminDetail, ValidationItemFull } from "@/models/responses";
 import { AxiosError } from "axios";
 import { PaginatedValidationItems, PublicationForValidationDTO } from "@/models/responses/publication";
+import { mapPublicationDetailsToAdminDetail } from "@/lib/publication";
 
 function mapPublicationDTOToValidate(p: PublicationForValidationDTO): ValidationItemFull {
     if (p.type === 'Oferta') {
@@ -100,8 +100,17 @@ export const useGetAdminPublicationDetailQuery = (id: string | undefined) => {
         queryKey: ["admin", "publication", id],
         queryFn: async () => {
             if (!id || id === 'undefined') throw new Error("ID de publicación no válido.");
+
             const isBuySellPrefixed = id.startsWith('bs-');
-            const entityId = isBuySellPrefixed ? id.split('-')[1] : id;
+            const numericId = isBuySellPrefixed ? id.split('-')[1] : id;
+
+            const response = await validationService.getPublicationDetailForApproval(numericId);
+            const detailDto = response.data?.data ?? response.data;
+
+            if (!detailDto) throw new Error("Respuesta de API vacía o malformada.");
+
+            return mapPublicationDetailsToAdminDetail(detailDto);
+            /*
             if (isBuySellPrefixed) {
                 const response = await validationService.getPublicationDetail("buysells", entityId);
                 const detailDto = response.data?.data ?? response.data;
@@ -128,6 +137,7 @@ export const useGetAdminPublicationDetailQuery = (id: string | undefined) => {
                 const apiError = handleApiError(error);
                 throw new Error(apiError.details || apiError.message);
             }
+            */
         },
         enabled: !!id,
         staleTime: 5 * 60 * 1000,
