@@ -156,7 +156,7 @@ export default function SiteHeader() {
         href:
           auth.role === "Admin"
             ? "/admin/your-publications"
-            : auth.role === "Offerent"
+            : auth.role === "Offeror"
             ? "/offerer/your-publications":"/students/your-publications",
         label: "Mis Publicaciones",
       },
@@ -176,7 +176,7 @@ export default function SiteHeader() {
     return baseItems.map((item) => {
       if (item.label !== "Historial de trabajos") return item;
       let newHref = "/jobs/reviews/student";
-      if (auth.role === "Offerent") newHref = "/jobs/reviews/employer";
+      if (auth.role === "Offeror") newHref = "/jobs/reviews/employer";
       if (auth.role === "Admin") newHref = "/jobs/reports";
       return { ...item, href: newHref };
     });
@@ -192,7 +192,7 @@ export default function SiteHeader() {
   }, [open]);
 
   const isAdmin = auth.role === "Admin";
-  const isOfferer = auth.role === "Offerent";
+  const isOfferer = auth.role === "Offeror";
   const isStudent = auth.role === "Applicant";
 
   const mainLinks = isAdmin ? adminNavLinks : isOfferer ? offererNavLinks :isStudent ? studentNavLinks :userLinks;
@@ -201,15 +201,15 @@ export default function SiteHeader() {
   const logoHref = isAdmin ? "/admin/publications" : "/";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[var(--border)] bg-white/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 w-full border-b border-(--border) bg-white/80 backdrop-blur-xl">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
         {/* Logo con href dinámico */}
         <Link
           href={logoHref}
           className="flex items-center gap-2 font-extrabold text-xl group"
         >
-          <span className="text-[var(--ink)]">Bolsa</span>
-          <span className="px-3 py-1 rounded-xl bg-white text-[var(--primary)] border border-[var(--primary)] font-bold shadow-sm">
+          <span className="text-(--ink)">Bolsa</span>
+          <span className="px-3 py-1 rounded-xl bg-white text-(--primary) border border-(--primary) font-bold shadow-sm">
             FEUCN
           </span>
         </Link>
@@ -220,9 +220,9 @@ export default function SiteHeader() {
               key={l.href}
               href={l.href}
               className={cn(
-                "rounded-xl px-4 py-2.5 text-sm font-medium text-[var(--muted-ink)] hover:text-[var(--ink)] hover:bg-[var(--chip)] transition-all",
+                "rounded-xl px-4 py-2.5 text-sm font-medium text-(--muted-ink) hover:text-(--ink) hover:bg-(--chip) transition-all",
                 pathname === l.href &&
-                  "bg-[var(--chip)] text-[var(--primary)] font-semibold"
+                  "bg-(--chip) text-(--primary) font-semibold"
               )}
             >
               {l.label}
@@ -232,7 +232,7 @@ export default function SiteHeader() {
           {!auth.logged ? (
             <Link
               href="/auth/login"
-              className="ml-2 rounded-xl px-5 py-2.5 font-semibold text-white bg-gradient-to-r from-[var(--primary)] to-[var(--pop)] hover:opacity-90 transition-all shadow-md hover:shadow-lg"
+              className="ml-2 rounded-xl px-5 py-2.5 font-semibold text-white bg-linear-to-r from-(--primary) to-(--pop) hover:opacity-90 transition-all shadow-md hover:shadow-lg"
             >
               Ingresar
             </Link>
@@ -240,7 +240,7 @@ export default function SiteHeader() {
             <div className="relative ml-2" ref={menuRef}>
               <button
                 onClick={() => setOpen(v => !v)}
-                className="cursor-pointer flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-[var(--chip)] transition-all"
+                className="cursor-pointer flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-(--chip) transition-all"
               >
                 <UserAvatar
                   name={auth.name}
@@ -248,27 +248,27 @@ export default function SiteHeader() {
                 />
                 <ChevronDown
                   className={cn(
-                    "w-4 h-4 text-[var(--muted-ink)] transition-transform",
+                    "w-4 h-4 text-(--muted-ink) transition-transform",
                     open && "rotate-180"
                   )}
                 />
               </button>
 
               {open && (
-                <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-[var(--border)] bg-white shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2">
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-(--border) bg-white shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2">
                   {dropdownItems.map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="block px-4 py-3 text-sm text-[var(--ink)] hover:bg-[var(--chip)] transition-colors"
+                      className="block px-4 py-3 text-sm text-(--ink) hover:bg-(--chip) transition-colors"
                     >
                       {item.label}
                     </Link>
                   ))}
-                  <div className="border-t border-[var(--border)]" />
+                  <div className="border-t border-(--border)" />
                   <button
                     onClick={() => logoutAndRedirect("/")}
-                    className="cursor-pointer w-full text-left px-4 py-3 text-sm text-[var(--pop)] font-medium hover:bg-red-50 transition-colors"
+                    className="cursor-pointer w-full text-left px-4 py-3 text-sm text-(--pop) font-medium hover:bg-red-50 transition-colors"
                   >
                     Cerrar sesión
                   </button>

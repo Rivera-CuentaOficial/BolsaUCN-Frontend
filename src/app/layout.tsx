@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body className={`${inter.variable} font-sans antialiased bg-[var(--bg)] text-[var(--ink)]`}>
+      <body className={`${inter.variable} font-sans antialiased bg-(--bg) text-(--ink)`}>
         <ReactQueryProvider>
           <Toaster 
             position="top-right" 
