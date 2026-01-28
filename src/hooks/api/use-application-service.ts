@@ -1,0 +1,23 @@
+import { useQuery } from "@tanstack/react-query";
+import { applicationService } from "@/services/applicationService";
+import {
+  ApplicationForApplicantDTO,
+  ApplicationsForApplicantDTO,
+  ApplicationSearchParams
+} from "@/models/responses";
+import { handleApiError } from "@/lib";
+
+export const useGetMyApplications = (params: ApplicationSearchParams) => {
+    return useQuery<ApplicationsForApplicantDTO, Error>({
+        queryKey: ["applications", "my-applications", params],
+        queryFn: async () => {
+            try {
+                const response = await applicationService.getMyApplications(params);
+                return response.data.data;
+            } catch (error) {
+                const apiError = handleApiError(error);
+                throw new Error(apiError.details || apiError.message);
+            }
+        },
+    });
+};

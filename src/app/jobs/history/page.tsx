@@ -1,22 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import api from "@/services/Service";
+import { useGetMyApplications } from "@/hooks/api/use-application-service";
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { Button } from "@/components/ui";
 
-type JobApplication = {
-  id: number;
-  studentName: string;
-  studentEmail: string;
-  offerId?: number | null;
-  offerTitle: string;
-  status: "Pendiente" | "Aceptada" | "Rechazada" | string;
-  applicationDate: string;
-  curriculumVitae?: string | null;
-  motivationLetter?: string | null;
-};
-
-type ApiResponse = { message: string; data: JobApplication[] };
+type ApplicationStatus = "Todos" | "Pendiente" | "Aceptada" | "Rechazada";
+type SortBy = "OfferTitle" | "CreatedAt";
+type SortOrder = "asc" | "desc";
 
 function toCLDate(iso?: string | null) {
   if (!iso) return "—";
@@ -31,22 +23,23 @@ function toCLDate(iso?: string | null) {
 }
 
 function StatusBadge({ value }: { value?: string | null }) {
-  const v = (value ?? "Pendiente").toLowerCase();
-  const map: Record<string, { wrap: string; label: string }> = {
-    pendiente: {
+  const v = (value ?? "Pendiente") as ApplicationStatus;
+  const map: Record<ApplicationStatus, { wrap: string; label: string }> = {
+    Todos: { wrap: "", label: "" },
+    Pendiente: {
       wrap: "bg-yellow-100 text-yellow-800 border-yellow-200",
       label: "Pendiente",
     },
-    aceptada: {
+    Aceptada: {
       wrap: "bg-green-100 text-green-800 border-green-200",
       label: "Aceptada",
     },
-    rechazada: {
+    Rechazada: {
       wrap: "bg-red-100 text-red-800 border-red-200",
       label: "Rechazada",
-    }
+    },
   };
-  const { wrap, label } = map[v] ?? map.pendiente;
+  const { wrap, label } = map[v] ?? map.Pendiente;
 
   return (
     <span
@@ -58,41 +51,65 @@ function StatusBadge({ value }: { value?: string | null }) {
 }
 
 function cardAccent(status?: string | null) {
-  const v = (status ?? "Pendiente").toLowerCase();
-  if (v === "aceptada") return "border-green-200 hover:ring-green-100/60";
-  if (v === "rechazada") return "border-red-200 hover:ring-red-100/60";
-  return "border-yellow-200 hover:ring-yellow-100/60"; // pendiente
+  const v = (status ?? "Pendiente");
+  if (v === "Aceptada") return "border-green-200 hover:ring-green-100/60";
+  if (v === "Rechazada") return "border-red-200 hover:ring-red-100/60";
+  return "border-yellow-200 hover:ring-yellow-100/60";
 }
 
 export default function JobsHistoryPage() {
   const router = useRouter();
-  const [items, setItems] = useState<JobApplication[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<ApplicationStatus>("Todos");
+  const [sortBy, setSortBy] = useState<SortBy>("CreatedAt");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await api.get<ApiResponse>(
-          "/job-applications/my-applications"
-        );
-        if (mounted) setItems(res.data?.data ?? []);
-      } catch (e) {
-        console.error(e);
-        setError(
-          "No pudimos cargar tus postulaciones. Inicia sesión nuevamente si el problema persiste."
-        );
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const { data, isLoading, error } = useGetMyApplications({
+    searchTerm: searchTerm || undefined,
+    statusFilter: statusFilter !== "Todos" ? statusFilter : undefined,
+    sortBy,
+    sortOrder,
+    pageNumber: currentPage,
+    pageSize,
+  });
 
-  if (loading) return <main className="max-w-4xl mx-auto p-6">Cargando…</main>;
+  const applications = data?.applications ?? [];
+  const totalPages = data?.totalPages ?? 1;
+  const totalCount = data?.totalCount ?? 0;
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleStatusChange = (status: ApplicationStatus) => {
+    setStatusFilter(status);
+    setCurrentPage(1);
+  };
+
+  const handleSortByChange = (newSortBy: SortBy) => {
+    setSortBy(newSortBy);
+    setCurrentPage(1);
+  };
+  
+  const handleSortOrderToggle = () => {
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    setCurrentPage(1);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+  };
+
+  if (isLoading) return <main className="max-w-4xl mx-auto p-6">Cargando…</main>;
 
   return (
     <main className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
@@ -100,91 +117,169 @@ export default function JobsHistoryPage() {
         <h1 className="text-3xl md:text-4xl font-extrabold">
           Historial de postulaciones
         </h1>
-        <p className="text-[var(--muted-ink)] mt-2">
+        <p className="text-(--muted-ink) mt-2">
           Aquí puedes revisar todas las postulaciones que has enviado.
+          {totalCount > 0 && (
+            <span className="font-semibold"> ({totalCount} total)</span>
+          )}
         </p>
         {error && (
           <div className="mt-3 rounded-xl bg-red-50 text-red-700 px-3 py-2 text-sm">
-            {error}
+            {error.message}
           </div>
         )}
       </header>
 
-      {items.length === 0 ? (
-        <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 text-center text-[var(--muted-ink)]">
-          Aún no tienes postulaciones registradas.
+      {/* Search and Status Filter */}
+      <section className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-(--muted-ink)" />
+          <input
+            type="text"
+            placeholder="Buscar por título de oferta..."
+            value={searchTerm}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 rounded-xl border border-(--border) bg-(--card) focus:outline-none focus:ring-2 focus:ring-(--primary)"
+          />
+        </div>
+        
+        <select
+          value={statusFilter}
+          onChange={(e) => handleStatusChange(e.target.value as ApplicationStatus)}
+          className="px-4 py-2 rounded-xl border border-(--border) bg-(--card) focus:outline-none focus:ring-2 focus:ring-(--primary)"
+        >
+          <option value="Todos">Todos los estados</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="Aceptada">Aceptada</option>
+          <option value="Rechazada">Rechazada</option>
+        </select>
+      </section>
+
+      {/* Sort and Page Size Controls */}
+      <section className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex flex-wrap gap-3 items-center">
+          <span className="text-sm text-(--muted-ink) font-medium">Ordenar por:</span>
+          <select
+            value={sortBy}
+            onChange={(e) => handleSortByChange(e.target.value as SortBy)}
+            className="px-3 py-1.5 text-sm rounded-lg border border-(--border) bg-(--card) focus:outline-none focus:ring-2 focus:ring-(--primary)"
+          >
+            <option value="CreatedAt">Fecha de postulación</option>
+            <option value="OfferTitle">Título de oferta</option>
+          </select>
+          
+          <button
+            onClick={handleSortOrderToggle}
+            className="px-3 py-1.5 rounded-lg border border-(--border) bg-(--card) hover:bg-(--muted) transition-colors flex items-center gap-2"
+            title={sortOrder === "asc" ? "Orden ascendente" : "Orden descendente"}
+          >
+            {sortOrder === "asc" ? (
+              <>
+                <ArrowUp size={16} />
+                <span className="text-sm">
+                  {sortBy === "CreatedAt" ? "Mas antiguas" : "A-Z"}
+                </span>
+              </>
+            ) : (
+              <>
+                <ArrowDown size={16} />
+                <span className="text-sm">
+                  {sortBy === "CreatedAt" ? "Mas recientes" : "Z-A"}
+                </span>
+              </>
+            )}
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-(--muted-ink) font-medium">Mostrar:</span>
+          <select
+            value={pageSize}
+            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+            className="px-3 py-1.5 text-sm rounded-lg border border-(--border) bg-(--card) focus:outline-none focus:ring-2 focus:ring-(--primary)"
+          >
+            <option value={5}>5 por página</option>
+            <option value={10}>10 por página</option>
+            <option value={25}>25 por página</option>
+            <option value={50}>50 por página</option>
+          </select>
+        </div>
+      </section>
+
+      {applications.length === 0 ? (
+        <section className="rounded-2xl border border-(--border) bg-(--card) p-6 text-center text-(--muted-ink)">
+          {searchTerm || statusFilter !== "Todos"
+            ? "No se encontraron postulaciones con los filtros aplicados."
+            : "Aún no tienes postulaciones registradas."}
         </section>
       ) : (
-        <section className="space-y-3">
-          {items.map((it) => (
-            <article
-              key={it.id}
-              className={[
-                "group relative overflow-hidden rounded-2xl border bg-[var(--card)] p-4 shadow-sm transition",
-                "hover:shadow-md hover:ring-4",
-                cardAccent(it.status),
-              ].join(" ")}
-            >
-              {/* Accent lateral sutil */}
-              <span
-                aria-hidden="true"
+        <>
+          <section className="space-y-3">
+            {applications.map((app) => (
+              <article
+                key={app.offerId}
                 className={[
-                  "absolute inset-y-0 left-0 w-1",
-                  (it.status ?? "Pendiente").toLowerCase() === "aceptada" &&  
-                  "bg-green-400",
-                (it.status ?? "Pendiente").toLowerCase() === "rechazada" &&  
-                  "bg-red-400",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-              />
+                  "group relative overflow-hidden rounded-2xl border bg-(--card) p-4 shadow-sm transition",
+                  "hover:shadow-md hover:ring-4 cursor-pointer",
+                  cardAccent(app.status),
+                ].join(" ")}
+                onClick={() => router.push(`/jobs/history/${app.offerId}`)}
+              >
+                {/* Accent lateral */}
+                <span
+                  aria-hidden="true"
+                  className={[
+                    "absolute inset-y-0 left-0 w-1",
+                    app.status === "Aceptada" && "bg-green-400",
+                    app.status === "Rechazada" && "bg-red-400",
+                    app.status === "Pendiente" && "bg-yellow-400",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                />
 
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <h3 className="font-bold text-[17px] truncate">
-                    {it.offerTitle}
-                  </h3>
-                  <div className="text-sm text-[var(--muted-ink)] mt-0.5">
-                    Enviada por {it.studentName}
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-[17px] truncate">
+                      {app.offerTitle}
+                    </h3>
+                    <div className="text-sm text-(--muted-ink) mt-0.5">
+                      Postulada el {toCLDate(app.createdAt)}
+                    </div>
                   </div>
+                  <StatusBadge value={app.status} />
                 </div>
-                <StatusBadge value={it.status} />
-              </div>
+              </article>
+            ))}
+          </section>
 
-              <div className="mt-3 text-sm text-[var(--muted-ink)]">
-                Postulada el {toCLDate(it.applicationDate)}
-              </div>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <nav className="flex items-center justify-between text-sm gap-4 mt-8">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft size={16} /> Anterior
+              </Button>
 
-              <div className="mt-3 flex flex-wrap gap-3 items-center justify-between">
-                <div className="flex flex-wrap gap-3">
-                  {it.curriculumVitae && (
-                    <a
-                      href={it.curriculumVitae}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm underline hover:opacity-90"
-                    >
-                      Ver CV
-                    </a>
-                  )}
-                  {it.motivationLetter && (
-                    <p className="text-sm italic text-[var(--ink)]/80 line-clamp-2">
-                      "{it.motivationLetter}"
-                    </p>
-                  )}
-                </div>
+              <span className="font-medium text-sm">
+                Página {currentPage} de {totalPages}
+              </span>
 
-                {/* BOTÓN VER DETALLES */}
-                <button
-                  onClick={() => router.push(`/jobs/history/${it.id}`)}
-                  className="px-4 py-2 bg-[var(--primary)] text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Ver detalles
-                </button>
-              </div>
-            </article>
-          ))}
-        </section>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Siguiente <ChevronRight size={16} />
+              </Button>
+            </nav>
+          )}
+        </>
       )}
     </main>
   );
