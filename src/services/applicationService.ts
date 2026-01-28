@@ -1,10 +1,10 @@
 import { BaseApiService } from "./base-api-service";
 import { ApiResponse } from "@/models/generics";
 import { 
-    ApplicationForApplicantDTO, 
     ApplicationsForApplicantDTO, 
     ApplicationSearchParams 
 } from "@/models/responses";
+import { GetApplicationDetailsDTO } from "@/models/responses/application";
 
 export class ApplicationService extends BaseApiService {
     constructor() {
@@ -22,6 +22,19 @@ export class ApplicationService extends BaseApiService {
 
         return this.httpClient.get<ApiResponse<ApplicationsForApplicantDTO>>(
             `${this.baseURL}/my-applications?${queryParams.toString()}`
+        );
+    }
+
+    getApplicationDetailsForApplicant(applicationId: number) {
+        return this.httpClient.get<ApiResponse<GetApplicationDetailsDTO>>(
+            `${this.baseURL}/my-applications/${applicationId}`
+        );
+    }
+
+    updateApplicationDetails(applicationId: number, coverLetter: string) {
+        return this.httpClient.patch<ApiResponse<string>>(
+            `${this.baseURL}/my-applications/${applicationId}`,
+            { coverLetter }
         );
     }
 }

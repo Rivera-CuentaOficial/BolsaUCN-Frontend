@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { applicationService } from "@/services/applicationService";
 import {
-  ApplicationForApplicantDTO,
   ApplicationsForApplicantDTO,
   ApplicationSearchParams
 } from "@/models/responses";

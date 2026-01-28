@@ -217,13 +217,13 @@ export default function JobsHistoryPage() {
           <section className="space-y-3">
             {applications.map((app) => (
               <article
-                key={app.offerId}
+                key={app.id}
                 className={[
                   "group relative overflow-hidden rounded-2xl border bg-(--card) p-4 shadow-sm transition",
                   "hover:shadow-md hover:ring-4 cursor-pointer",
                   cardAccent(app.status),
                 ].join(" ")}
-                onClick={() => router.push(`/jobs/history/${app.offerId}`)}
+                onClick={() => router.push(`/jobs/history/${app.id}`)}
               >
                 {/* Accent lateral */}
                 <span

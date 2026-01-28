@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/services/Service";
+import { cvService } from "@/services/cvService";
 import Link from "next/link";
+import { toast } from "sonner";
 
 type OfferDetail = {
   id: number;
@@ -18,6 +20,7 @@ type OfferDetail = {
   deadlineDate?: string | null;
   remuneration?: number | null;
   offerType?: number | "Trabajo" | "Voluntariado";
+  isCvRequired?: boolean;
 };
 
 type BannerState = {
@@ -54,8 +57,9 @@ export default function OfferDetailPage() {
 
   // UI postulación
   const [applyLoading, setApplyLoading] = useState(false);
-  const [motivation, setMotivation] = useState("");
+  const [coverLetter, setCoverLetter] = useState("");
   const [cvFile, setCvFile] = useState<File | null>(null);
+  const [uploadingCV, setUploadingCV] = useState(false);
 
   const [hasApplied, setHasApplied] = useState(false);
   const [banner, setBanner] = useState<BannerState | null>(null);
@@ -90,14 +94,14 @@ export default function OfferDetailPage() {
   useEffect(() => {
     if (!banner) return;
 
-    setBannerVisible(true); // entra
+    setBannerVisible(true);
 
     const timer = setTimeout(() => {
-      setBannerVisible(false); // empieza a salir
+      setBannerVisible(false);
       setTimeout(() => {
-        setBanner(null); // se desmonta después de la animación
+        setBanner(null);
       }, 200);
-    }, 3500); // tiempo que queda visible
+    }, 3500);
 
     return () => clearTimeout(timer);
   }, [banner]);
@@ -106,17 +110,18 @@ export default function OfferDetailPage() {
     setBannerVisible(false);
     setTimeout(() => setBanner(null), 200);
   }
+  
   useEffect(() => {
     if (!showCelebration) return;
 
-    setCelebrationVisible(true); // entra
+    setCelebrationVisible(true);
 
     const timer = setTimeout(() => {
-      setCelebrationVisible(false); // empieza a salir
+      setCelebrationVisible(false);
       setTimeout(() => {
-        setShowCelebration(false); // se desmonta después
+        setShowCelebration(false);
       }, 200);
-    }, 1800); // tiempo visible
+    }, 1800);
 
     return () => clearTimeout(timer);
   }, [showCelebration]);
@@ -128,6 +133,25 @@ export default function OfferDetailPage() {
   const company = data?.companyName ?? data?.ownerName ?? "Confidencial";
   const published = toCLDate(data?.postDate ?? data?.publicationDate);
 
+  async function handleUploadCV() {
+    if (!cvFile) {
+      toast.error("Selecciona un archivo primero");
+      return;
+    }
+
+    setUploadingCV(true);
+    try {
+      await cvService.uploadCV(cvFile);
+      toast.success("CV subido exitosamente");
+      setCvFile(null);
+    } catch (e: any) {
+      const errorMsg = e?.response?.data?.message || "No se pudo subir el CV";
+      toast.error(errorMsg);
+    } finally {
+      setUploadingCV(false);
+    }
+  }
+
   async function handleApply() {
     if (!id || hasApplied) return;
 
@@ -135,20 +159,13 @@ export default function OfferDetailPage() {
     setBanner(null);
 
     try {
-      if (offerType === "Trabajo" && (cvFile || motivation.trim())) {
-        const form = new FormData();
-        if (motivation.trim()) form.append("motivation", motivation.trim());
-        if (cvFile) form.append("cv", cvFile);
-        await api.post(`/publications/offers/${id}/apply`, form, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-      } else {
-        await api.post(`/publications/offers/${id}/apply`);
-      }
+      // Send coverLetter as JSON (backend expects CoverLetterDTO)
+      await api.post(`/publications/offers/${id}/apply`, {
+        coverLetter: coverLetter.trim() || null,
+      });
 
       // éxito
-      setMotivation("");
-      setCvFile(null);
+      setCoverLetter("");
       setHasApplied(true);
 
       setBanner({
@@ -158,7 +175,6 @@ export default function OfferDetailPage() {
         type: "success",
       });
 
-      // mini-celebración centrada
       setShowCelebration(true);
     } catch (e: any) {
       const raw =
@@ -167,11 +183,13 @@ export default function OfferDetailPage() {
         e?.message ||
         "No se pudo postular. Intenta más tarde.";
 
-      // Verificar si es error 409 (Conflict) o mensaje de "ya has postulado"
-      const is409 = e?.response?.status === 409;
-      const alreadyApplied = is409 || /ya has postulado/i.test(raw);
+      console.error("❌ Error al postular:", e?.response?.status, raw);
 
-      if (alreadyApplied) {
+      // Check for specific error types
+      const status = e?.response?.status;
+      
+      // 409 Conflict = already applied
+      if (status === 409 || /ya has postulado/i.test(raw)) {
         setHasApplied(true);
         setBanner({
           title: "Ya estás postulado",
@@ -179,7 +197,25 @@ export default function OfferDetailPage() {
             "Ya tienes una postulación activa para esta oferta. Puedes revisar su estado en tu historial de postulaciones.",
           type: "success",
         });
-      } else {
+      } 
+      // CV required error
+      else if (/se requiere un cv/i.test(raw) || /cv requerido/i.test(raw)) {
+        setBanner({
+          title: "CV requerido",
+          message: "Esta oferta requiere que tengas un CV cargado en tu perfil. Puedes subirlo abajo o en tu perfil.",
+          type: "error",
+        });
+      }
+      // Pending reviews error
+      else if (/reseñas pendientes/i.test(raw)) {
+        setBanner({
+          title: "Reseñas pendientes",
+          message: raw,
+          type: "error",
+        });
+      }
+      // Other errors
+      else {
         setBanner({
           title: "No se pudo postular",
           message: raw,
@@ -190,6 +226,7 @@ export default function OfferDetailPage() {
       setApplyLoading(false);
     }
   }
+  
   useEffect(() => {
     if (!showCelebration) return;
     const t = setTimeout(() => setShowCelebration(false), 2500);
@@ -350,24 +387,50 @@ export default function OfferDetailPage() {
           </div>
         )}
 
-        {/* Postular */}
-        <div className="pt-2">
-          {offerType === "Trabajo" && (
-            <div className="mb-4 space-y-3">
-              <label className="block text-sm font-medium">
-                Carta de motivación (opcional)
-              </label>
-              <textarea
-                value={motivation}
-                onChange={(e) => setMotivation(e.target.value)}
-                placeholder="Escribe brevemente por qué te interesa este cargo…"
-                className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--ring)] min-h-[90px]"
-              />
+        {/* Postular con Carta de Presentación */}
+        <div className="pt-2 space-y-4">
+          {/* Carta de presentación */}
+          <div className="space-y-3">
+            <label className="block text-sm font-medium">
+              Carta de presentación (opcional)
+            </label>
+            <textarea
+              value={coverLetter}
+              onChange={(e) => setCoverLetter(e.target.value)}
+              placeholder="Escribe por qué te interesa esta oportunidad..."
+              className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--ring)] min-h-[120px] resize-y"
+              maxLength={1000}
+            />
+            <p className="text-xs text-[var(--muted-ink)]">
+              Máximo 1000 caracteres. {coverLetter.length}/1000
+            </p>
+            <p className="text-xs text-[var(--muted-ink)]">
+              Puedes editar tu carta de presentación después de postular en tu{" "}
+              <Link href="/jobs/history" className="underline">
+                historial de postulaciones
+              </Link>
+              .
+            </p>
+          </div>
 
-              {/* Input de archivo mejorado */}
+          {/* CV Upload Section (if required) */}
+          {data.isCvRequired && (
+            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+              <div className="flex items-start gap-2">
+                <span className="text-blue-600 text-lg">📄</span>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-blue-900">
+                    Esta oferta requiere CV
+                  </p>
+                  <p className="text-xs text-blue-700 mt-1">
+                    Asegúrate de tener tu CV cargado en tu perfil, o súbelo aquí directamente.
+                  </p>
+                </div>
+              </div>
+
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-                <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm font-medium text-[var(--ink)] hover:bg-slate-50">
-                  Seleccionar archivo
+                <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-blue-300 bg-white px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-50 transition">
+                  Seleccionar CV
                   <input
                     type="file"
                     accept=".pdf,.doc,.docx"
@@ -376,15 +439,25 @@ export default function OfferDetailPage() {
                   />
                 </label>
 
-                <span className="text-sm text-[var(--muted-ink)] truncate max-w-full sm:max-w-[260px]">
-                  {cvFile ? cvFile.name : "Sin archivos seleccionados"}
-                </span>
+                {cvFile && (
+                  <>
+                    <span className="text-sm text-blue-900 truncate max-w-full sm:max-w-[200px]">
+                      {cvFile.name}
+                    </span>
+                    <button
+                      onClick={handleUploadCV}
+                      disabled={uploadingCV}
+                      className="px-4 py-2 text-sm bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition disabled:opacity-50"
+                    >
+                      {uploadingCV ? "Subiendo..." : "Subir CV"}
+                    </button>
+                  </>
+                )}
               </div>
 
-              <p className="text-xs text-[var(--muted-ink)]">
-                Si no tienes CV cargado en tu perfil, puedes adjuntarlo aquí.
-                También puedes gestionarlo en{" "}
-                <Link href="/profile" className="underline">
+              <p className="text-xs text-blue-700">
+                También puedes gestionar tu CV en{" "}
+                <Link href="/profile" className="underline font-medium">
                   tu perfil
                 </Link>
                 .
@@ -392,13 +465,14 @@ export default function OfferDetailPage() {
             </div>
           )}
 
+          {/* Apply Button */}
           <button
             onClick={handleApply}
             disabled={applyLoading || hasApplied}
-            className={`w-full md:w-auto rounded-xl px-5 py-2 font-semibold disabled:opacity-60 ${
+            className={`w-full md:w-auto rounded-xl px-5 py-2 font-semibold disabled:opacity-60 transition ${
               hasApplied
                 ? "bg-[var(--chip)] text-[var(--ink)]"
-                : "bg-[var(--primary)] text-white"
+                : "bg-[var(--primary)] text-white hover:bg-blue-700"
             }`}
           >
             {applyLoading ? "Enviando…" : hasApplied ? "Postulado" : "Postular"}

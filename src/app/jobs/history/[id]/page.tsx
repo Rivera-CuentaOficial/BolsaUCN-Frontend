@@ -2,25 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import api from "@/services/Service";
-
-type JobApplicationDetail = {
-  id: number;
-  offerTitle: string;
-  companyName: string;
-  applicationDate: string;
-  publicationDate: string;
-  endDate?: string | null;
-  remuneration: number;
-  description?: string | null;
-  requirements?: string | null;
-  contactInfo?: string | null;
-  status: "Pendiente" | "Aceptada" | "Rechazada" | string;
-  statusMessage?: string | null;
-};
-
-//  CAMBIO: La respuesta viene directa, sin GenericResponse
-type ApiResponse = JobApplicationDetail;
+import { GetApplicationDetailsDTO } from "@/models/responses";
+import { applicationService } from "@/services/applicationService";
+import { toast } from "sonner";
 
 function toCLDate(iso?: string | null) {
   if (!iso) return "—";
@@ -73,30 +57,30 @@ export default function ApplicationDetailPage() {
   const router = useRouter();
   const applicationId = Number(params.id);
 
-  const [application, setApplication] = useState<JobApplicationDetail | null>(null);
+  const [application, setApplication] = useState<GetApplicationDetailsDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Edit state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedCoverLetter, setEditedCoverLetter] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        console.log("📍 Intentando obtener:", `/job-applications/${applicationId}/details`);
-        
-        // ✅ CAMBIO: Acceder directamente a res.data (sin .data?.data)
-        const res = await api.get<ApiResponse>(
-          `/job-applications/${applicationId}/details`
-        );
-        
-        console.log("✅ Respuesta:", res.data);
+        const res = await applicationService.getApplicationDetailsForApplicant(applicationId);
         
         if (mounted) {
-          setApplication(res.data ?? null);
+          const data = res.data.data ?? null;
+          setApplication(data);
+          if (data?.coverLetter) {
+            setEditedCoverLetter(data.coverLetter);
+          }
         }
       } catch (e: any) {
-        console.error("❌ Error completo:", e);
-        console.error("Status:", e.response?.status);
-        console.error("Data:", e.response?.data);
+        console.error("Error loading application details:", e);
         
         if (mounted) {
           setError(
@@ -111,6 +95,43 @@ export default function ApplicationDetailPage() {
       mounted = false;
     };
   }, [applicationId]);
+
+  const handleSaveCoverLetter = async () => {
+    if (!editedCoverLetter.trim()) {
+      toast.error("La carta de presentación no puede estar vacía");
+      return;
+    }
+
+    if (editedCoverLetter.length > 1000) {
+      toast.error("La carta de presentación no puede exceder los 1000 caracteres");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await applicationService.updateApplicationDetails(applicationId, editedCoverLetter);
+      
+      // Update local state
+      if (application) {
+        setApplication({ ...application, coverLetter: editedCoverLetter });
+      }
+      
+      setIsEditing(false);
+      toast.success("Carta de presentación actualizada exitosamente");
+    } catch (e: any) {
+      console.error("Error updating cover letter:", e);
+      toast.error(
+        e.response?.data?.message || "No se pudo actualizar la carta de presentación"
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditedCoverLetter(application?.coverLetter || "");
+    setIsEditing(false);
+  };
 
   if (loading) {
     return <main className="max-w-4xl mx-auto p-6">Cargando…</main>;
@@ -165,7 +186,9 @@ export default function ApplicationDetailPage() {
             "absolute inset-y-0 left-0 w-1",
             (application.status ?? "Pendiente").toLowerCase() === "aceptada" &&
             "bg-green-400",
-          (application.status ?? "Pendiente").toLowerCase() === "rechazada" &&
+            (application.status ?? "Pendiente").toLowerCase() === "pendiente" &&
+            "bg-yellow-400",
+            (application.status ?? "Pendiente").toLowerCase() === "rechazada" &&
             "bg-red-400",
           ]
             .filter(Boolean)
@@ -193,18 +216,18 @@ export default function ApplicationDetailPage() {
         <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
           <div>
             <p className="text-xs text-[var(--muted-ink)] font-medium">
-              Postulada el
+              Postulado
             </p>
             <p className="text-sm font-semibold mt-1">
-              {toCLDate(application.applicationDate)}
+              {toCLDate(application.createdAt)}
             </p>
           </div>
           <div>
             <p className="text-xs text-[var(--muted-ink)] font-medium">
-              Publicada el
+              Límite
             </p>
             <p className="text-sm font-semibold mt-1">
-              {toCLDate(application.publicationDate)}
+              {toCLDate(application.applicationDeadline)}
             </p>
           </div>
           {application.endDate && (
@@ -227,6 +250,65 @@ export default function ApplicationDetailPage() {
           </div>
         </div>
       </article>
+
+      {/* Carta de presentación - Editable */}
+      <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-bold text-lg">Tu carta de presentación</h3>
+          {/* Only show edit button if status is Pendiente */}
+          {!isEditing && application.status?.toLowerCase() === "pendiente" && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Editar
+            </button>
+          )}
+          {application.status?.toLowerCase() !== "pendiente" && !isEditing && (
+            <span className="text-xs text-gray-500 italic">
+              Solo puedes editar postulaciones pendientes
+            </span>
+          )}
+        </div>
+        
+        {isEditing ? (
+          <div className="space-y-3">
+            <textarea
+              value={editedCoverLetter}
+              onChange={(e) => setEditedCoverLetter(e.target.value)}
+              placeholder="Escribe tu carta de presentación aquí..."
+              className="w-full min-h-[200px] p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
+              maxLength={1000}
+              disabled={isSaving}
+            />
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-500">
+                {editedCoverLetter.length}/1000 caracteres
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCancelEdit}
+                  disabled={isSaving}
+                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveCoverLetter}
+                  disabled={isSaving}
+                  className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {isSaving ? "Guardando..." : "Guardar"}
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="text-[var(--ink)] leading-relaxed whitespace-pre-wrap">
+            {application.coverLetter || "No has agregado una carta de presentación."}
+          </p>
+        )}
+      </section>
 
       {/* Descripción */}
       {application.description && (

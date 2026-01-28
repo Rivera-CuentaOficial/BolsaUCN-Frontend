@@ -1,5 +1,5 @@
 export interface ApplicationForApplicantDTO{
-    offerId: number;
+    id: number;
     offerTitle: string;
     status: 'Pendiente' | 'Aceptada' | 'Rechazada' | string;
     createdAt: string;
@@ -18,4 +18,19 @@ export interface ApplicationSearchParams{
     sortOrder?: "asc" | "desc";
     pageNumber: number;
     pageSize?: number;
+}
+export interface GetApplicationDetailsDTO{
+    id: number;
+    offerTitle: string;
+    companyName: string;
+    applicationDeadline: string;
+    createdAt: string;
+    endDate?: string;
+    remuneration: number;
+    description?: string;
+    requirements?: string;
+    contactInfo?: string;
+    coverLetter?: string;
+    status: 'Pendiente' | 'Aceptada' | 'Rechazada' | string;
+    statusMessage?: string;
 }

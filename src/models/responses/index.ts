@@ -34,5 +34,6 @@ export {
 export {
   type ApplicationForApplicantDTO,
   type ApplicationsForApplicantDTO,
-  type ApplicationSearchParams
+  type ApplicationSearchParams,
+  type GetApplicationDetailsDTO
 } from "./application";
