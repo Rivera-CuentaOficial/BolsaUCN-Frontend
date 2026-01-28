@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { ArrowLeft, AlertCircle, Sparkles, CheckCircle2, XCircle } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAdminPublicationDetailView } from "./hooks/use-validation-detail-view";
 import { handleApiError, getPresentationType } from "@/lib";
 import { ValidationDetailSection } from "./components/validation-detail-section";
@@ -25,6 +25,15 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
   
   const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+
+  useEffect(() => {
+    if (error && /no está pendiente de aprobación/i.test(error)) {
+      toast.error("Publicación ya revisada", {
+        description: "Esta publicación ya fue aprobada o rechazada.",
+      });
+      router.push(backRoute);
+    }
+  }, [error, router, backRoute]);
 
   const handlePublishConfirm = async () => {
     setIsPublishDialogOpen(false);
@@ -75,18 +84,29 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
   }
 
   // 2. ESTADO DE ERROR
-  if (error) {
-    const errorDetails = error ? handleApiError(error).details : "Error desconocido.";
+  if (error && !/no está pendiente de aprobación/i.test(error)) {
+    const errorDetails = error || "Error desconocido.";
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 relative text-white">
-         <div className="absolute inset-0 bg-gradient-to-br from-violet-900 to-slate-900" />
+         <div className="absolute inset-0 bg-linear-to-br from-violet-900 to-slate-900" />
          <div className="relative z-10 max-w-xl mx-auto p-8 bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2rem] text-center shadow-2xl">
             <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-400" />
             <h2 className="text-2xl font-bold mb-2">Error al cargar</h2>
             <p className="text-white/80 mb-6">{errorDetails}</p>
-            <button onClick={handleRetry} className="px-6 py-3 bg-white text-purple-900 rounded-full font-bold hover:bg-purple-100 transition shadow-lg">
-              Reintentar
-            </button>
+            <div className="flex gap-3 justify-center">
+              <button 
+                onClick={handleRetry} 
+                className="px-6 py-3 bg-white text-purple-900 rounded-full font-bold hover:bg-purple-100 transition shadow-lg"
+              >
+                Reintentar
+              </button>
+              <button 
+                onClick={() => router.push(backRoute)} 
+                className="px-6 py-3 bg-purple-600 text-white rounded-full font-bold hover:bg-purple-700 transition shadow-lg"
+              >
+                Volver
+              </button>
+            </div>
          </div>
       </div>
     );
