@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { AxiosError } from "axios";
+import { validators } from "@/utils/AuthValidatorsUtil"
 import { offererPublicationService } from "src/services/offererPublicationService"; // Asegúrate de importar la interfaz
 import { buildLoginUrl, extractUserFromJwt } from "src/lib/auth";
 import { CreateBuySellData } from "@/models/responses";
@@ -14,7 +15,7 @@ import { useNotification } from "@/hooks/common/use-notification";
 export interface PublicationFormData {
   title: string;
   description: string;
-  type: string; // '1' = Trabajo, '2' = Venta
+  type: string; // '0' = Trabajo, '1' = Venta
   // Campos Oferta Trabajo
   endDate: string;
   applicationDeadline: string;
@@ -26,8 +27,12 @@ export interface PublicationFormData {
   // Campos Venta
   category: string;
   price: string;
-  // Comunes
-  additionalContactInfo: string;
+  // Contacto
+  additionalContactEmail: string;
+  additionalContactPhoneNumber: string;
+  // Contacto Venta
+  showProfileEmail: boolean;
+  showProfilePhone: boolean;
 }
 
 /**
@@ -47,17 +52,20 @@ export const usePublicationForm = () => {
   const [formData, setFormData] = useState<PublicationFormData>({
     title: "",
     description: "",
-    type: "0", // Por defecto Oferta Laboral
+    type: "", // Por defecto Oferta Laboral
     endDate: "",
     applicationDeadline: "",
     remuneration: "",
     location: "",
     requirements: "",
-    additionalContactInfo: "",
+    additionalContactEmail: "",
+    additionalContactPhoneNumber: "",
     isCvRequired: false,
     offerType: "",
     category: "",
     price: "",
+    showProfileEmail: false,
+    showProfilePhone: false,
   });
 
   // 1. Verificación de Autenticación: Redirige al login si no hay token.
@@ -118,8 +126,19 @@ export const usePublicationForm = () => {
     if (!formData.title.trim()) newErrors.title = "El título es requerido";
     if (!formData.description.trim())
       newErrors.description = "La descripción es requerida";
-    if (!formData.additionalContactInfo.trim())
-      newErrors.additionalContactInfo = "El contacto es requerido";
+
+    // Validación de email adicional (opcional pero debe ser válido si se ingresa)
+    if (formData.additionalContactEmail && 
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.additionalContactEmail)) {
+      newErrors.additionalContactEmail = "Email inválido";
+    }
+    // Validación de teléfono adicional (opcional pero debe tener formato válido si se ingresa)
+    if (formData.additionalContactPhoneNumber){
+      const phoneError = validators.phone(formData.additionalContactPhoneNumber);
+      if (phoneError) {
+        newErrors.additionalContactPhoneNumber = phoneError;
+      }
+    }
 
     // --- VALIDACIONES SOLO PARA OFERTA LABORAL (TIPO 1) ---
     if (isJobOffer) {
@@ -177,6 +196,16 @@ export const usePublicationForm = () => {
       }
     }
 
+    const hasContactInfo = 
+      formData.showProfileEmail ||
+      formData.showProfilePhone ||
+      formData.additionalContactEmail.trim() !== "" ||
+      formData.additionalContactPhoneNumber.trim() !== "";
+
+    if (!hasContactInfo) {
+      newErrors.showProfileEmail = "Debes seleccionar al menos un método de contacto para mostrar"
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -199,15 +228,15 @@ export const usePublicationForm = () => {
         await offererPublicationService.create({
           Title: formData.title,
           Description: formData.description,
-          OfferType: formData.offerType === "JobOffer" ? 0 : 1,
+          OfferType: formData.offerType === "JobOffer" ? "Trabajo" : "Voluntariado",
           EndDate: formData.endDate,
           ApplicationDeadline: formData.applicationDeadline,
-          Remuneration: formData.remuneration
-            ? parseFloat(formData.remuneration)
-            : 0,
+          Remuneration: formData.offerType === "Volunteering"
+            ? null
+            : (formData.remuneration ? parseFloat(formData.remuneration) : 0),
           Location: formData.location,
-          Requirements: formData.requirements,
-          AdditionalContactInfo: formData.additionalContactInfo,
+          AdditionalContactEmail: formData.additionalContactEmail,
+          AdditionalContactPhoneNumber: formData.additionalContactPhoneNumber,
           IsCvRequired: formData.isCvRequired,
           //ImagesURL: [],
         });
@@ -220,7 +249,8 @@ export const usePublicationForm = () => {
           Category: formData.category,
           Price: parseFloat(formData.price || "0"),
           Location: formData.location,
-          ContactInfo: formData.additionalContactInfo,
+          AdditionalContactEmail: formData.additionalContactEmail,
+          AdditionalContactPhoneNumber: formData.additionalContactPhoneNumber,
           ImagesURL: [],
         };
 

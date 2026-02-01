@@ -122,7 +122,7 @@ export function UserDetailView({ id }: UserDetailViewProps) {
                     <div className="flex flex-col md:flex-row gap-8 items-start">
                         
                         {/* Columna Izquierda: Información Principal */}
-                        <div className="w-full md:w-3/4 space-y-8">
+                        <div className="w-full md:w-3/4 space-y-8 order-2 lg:order-none">
                             <UserDetailSection user={user} />
 
                             {/* Botón de Acción */}
@@ -142,7 +142,7 @@ export function UserDetailView({ id }: UserDetailViewProps) {
                         </div>
 
                         {/* Columna Derecha: Perfil */}
-                        <div className="w-full md:w-1/4 space-y-6">
+                        <div className="w-full md:w-1/4 space-y-6 order-1 lg:order-none">
                             <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
                                 <UserProfileSection user={user} />
                             </div>

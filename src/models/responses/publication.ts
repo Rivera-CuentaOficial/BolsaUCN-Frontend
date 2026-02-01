@@ -93,6 +93,7 @@ export type ValidationStatus = "Pending" | "Published" | "Rejected";
 
 export interface AdminDetail {
     id: string; 
+    userId: number;
     title: string;
     description: string;
     images: string[];
@@ -103,7 +104,8 @@ export interface AdminDetail {
     statusValidation: ValidationStatus; 
     price?: number;
     remuneration?: number;
-    deadlineDate?: string; 
+    deadlineDate?: string;
+    isCVRequired?: boolean; 
     endDate?: string;
     location?: string;
     requirements?: string;
@@ -111,6 +113,8 @@ export interface AdminDetail {
     aboutMe?: string;
     rating: number;
     category?: string;
+    additionalContactEmail?: string;
+    additionalContactPhoneNumber?: string;
 }
 
 export interface UseAdminDetailValidateResult {
@@ -141,12 +145,11 @@ export interface CreatePublicationData {
   Description: string;
   EndDate?: string; // Fecha de término de la oferta/pasantía
   ApplicationDeadline?: string; // Fecha límite para postular
-  Remuneration?: number;
-  OfferType: number; // 0 para Trabajo, 1 para Voluntariado/Pasantía
+  Remuneration?: number | null; // Remuneración ofrecida (null para voluntariados)
+  OfferType: string; 
   Location?: string;
-  Requirements?: string;
-  AdditionalContactInfo?: string;
-  //ImagesURL: string[];
+  AdditionalContactEmail?: string;
+  AdditionalContactPhoneNumber?: string;
   IsCvRequired: boolean;
 }
 export interface CreateBuySellData 
@@ -157,7 +160,8 @@ export interface CreateBuySellData
   Price: number;
   ImagesURL: string[],
   Location: string;
-  ContactInfo: string;
+  AdditionalContactEmail?: string;
+  AdditionalContactPhoneNumber?: string;
 }
 
     //  mypublished PublicationsDTO
@@ -332,7 +336,8 @@ export interface PublicationDetailsForApprovalDTO {
     isOpen: boolean;
     approvalStatus: string;
     location: string;
-    additionalContactInfo: string;
+    additionalContactEmail?: string;
+    additionalContactPhoneNumber?: string;
     aboutMe: string;
     rating: number;
 

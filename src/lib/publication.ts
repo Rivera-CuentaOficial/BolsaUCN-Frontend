@@ -118,6 +118,7 @@ export function mapPublicationDetailsToAdminDetail(dto: PublicationDetailsForApp
 
   return {
     id: id,
+    userId: dto.userId,
     title: dto.title,
     description: dto.description,
     companyName: dto.companyName || dto.userName || "Usuario UCN",
@@ -132,7 +133,9 @@ export function mapPublicationDetailsToAdminDetail(dto: PublicationDetailsForApp
     endDate: dto.endDate,
     location: dto.location,
     requirements: dto.requirements,
-    contactInfo: dto.additionalContactInfo,
+    contactInfo: dto.additionalContactEmail || "",
+    additionalContactEmail: dto.additionalContactEmail,
+    additionalContactPhoneNumber: dto.additionalContactPhoneNumber,
     aboutMe: dto.aboutMe,
     rating: dto.rating || 0,
     category: isBuySell ? dto.category : undefined
@@ -175,6 +178,7 @@ export function mapOfferToDetail(dto: any): AdminDetail {
   const endDateValue = (dto as any).EndDate ?? dto.endDate;
   return {
     id: String(idValue),
+    userId: dto.userId,
     title: titleValue,
     description: descriptionValue,
     companyName: companyNameValue,
@@ -220,6 +224,7 @@ export function mapBuySellToDetail(dto: any): AdminDetail {
 
   return {
     id: `bs-${String(idValue)}`,
+    userId: dto.userId,
     title: titleValue,
     description: descriptionValue,
     companyName: userNameValue,

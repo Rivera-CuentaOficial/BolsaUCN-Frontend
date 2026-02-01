@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import api from "src/services/Service";
+import { Mail } from "lucide-react";
 
 type BuySellDetail = {
   id: number;
@@ -12,8 +13,11 @@ type BuySellDetail = {
   price: number;
   location?: string | null;
   publicationDate: string; // ISO
-  contactInfo?: string | null;
+  additionalContactEmail?: string | null;
+  additionalContactPhoneNumber?: string | null;
   userName: string;
+  userEmail?: string | null;
+  userPhoneNumber?: string | null;
   firstImageUrl?: string | null;
 };
 
@@ -52,19 +56,6 @@ export default function BuySellDetailPage() {
   if (err || !data) return <main className="max-w-6xl mx-auto px-4 md:px-6 py-8">{err ?? "No encontrada."}</main>;
 
   const imgSrc = data.firstImageUrl || "/generic22.png";
-  const isEmail = !!data.contactInfo && /@/.test(data.contactInfo);
-  const isPhone = !!data.contactInfo && /\+?\d/.test(data.contactInfo) && !isEmail;
-
-  async function copyContact() {
-  if (!data || !data.contactInfo) return; // <-- revisa ambas cosas
-  try {
-    await navigator.clipboard.writeText(data.contactInfo);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1800);
-  } catch {
-    console.error("No se pudo copiar el contacto.");
-  }
-}
 
   return (
     <main className="max-w-6xl mx-auto px-4 md:px-6 py-8">
@@ -144,29 +135,66 @@ export default function BuySellDetailPage() {
           <div className="rounded-2xl border border-green-200 bg-green-50 p-5">
             <h3 className="font-semibold mb-2">Contacto</h3>
 
-            {data.contactInfo ? (
-              <div className="flex items-center gap-2">
-                {isEmail && (
-                  <a href={`mailto:${data.contactInfo}`} className="underline break-all">{data.contactInfo}</a>
+            {(data.additionalContactEmail || data.additionalContactPhoneNumber) ? (
+              <div className="space-y-3">
+                {data.additionalContactEmail && (
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 flex-shrink-0 text-green-700" />
+                    <a 
+                      href={`mailto:${data.additionalContactEmail}`} 
+                      className="underline break-all flex-1 text-sm"
+                    >
+                      {data.additionalContactEmail}
+                    </a>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(data.additionalContactEmail!);
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 1800);
+                        } catch {}
+                      }}
+                      className="rounded-lg border border-green-300 bg-white/70 px-3 py-1 text-xs hover:bg-white transition flex-shrink-0"
+                    >
+                      {copied ? "✓" : "Copiar"}
+                    </button>
+                  </div>
                 )}
-                {isPhone && (
-                  <a href={`tel:${data.contactInfo.replace(/\s/g, "")}`} className="underline break-all">{data.contactInfo}</a>
+                
+                {data.additionalContactPhoneNumber && (
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 flex-shrink-0 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    <a 
+                      href={`tel:${data.additionalContactPhoneNumber.replace(/\s/g, "")}`} 
+                      className="underline break-all flex-1 text-sm"
+                    >
+                      {data.additionalContactPhoneNumber}
+                    </a>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(data.additionalContactPhoneNumber!);
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 1800);
+                        } catch {}
+                      }}
+                      className="rounded-lg border border-green-300 bg-white/70 px-3 py-1 text-xs hover:bg-white transition flex-shrink-0"
+                    >
+                      {copied ? "✓" : "Copiar"}
+                    </button>
+                  </div>
                 )}
-                {!isEmail && !isPhone && <span className="break-all">{data.contactInfo}</span>}
 
-                <button
-                  onClick={copyContact}
-                  className="ml-auto rounded-lg border border-green-300 bg-white/70 px-3 py-1 text-sm hover:bg-white transition"
-                >
-                  {copied ? "Copiado" : "Copiar"}
-                </button>
+                <p className="mt-2 text-xs text-green-800/80">
+                  {data.additionalContactEmail && "Toca el email para abrir tu cliente de correo. "}
+                  {data.additionalContactPhoneNumber && "Toca el teléfono para llamar."}
+                </p>
               </div>
             ) : (
-              <p className="text-[var(--muted-ink)]">El oferente no ha dejado un contacto.</p>
+              <p className="text-[var(--muted-ink)]">El oferente no ha proporcionado información de contacto adicional.</p>
             )}
-
-            {isEmail && <p className="mt-2 text-xs text-green-800/80">Toca para abrir tu cliente de correo.</p>}
-            {isPhone && <p className="mt-2 text-xs text-green-800/80">Toca para llamar o enviar WhatsApp.</p>}
           </div>
         </aside>
       </div>
