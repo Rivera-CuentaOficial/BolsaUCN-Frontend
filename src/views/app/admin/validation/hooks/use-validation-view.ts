@@ -1,30 +1,48 @@
 "use client";
-import { useMemo, useState } from "react";
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useGetPendingPublications } from "@/hooks/api/use-validation-service"; 
 import { ValidationType } from "@/models/responses"; 
-import { totalmem } from "os";
 
 type SortType = "recientes" | "titulo";
+type ViewMode = "grid" | "list";
 
 export const useValidationView = () => {
     const router = useRouter();
-    const [text, setText] = useState("");
-    const [type, setType] = useState<ValidationType>("Todos");
-    const [sort, setSort] = useState<SortType>("recientes");
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const searchParams = useSearchParams();
+
+    // Initialize from URL params
+    const [text, setText] = useState(searchParams.get("search") || "");
+    const [type, setType] = useState<ValidationType>((searchParams.get("type") as ValidationType) || "Todos");
+    const [sort, setSort] = useState<SortType>((searchParams.get("sort") as SortType) || "recientes");
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">((searchParams.get("order") as "asc" | "desc") || "desc");
+    const [viewMode, setViewMode] = useState<ViewMode>((searchParams.get("view") as ViewMode) || "list");
+    const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get("page") || "1", 10));
+    const [pageSize] = useState(10);
+
+    // Update URL when filters change
+    useEffect(() => {
+        const params = new URLSearchParams();
+        if (text) params.set("search", text);
+        if (type !== "Todos") params.set("type", type);
+        if (sort !== "recientes") params.set("sort", sort);
+        if (sortOrder !== "desc") params.set("order", sortOrder);
+        if (viewMode !== "list") params.set("view", viewMode);
+        if (currentPage > 1) params.set("page", currentPage.toString());
+
+        const newUrl = params.toString() ? `?${params.toString()}` : "";
+        router.replace(`/admin/publications/validate${newUrl}`, { scroll: false });
+    }, [text, type, sort, sortOrder, viewMode, currentPage, router]);
 
     const filterBy = type !== "Todos"
         ? (type === "Compra/Venta" ? "CompraVenta" : "Oferta")
         : undefined;
 
     const sortBy = sort === "titulo" ? "Title" : "CreatedAt";
-    const sortOrder = sort === "recientes" ? "desc" : "asc";
 
     const {
         data,
-        isFetching, // Usamos isFetching para detectar la carga inicial real
+        isFetching,
         error: apiError,
         refetch,
     } = useGetPendingPublications({
@@ -33,10 +51,9 @@ export const useValidationView = () => {
         sortBy,
         sortOrder,
         pageNumber: currentPage,
-        pageSize });
+        pageSize 
+    });
 
-    // LÓGICA ANTI-PARPADEO (Igual que en Gestión):
-    // Si estamos buscando datos y el array está vacío o indefinido, consideramos que está "Cargando Vista".
     const isViewLoading = isFetching && !data;
 
     const handleViewDetail = (publicationId: string) => {
@@ -50,8 +67,12 @@ export const useValidationView = () => {
         window.scrollTo({top: 0, behavior: 'smooth'}); 
     }
 
+    const toggleSortOrder = () => {
+        setSortOrder(prev => prev === "asc" ? "desc" : "asc");
+        setCurrentPage(1);
+    }
+
     return {
-        // CLAVE: Devolvemos NULL si está cargando para activar los Skeletons en la vista
         pendingPublications: isViewLoading ? null : data?.publications || [],
         
         totalCount: data?.totalCount || 0,
@@ -63,24 +84,23 @@ export const useValidationView = () => {
         
         isLoading: isViewLoading,
         error: errorMessage,
-        filters: { text, type, sort },
+        viewMode,
+        filters: { text, type, sort, sortOrder },
         actions: {
             setText: (newText: string) => {
                 setText(newText);
-                setCurrentPage(1); // Resetear a la primera página al cambiar el texto
+                setCurrentPage(1);
             },
             setType: (newType: ValidationType) => {
                 setType(newType);
-                setCurrentPage(1); // Resetear a la primera página al cambiar el filtro
+                setCurrentPage(1);
             },
             setSort: (newSort: SortType) => {
                 setSort(newSort);
-                setCurrentPage(1); // Resetear a la primera página al cambiar el orden
+                setCurrentPage(1);
             },
-            setPageSize: (newPageSize: number) => {
-                setPageSize(newPageSize);
-                setCurrentPage(1); // Resetear a la primera página al cambiar el tamaño de página
-            },
+            toggleSortOrder,
+            setViewMode,
             handlePageChange,
             handleRetry: refetch,
             handleViewDetail

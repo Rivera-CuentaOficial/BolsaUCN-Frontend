@@ -148,41 +148,41 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
 
         {/* Tarjeta Principal Blanca */}
         <div className="bg-white text-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden p-6 md:p-8">
-            <div className="flex flex-col md:flex-row gap-8 items-start">
-                
-                {/* Columna Izquierda: Información */}
-                <div className="w-full md:w-3/4 space-y-8">
-                    <ValidationDetailSection detail={detail} />
+          <div className="flex flex-col lg:flex-row gap-8 items-start">
+            
+            {/* Columna Izquierda: Información */}
+            <div className="w-full lg:w-2/3 space-y-8 order-2 lg:order-none">
+              <ValidationDetailSection detail={detail} />
 
-                    {/* Botones de Acción */}
-                    <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-100">
-                        <button
-                            onClick={() => setIsRejectDialogOpen(true)}
-                            disabled={isMutating}
-                            className="flex-1 px-6 py-4 bg-red-50 text-red-600 border border-red-100 rounded-xl font-bold hover:bg-red-100 transition disabled:opacity-50 flex justify-center items-center gap-2"
-                        >
-                            <XCircle className="w-5 h-5" />
-                            Rechazar publicacion
-                        </button>
+              {/* Botones de Acción */}
+              <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-100">
+                <button
+                  onClick={() => setIsRejectDialogOpen(true)}
+                  disabled={isMutating}
+                  className="flex-1 px-6 py-4 bg-red-50 text-red-600 border border-red-100 rounded-xl font-bold hover:bg-red-100 transition disabled:opacity-50 flex justify-center items-center gap-2"
+                >
+                  <XCircle className="w-5 h-5" />
+                  Rechazar publicacion
+                </button>
 
-                        <button
-                            onClick={() => setIsPublishDialogOpen(true)}
-                            disabled={isMutating}
-                            className="flex-2 px-6 py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition shadow-lg hover:shadow-green-200 flex justify-center items-center gap-2"
-                        >
-                            <CheckCircle2 className="w-5 h-5" />
-                            {isMutating ? "Procesando..." : "Validar publicacion"}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Columna Derecha: Perfil */}
-                <div className="w-full md:w-1/4 space-y-6">
-                    <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                        <ValidationActionSection detail={detail} handleAction={handleAction} isMutating={isMutating} />
-                    </div>
-                </div>
+                <button
+                  onClick={() => setIsPublishDialogOpen(true)}
+                  disabled={isMutating}
+                  className="flex-1 sm:flex-2 px-6 py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition shadow-lg hover:shadow-green-200 flex justify-center items-center gap-2"
+                >
+                  <CheckCircle2 className="w-5 h-5" />
+                  {isMutating ? "Procesando..." : "Validar publicacion"}
+                </button>
+              </div>
             </div>
+
+            {/* Columna Derecha: Perfil */}
+            <div className="w-full lg:w-1/3 lg:sticky lg:top-8 space-y-6 order-1 lg:order-none">
+              <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                <ValidationActionSection detail={detail} handleAction={handleAction} isMutating={isMutating} />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Diálogos */}
