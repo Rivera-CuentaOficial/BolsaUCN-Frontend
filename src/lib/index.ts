@@ -33,4 +33,8 @@ export {
   thousandSeparatorPipe,
   isValidId,
   getRoleFromToken,
+  getRolesFromToken,
+  hasRole,
+  hasAnyRole,
+  hasAllRoles,
 } from "./utils";

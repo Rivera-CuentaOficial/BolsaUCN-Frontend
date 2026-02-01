@@ -8,7 +8,7 @@ import { ChevronDown } from "lucide-react";
 
 import {
   isLoggedIn,
-  getRoleFromToken,
+  getRolesFromToken,
   logoutAndRedirect,
   cn,
 } from "@/lib";
@@ -78,7 +78,7 @@ export default function SiteHeader() {
   const [auth, setAuth] = useState({
     logged: false,
     name: "Usuario",
-    role: null as string | null,
+    roles: [] as string[],
     userType: null as string | null,
     photoUrl: null as string | null,
     superAdmin: false
@@ -102,19 +102,19 @@ export default function SiteHeader() {
     const logged = isLoggedIn();
     const token = getTokenFromCookie();
     const info = token ? getUserFromToken() : null;
-    const userRole = getRoleFromToken();
+    const userRoles = getRolesFromToken();
     const tokenData = getUserFromToken();
 
     setAuth({
       logged,
       name: info?.userName || info?.email?.split("@")[0] || "Usuario",
-      role: userRole,
+      roles: userRoles,
       userType: tokenData?.userType || null,
       photoUrl: null,
       superAdmin: false
     });
 
-    if (logged && userRole === "Admin") {
+    if (logged && userRoles.includes("Admin")) {
       profileService.getAdminProfile().then((res) => {
         setAuth(prev => ({ ...prev, superAdmin: res.data.superAdmin || false }));
       }).catch(() => {
@@ -146,7 +146,7 @@ export default function SiteHeader() {
       },
       // MODIFICACIÓN AQUÍ:
       // Solo agregamos este item si el rol NO es Admin
-      ...(auth.role !== "Admin"
+      ...(!auth.roles.includes("Admin")
         ? [{ href: "/jobs/history", label: "Historial de postulaciones" }]
         : []),
       
@@ -154,15 +154,15 @@ export default function SiteHeader() {
       { href: "/offerer/create-publication", label: "Publicar" },
       {
         href:
-          auth.role === "Admin"
+          auth.roles.includes("Admin")
             ? "/admin/your-publications"
-            : auth.role === "Offeror"
+            : auth.roles.includes("Offeror")
             ? "/offerer/your-publications":"/students/your-publications",
         label: "Mis Publicaciones",
       },
     ];
 
-    if (auth.role === "Admin") {
+    if (auth.roles.includes("Admin")) {
       baseItems.push({ 
         href: "/admin/users", 
         label: "Ver usuarios" });
@@ -176,11 +176,11 @@ export default function SiteHeader() {
     return baseItems.map((item) => {
       if (item.label !== "Historial de trabajos") return item;
       let newHref = "/jobs/reviews/student";
-      if (auth.role === "Offeror") newHref = "/jobs/reviews/employer";
-      if (auth.role === "Admin") newHref = "/jobs/reports";
+      if (auth.roles.includes("Offeror")) newHref = "/jobs/reviews/employer";
+      if (auth.roles.includes("Admin")) newHref = "/jobs/reports";
       return { ...item, href: newHref };
     });
-  }, [auth.userType, auth.role, auth.superAdmin]);
+  }, [auth.userType, auth.roles, auth.superAdmin]);
   
 
   useEffect(() => {
@@ -191,9 +191,9 @@ export default function SiteHeader() {
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [open]);
 
-  const isAdmin = auth.role === "Admin";
-  const isOfferer = auth.role === "Offeror";
-  const isStudent = auth.role === "Applicant";
+  const isAdmin = auth.roles.includes("Admin");
+  const isOfferer = auth.roles.includes("Offeror");
+  const isStudent = auth.roles.includes("Applicant");
 
   const mainLinks = isAdmin ? adminNavLinks : isOfferer ? offererNavLinks :isStudent ? studentNavLinks :userLinks;
 
