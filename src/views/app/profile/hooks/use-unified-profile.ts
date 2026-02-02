@@ -116,7 +116,8 @@ export const useUnifiedProfile = () => {
 
         // Email
         if (userType === "Estudiante") {
-            const emailError = validators.studentEmail(formData.email);
+            const emailLocal = formData.email.replace("@alumnos.ucn.cl", "");
+            const emailError = validators.studentEmail(emailLocal);
             if (emailError) errors.email = emailError;
         }
         else {
@@ -138,16 +139,32 @@ export const useUnifiedProfile = () => {
         setIsSaving(true);
 
         try {
-            const updateData: any = {
-                userName: formData.userName,
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                email: formData.email,
-                phoneNumber: formData.phoneNumber,
-                aboutMe: formData.aboutMe,
-            };
+            const updateData: any = {};
+            if (formData.userName !== originalData.userName) {
+                updateData.userName = formData.userName;
+            }
+            if (formData.firstName !== originalData.firstName) {
+                updateData.firstName = formData.firstName;
+            }
+            if (formData.lastName !== originalData.lastName) {
+                updateData.lastName = formData.lastName;
+            }
+            if (formData.email !== originalData.email) {
+                updateData.email = formData.email;
+            }
+            if (formData.phoneNumber !== originalData.phoneNumber) {
+                updateData.phoneNumber = formData.phoneNumber;
+            }
+            if (formData.aboutMe !== originalData.aboutMe) {
+                updateData.aboutMe = formData.aboutMe;
+            }
 
-            var response = await profileService.updateUserProfile(updateData);
+            if (Object.keys(updateData).length === 0) {
+                show("Sin cambios", "No se han realizado cambios para guardar.", "info");
+                return true;
+            }
+
+            const response = await profileService.updateUserProfile(updateData);
 
             if (response) {
                 show("Perfil actualizado", "Los cambios se han guardado correctamente.", "success");

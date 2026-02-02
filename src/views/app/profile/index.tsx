@@ -210,6 +210,7 @@ export function UnifiedProfileView() {
                     handleChange={handleChange}
                     handleSave={handleSave}
                     isSaving={isSaving}
+                    userType={userType}
                 />
 
                 {/* Change Password Dialog */}
