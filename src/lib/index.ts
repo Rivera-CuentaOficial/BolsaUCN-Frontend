@@ -28,6 +28,7 @@ export {
   getPresentationType,
   getApplicantDetailForAdmin
 } from "./publication";
+export * from "./roles";
 export {
   formatDate,
   thousandSeparatorPipe,

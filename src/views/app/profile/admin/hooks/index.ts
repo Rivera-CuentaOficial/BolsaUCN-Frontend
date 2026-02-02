@@ -1,1 +1,0 @@
-export {useAdminProfile } from './use-admin-profile';

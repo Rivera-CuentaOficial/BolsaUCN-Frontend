@@ -1,5 +1,7 @@
+import { get } from "http";
 import api from "./Service";
 
+/* Deprecated DTOs
 export interface StudentProfileDTO {
   userName: string;
   name: string;
@@ -90,18 +92,6 @@ export interface UpdateAdminProfileDTO {
   superAdmin?: boolean;
 };
 
-export interface GetPhotoDTO {
-    photoUrl: string;
-}
-
-export interface UpdatePhotoDTO {
-    photo: File;
-}
-export interface PhotoResponse {
-    message: string;
-    data: GetPhotoDTO;
-}
-
 export interface StudentResponse {
     message: string;
     data: StudentProfileDTO;
@@ -118,6 +108,50 @@ export interface AdminResponse {
     message: string;
     data: AdminProfileDTO;
 };
+*/
+
+// Nuevos DTOs
+export interface GetUserProfileDTO {
+    userName: string;
+    firstName: string; // Empresas usan firstName para el nombre de la empresa
+    lastName: string; // Empresas usan lastName para la razon legal
+    rut: string;
+    email: string;
+    phoneNumber: string;
+    rating: number;
+    aboutMe: string;
+    userType: string;
+    profilePhoto?: string;
+    // Estudiantes (Role: Applicant)
+    curriculumVitae?: string;
+    disability?: string;
+}
+
+export interface UpdateUserProfileDTO {
+    userName?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phoneNumber?: string;
+    aboutMe?: string;
+}
+
+export interface GetPhotoDTO {
+    photoUrl: string;
+}
+
+export interface UpdatePhotoDTO {
+    photo: File;
+}
+export interface PhotoResponse {
+    message: string;
+    data: GetPhotoDTO;
+}
+
+export interface ProfileResponse {
+    message: string;
+    data: GetUserProfileDTO;
+}
 
 export interface UpdateResponse {
     message: string;
@@ -133,12 +167,12 @@ export interface ChangePasswordDTO {
 export const profileService = {
     //Students
     //GET api/user/profile/student
-    async getStudentProfile(): Promise<StudentResponse> {
-        const response = await api.get<StudentResponse>("/user/profile/student");
-        return response.data;   
+    async getStudentProfile(): Promise<ProfileResponse> {
+        const response = await api.get<ProfileResponse>("/user/profile/student");
+        return response.data;
     },
     //PATCH api/user/profile/student
-    async updateStudentProfile(data: UpdateStudentProfileDTO) {
+    async updateStudentProfile(data: UpdateUserProfileDTO) {
         const formData = new FormData();
 
         Object.entries(data).forEach(([key, value]) => {
@@ -148,7 +182,7 @@ export const profileService = {
         });
         const response = await api.patch<{ message: string; data: string }>(
             "/user/profile/student",
-            formData, 
+            formData,
             {
                 headers: {
                     'Content-Type': 'multipart/form-data'
@@ -159,12 +193,12 @@ export const profileService = {
     },
     //Individuals
     //GET api/user/profile/individual
-    async getIndividualProfile(): Promise<IndividualResponse> {
-        const response = await api.get<IndividualResponse>("/user/profile/individual");
-        return response.data;   
+    async getIndividualProfile(): Promise<ProfileResponse> {
+        const response = await api.get<ProfileResponse>("/user/profile/individual");
+        return response.data;
     },
     //PATCH api/user/profile/individual
-    async updateIndividualProfile(data: UpdateIndividualProfileDTO) {
+    async updateIndividualProfile(data: UpdateUserProfileDTO) {
         const formData = new FormData();
 
         Object.entries(data).forEach(([key, value]) => {
@@ -174,7 +208,7 @@ export const profileService = {
         });
         const response = await api.patch<{ message: string; data: string }>(
             "/user/profile/individual",
-            formData, 
+            formData,
             {
                 headers: {
                     'Content-Type': 'multipart/form-data'
@@ -185,12 +219,12 @@ export const profileService = {
     },
     //Companies
     //GET api/user/profile/company
-    async getCompanyProfile(): Promise<CompanyResponse> {
-        const response = await api.get<CompanyResponse>("/user/profile/company");
-        return response.data;   
+    async getCompanyProfile(): Promise<ProfileResponse> {
+        const response = await api.get<ProfileResponse>("/user/profile/company");
+        return response.data;
     },
     //PATCH api/user/profile/company
-    async updateCompanyProfile(data: UpdateCompanyProfileDTO) {
+    async updateCompanyProfile(data: UpdateUserProfileDTO) {
         const formData = new FormData();
 
         Object.entries(data).forEach(([key, value]) => {
@@ -200,7 +234,7 @@ export const profileService = {
         });
         const response = await api.patch<{ message: string; data: string }>(
             "/user/profile/company",
-            formData, 
+            formData,
             {
                 headers: {
                     'Content-Type': 'multipart/form-data'
@@ -211,12 +245,12 @@ export const profileService = {
     },
     //Admins
     //GET api/user/profile/admin
-    async getAdminProfile(): Promise<AdminResponse> {
-        const response = await api.get<AdminResponse>("/user/profile/admin");
-        return response.data;   
+    async getAdminProfile(): Promise<ProfileResponse> {
+        const response = await api.get<ProfileResponse>("/user/profile/admin");
+        return response.data;
     },
     //PATCH api/user/profile/admin
-    async updateAdminProfile(data: UpdateAdminProfileDTO) {
+    async updateAdminProfile(data: UpdateUserProfileDTO) {
         const formData = new FormData();
 
         Object.entries(data).forEach(([key, value]) => {
@@ -226,7 +260,36 @@ export const profileService = {
         });
         const response = await api.patch<{ message: string; data: string }>(
             "/user/profile/admin",
-            formData, 
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+            }
+        );
+        return response.data;
+    },
+
+    //NEW Unified Profile Endpoints
+
+    //GET api/user/profile
+    async getUserProfile(): Promise<ProfileResponse> {
+        const response = await api.get<ProfileResponse>("/user/profile");
+        return response.data;
+    },
+
+    //PATCH api/user/profile
+    async updateUserProfile(data: UpdateUserProfileDTO) {
+        const formData = new FormData();
+
+        Object.entries(data).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                formData.append(key, value.toString());
+            }
+        });
+        const response = await api.patch<{ message: string; data: string }>(
+            "/user/profile",
+            formData,
             {
                 headers: {
                     'Content-Type': 'multipart/form-data'
@@ -241,6 +304,7 @@ export const profileService = {
         const response = await api.get<PhotoResponse>("/user/profile/photo");
         return response.data;
     },
+
     //PATCH api/user/profile/photo
     async updateProfilePhoto(data: UpdatePhotoDTO) {
         const formData = new FormData();
@@ -257,6 +321,7 @@ export const profileService = {
         );
         return response.data;
     },
+    
     //PATCH /api/user/profile/change-password
     async changePassword(data: ChangePasswordDTO): Promise<UpdateResponse> {
         const response = await api.patch<UpdateResponse>(

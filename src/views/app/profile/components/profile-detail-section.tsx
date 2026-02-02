@@ -1,30 +1,31 @@
 "use client";
 
-import { StudentProfileDTO } from "@/services/profileService";
+import { GetUserProfileDTO } from "@/services/profileService";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 interface ProfileDetailSectionProps {
-    profile: StudentProfileDTO;
+    profile: GetUserProfileDTO;
     formData: {
         userName: string;
-        name: string;
+        firstName: string;
         lastName: string;
         rut: string;
-        emailLocal: string;
+        email: string;
         phoneNumber: string;
         aboutMe: string;
     };
     isEditing: boolean;
     fieldErrors: Record<string, string>;
     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+    userType: string;
 }
 
-function ProfileField({ 
-    label, 
-    name, 
-    value, 
-    displayValue, 
+function ProfileField({
+    label,
+    name,
+    value,
+    displayValue,
     textarea = false,
     colSpan = 1,
     isEditing,
@@ -55,7 +56,11 @@ function ProfileField({
                             onChange={handleChange}
                             rows={6}
                             maxLength={500}
-                            className={`resize-y min-h-32 ${fieldErrors[name] ? "border-red-500 focus:ring-red-500" : ""}`}
+                            className={`resize-y min-h-32 px-4 py-3 border rounded-xl bg-white text-slate-700 ${
+                                fieldErrors[name] 
+                                    ? "border-red-500 focus:ring-red-500 focus:border-red-500" 
+                                    : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                            }`}
                             placeholder={`Escribe ${label.toLowerCase()}...`}
                         />
                     ) : (
@@ -63,7 +68,11 @@ function ProfileField({
                             name={name}
                             value={value}
                             onChange={handleChange}
-                            className={fieldErrors[name] ? "border-red-500 focus:ring-red-500" : ""}
+                            className={`px-4 py-3 border rounded-xl bg-white text-slate-700 ${
+                                fieldErrors[name] 
+                                    ? "border-red-500 focus:ring-red-500 focus:border-red-500" 
+                                    : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                            }`}
                         />
                     )}
                     {fieldErrors[name] && (
@@ -83,12 +92,13 @@ function ProfileField({
     );
 }
 
-export function ProfileDetailSection({ 
-    profile, 
-    formData, 
-    isEditing, 
-    fieldErrors, 
-    handleChange 
+export function ProfileDetailSection({
+    profile,
+    formData,
+    isEditing,
+    fieldErrors,
+    handleChange,
+    userType
 }: ProfileDetailSectionProps) {
     return (
         <section className="w-full space-y-6">
@@ -117,16 +127,16 @@ export function ProfileDetailSection({
                         handleChange={handleChange}
                     />
                     <ProfileField
-                        label="Nombre"
-                        name="name"
-                        value={formData.name}
-                        displayValue={profile.name}
+                        label={userType === "Empresa" ? "Nombre de la empresa" : "Nombre"}
+                        name="firstName"
+                        value={formData.firstName}
+                        displayValue={profile.firstName}
                         isEditing={isEditing}
                         fieldErrors={fieldErrors}
                         handleChange={handleChange}
                     />
                     <ProfileField
-                        label="Apellido"
+                        label={userType === "Empresa" ? "Razón legal" : "Apellido"}
                         name="lastName"
                         value={formData.lastName}
                         displayValue={profile.lastName}
@@ -134,11 +144,11 @@ export function ProfileDetailSection({
                         fieldErrors={fieldErrors}
                         handleChange={handleChange}
                     />
-                    
+
                     <ProfileField
                         label="Correo electrónico"
-                        name="emailLocal"
-                        value={formData.emailLocal}
+                        name="email"
+                        value={formData.email}
                         displayValue={profile.email}
                         colSpan={2}
                         isEditing={isEditing}

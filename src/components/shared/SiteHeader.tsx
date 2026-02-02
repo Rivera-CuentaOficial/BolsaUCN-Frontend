@@ -3,16 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useMemo } from "react";
-import { getProfileRoute, getUserFromToken, getTokenFromCookie } from "@/lib";
-import { ChevronDown } from "lucide-react";
-
 import {
+  getProfileRoute,
+  getUserFromToken,
+  getTokenFromCookie,
+  ROLES,
+  UserRoles,
   isLoggedIn,
   getRolesFromToken,
   logoutAndRedirect,
   cn,
 } from "@/lib";
-
+import { ChevronDown } from "lucide-react";
 import { profileService } from "@/services/profileService";
 
 const userLinks = [
@@ -78,7 +80,7 @@ export default function SiteHeader() {
   const [auth, setAuth] = useState({
     logged: false,
     name: "Usuario",
-    roles: [] as string[],
+    roles: [] as UserRoles[],
     userType: null as string | null,
     photoUrl: null as string | null,
     superAdmin: false
@@ -108,19 +110,11 @@ export default function SiteHeader() {
     setAuth({
       logged,
       name: info?.userName || info?.email?.split("@")[0] || "Usuario",
-      roles: userRoles,
+      roles: userRoles as UserRoles[],
       userType: tokenData?.userType || null,
       photoUrl: null,
-      superAdmin: false
+      superAdmin: userRoles.includes("SuperAdmin")
     });
-
-    if (logged && userRoles.includes("Admin")) {
-      profileService.getAdminProfile().then((res) => {
-        setAuth(prev => ({ ...prev, superAdmin: res.data.superAdmin || false }));
-      }).catch(() => {
-        setAuth(prev => ({ ...prev, superAdmin: false }));
-      });
-    }
 
     if (logged) {
       loadPhoto();
@@ -141,28 +135,28 @@ export default function SiteHeader() {
   const dropdownItems = useMemo(() => {
     const baseItems = [
       {
-        href: getProfileRoute(auth.userType ?? undefined),
+        href: "/profile",
         label: "Editar perfil",
       },
       // MODIFICACIÓN AQUÍ:
       // Solo agregamos este item si el rol NO es Admin
-      ...(!auth.roles.includes("Admin")
+      ...(!auth.roles.includes(ROLES.ADMIN)
         ? [{ href: "/jobs/history", label: "Historial de postulaciones" }]
         : []),
-      
+
       { href: "/jobs/reports", label: "Historial de trabajos" },
       { href: "/offerer/create-publication", label: "Publicar" },
       {
         href:
-          auth.roles.includes("Admin")
+          auth.roles.includes(ROLES.ADMIN)
             ? "/admin/your-publications"
-            : auth.roles.includes("Offeror")
+            : auth.roles.includes(ROLES.OFFEROR)
             ? "/offerer/your-publications":"/students/your-publications",
         label: "Mis Publicaciones",
       },
     ];
 
-    if (auth.roles.includes("Admin")) {
+    if (auth.roles.includes(ROLES.ADMIN)) {
       baseItems.push({ 
         href: "/admin/users", 
         label: "Ver usuarios" });
@@ -176,8 +170,8 @@ export default function SiteHeader() {
     return baseItems.map((item) => {
       if (item.label !== "Historial de trabajos") return item;
       let newHref = "/jobs/reviews/student";
-      if (auth.roles.includes("Offeror")) newHref = "/jobs/reviews/employer";
-      if (auth.roles.includes("Admin")) newHref = "/jobs/reports";
+      if (auth.roles.includes(ROLES.OFFEROR)) newHref = "/jobs/reviews/employer";
+      if (auth.roles.includes(ROLES.ADMIN)) newHref = "/jobs/reports";
       return { ...item, href: newHref };
     });
   }, [auth.userType, auth.roles, auth.superAdmin]);
@@ -191,9 +185,9 @@ export default function SiteHeader() {
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [open]);
 
-  const isAdmin = auth.roles.includes("Admin");
-  const isOfferer = auth.roles.includes("Offeror");
-  const isStudent = auth.roles.includes("Applicant");
+  const isAdmin = auth.roles.includes(ROLES.ADMIN);
+  const isOfferer = auth.roles.includes(ROLES.OFFEROR);
+  const isStudent = auth.roles.includes(ROLES.APPLICANT);
 
   const mainLinks = isAdmin ? adminNavLinks : isOfferer ? offererNavLinks :isStudent ? studentNavLinks :userLinks;
 

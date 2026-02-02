@@ -15,6 +15,18 @@ export function isLoggedIn(): boolean {
   return !!getTokenFromCookie();
 }
 
+export function getUserTypeFromToken(): string {
+  const token = getTokenFromCookie();
+  if (!token) return "";
+
+  const decoded = jwtDecode<JwtClaims>(token);
+  if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
+    return "";
+  }
+  const userType = decoded["userType"];
+  return userType;
+}
+
 export function getUserFromToken(): {
   name?: string;
   email?: string;

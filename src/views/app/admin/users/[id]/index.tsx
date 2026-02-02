@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { ConfirmDialog, NotificationBanner } from "@/components/ui";
 import { useUserDetail } from "./hooks";
 import { useState } from "react";
-import { 
-    UserDetailLoading, 
-    UserDetailSection, 
-    UserProfileSection 
+import {
+    UserDetailLoading,
+    UserDetailSection,
+    UserProfileSection
 } from "./components";
 
 export interface UserDetailViewProps {
@@ -54,7 +54,7 @@ export function UserDetailView({ id }: UserDetailViewProps) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-900 relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-violet-900 to-slate-900" />
-                
+
                 <div className="relative z-10 max-w-xl mx-auto p-8 bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2rem] text-center text-white shadow-2xl">
                     <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-400" />
                     <h2 className="text-2xl font-bold mb-2">Error al cargar</h2>
@@ -73,7 +73,7 @@ export function UserDetailView({ id }: UserDetailViewProps) {
     // 3. VISTA PRINCIPAL
     return (
         <div className="flex flex-col min-h-screen relative z-0 text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-slate-900">
-            
+
             {/* Fondo Morado Continuo */}
             <div className="absolute inset-0 z-0">
                 <img src="/fondo.png" alt="Fondo UCN" className="w-full h-full object-cover opacity-60"/>
@@ -82,17 +82,17 @@ export function UserDetailView({ id }: UserDetailViewProps) {
             </div>
 
             <NotificationBanner
-                data={{ 
-                    title: notification?.title || "", 
-                    message: notification?.message || "", 
-                    type: notification?.type || "success" 
+                data={{
+                    title: notification?.title || "",
+                    message: notification?.message || "",
+                    type: notification?.type || "success"
                 }}
                 isVisible={isVisible}
                 onClose={close}
             />
 
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
-                
+
                 {/* Header Flotante */}
                 <header className="mb-8">
                     <button
@@ -120,7 +120,7 @@ export function UserDetailView({ id }: UserDetailViewProps) {
                 {/* Tarjeta Principal Blanca */}
                 <div className="bg-white text-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden p-6 md:p-8">
                     <div className="flex flex-col md:flex-row gap-8 items-start">
-                        
+
                         {/* Columna Izquierda: Información Principal */}
                         <div className="w-full md:w-3/4 space-y-8 order-2 lg:order-none">
                             <UserDetailSection user={user} />

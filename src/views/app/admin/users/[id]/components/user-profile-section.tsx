@@ -19,7 +19,7 @@ export function UserProfileSection({ user }: UserProfileSectionProps) {
 
             {/* PERFIL */}
             <div className="flex flex-col items-center text-center space-y-4">
-                
+
                 {/* AVATAR */}
                 {user.profilePictureUrl ? (
                     <img
@@ -46,7 +46,7 @@ export function UserProfileSection({ user }: UserProfileSectionProps) {
 
             {/* INFO DETALLADA */}
             <div className="mt-6 pt-5 border-t border-slate-200 text-slate-700 text-sm space-y-4">
-                
+
                 {/* User ID */}
                 <div className="flex flex-col">
                     <span className="font-semibold mb-1">ID de Usuario:</span>
@@ -65,8 +65,8 @@ export function UserProfileSection({ user }: UserProfileSectionProps) {
                 <div className="flex flex-col">
                     <span className="font-semibold mb-1">Estado de la Cuenta:</span>
                     <span className={`inline-flex self-start px-3 py-1 rounded-full text-xs font-bold ${
-                        user.banned 
-                            ? "bg-red-100 text-red-700" 
+                        user.banned
+                            ? "bg-red-100 text-red-700"
                             : "bg-green-100 text-green-700"
                     }`}>
                         {user.banned ? "Bloqueado" : "Activo"}

@@ -18,6 +18,7 @@ export interface GetCVDTO {
 }
 
 export const cvService = {
+  //PATCH /api/user/cv
   async uploadCV(file: File): Promise<CVResponse> {
     const formData = new FormData();
     formData.append("CVFile", file);
@@ -30,23 +31,15 @@ export const cvService = {
     return response.data;
   },
 
+  //GET /api/user/cv
   async getCV(): Promise<GetCVResponse> {
     const response = await api.get<GetCVResponse>("/user/cv");
     return response.data;
   },
 
+  //DELETE /api/user/cv
   async deleteCV(): Promise<CVResponse> {
     const response = await api.delete<CVResponse>("/user/cv");
     return response.data;
-  },
-
-  downloadCV(url: string, fileName: string): void {
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName;
-    link.target = "_blank";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   },
 };

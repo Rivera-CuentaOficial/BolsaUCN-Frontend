@@ -1,1 +1,0 @@
-export { useCompanyProfile } from "./use-company-profile";
