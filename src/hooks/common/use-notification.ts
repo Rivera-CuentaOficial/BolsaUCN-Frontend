@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 
-export type NotificationType = "success" | "error";
+export type NotificationType = "success" | "error" | "info";
 
 export interface NotificationState {
   title: string;
@@ -15,7 +15,7 @@ export function useNotification() {
   const close = useCallback(() => {
     setIsVisible(false);
     if (timerRef.current) clearTimeout(timerRef.current);
-    setTimeout(() => setNotification(null), 200); 
+    setTimeout(() => setNotification(null), 200);
   }, []);
   const show = useCallback((title: string, message: string, type: NotificationType = "success") => {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -23,7 +23,7 @@ export function useNotification() {
     setIsVisible(true);
     timerRef.current = setTimeout(() => {
       close();
-    }, 8000); 
+    }, 8000);
   }, [close]);
   return {
     notification,
