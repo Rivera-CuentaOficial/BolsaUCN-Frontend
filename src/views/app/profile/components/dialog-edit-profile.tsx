@@ -191,57 +191,6 @@ export function EditProfileDialog({
               )}
             </div>
 
-            {/* Email */}
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Correo electrónico
-                {isStudent && (
-                  <span className="text-xs font-normal text-slate-500 ml-2">
-                    (Dominio UCN)
-                  </span>
-                )}
-              </label>
-              {isStudent ? (
-                <div className="relative">
-                  <Input
-                    name="email"
-                    value={emailLocal}
-                    onChange={handleEmailChange}
-                    className={`px-4 py-3 pr-40 border rounded-xl bg-white text-slate-700 ${
-                      fieldErrors.email
-                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                        : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
-                    }`}
-                    placeholder="tu.nombre"
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 pointer-events-none">
-                    <AtSign className="w-4 h-4" />
-                    <span className="text-sm font-medium">alumnos.ucn.cl</span>
-                  </div>
-                </div>
-              ) : (
-                <Input
-                  name="email"
-                  value={emailLocal}
-                  onChange={handleEmailChange}
-                  className={`px-4 py-3 border rounded-xl bg-white text-slate-700 ${
-                    fieldErrors.email
-                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                      : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
-                  }`}
-                  placeholder="correo@ejemplo.com"
-                />
-              )}
-              {fieldErrors.email && (
-                <p className="text-red-600 text-xs mt-1">{fieldErrors.email}</p>
-              )}
-              {isStudent && !fieldErrors.email && (
-                <p className="text-slate-500 text-xs mt-1.5">
-                  Tu correo completo: <span className="font-medium">{formData.email}</span>
-                </p>
-              )}
-            </div>
-
             {/* Phone Number */}
             <div className="sm:col-span-2">
               <label className="block text-sm font-semibold text-slate-700 mb-2">

@@ -1,24 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, User, Edit2, Lock, Briefcase, Building2, UserCog } from "lucide-react";
+import { ArrowLeft, User, Settings, Briefcase, Building2, UserCog } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button, NotificationBanner } from "@/components/ui";
 import { useUnifiedProfile } from "./hooks";
-import ChangePasswordDialog from "@/components/profile/ChangePassword";
 
 import {
     ProfileDetailSection,
     ProfileSidebarSection,
     ProfileSkeleton,
-    EditProfileDialog,
+    ProfileSettingsMenu,
     CVUploadSection
 } from "./components";
 
 export function UnifiedProfileView() {
     const router = useRouter();
-    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+    const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(false);
 
     const {
         userType,
@@ -90,13 +88,9 @@ export function UnifiedProfileView() {
         );
     }
 
-    const handleCloseEditDialog = () => {
+    const handleCloseSettingsMenu = () => {
         handleCancel();
-        setIsEditDialogOpen(false);
-    };
-
-    const handlePasswordChangeSuccess = () => {
-        show("Contraseña cambiada", "Tu contraseña se ha actualizado correctamente.", "success");
+        setIsSettingsMenuOpen(false);
     };
 
     return (
@@ -144,23 +138,14 @@ export function UnifiedProfileView() {
                             </p>
                         </div>
 
-                        {/* Action Buttons */}
-                        <div className="flex flex-wrap gap-3">
-                            <button
-                                onClick={() => setIsEditDialogOpen(true)}
-                                className="px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white rounded-full font-bold transition shadow-lg flex items-center gap-2"
-                            >
-                                <Edit2 className="w-4 h-4" />
-                                Editar Perfil
-                            </button>
-                            <button
-                                onClick={() => setIsPasswordDialogOpen(true)}
-                                className="px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white rounded-full font-bold transition shadow-lg flex items-center gap-2"
-                            >
-                                <Lock className="w-4 h-4" />
-                                Cambiar Contraseña
-                            </button>
-                        </div>
+                        {/* Single Update Profile Button */}
+                        <button
+                            onClick={() => setIsSettingsMenuOpen(true)}
+                            className="px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white rounded-full font-bold transition shadow-lg flex items-center gap-2"
+                        >
+                            <Settings className="w-5 h-5" />
+                            Actualizar Perfil
+                        </button>
                     </div>
                 </header>
 
@@ -200,10 +185,10 @@ export function UnifiedProfileView() {
                     </div>
                 </div>
 
-                {/* Edit Profile Dialog */}
-                <EditProfileDialog
-                    isOpen={isEditDialogOpen}
-                    onClose={handleCloseEditDialog}
+                {/* Menu Principal */}
+                <ProfileSettingsMenu
+                    isOpen={isSettingsMenuOpen}
+                    onClose={handleCloseSettingsMenu}
                     profile={profile}
                     formData={formData}
                     fieldErrors={fieldErrors}
@@ -211,13 +196,6 @@ export function UnifiedProfileView() {
                     handleSave={handleSave}
                     isSaving={isSaving}
                     userType={userType}
-                />
-
-                {/* Change Password Dialog */}
-                <ChangePasswordDialog
-                    open={isPasswordDialogOpen}
-                    onOpenChange={setIsPasswordDialogOpen}
-                    onSuccess={handlePasswordChangeSuccess}
                 />
             </main>
         </div>
