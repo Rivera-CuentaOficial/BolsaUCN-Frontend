@@ -116,7 +116,7 @@ export const validators = {
 
         const digitsOnly = value.replace(/\D/g, '');
 
-        if (!/^[0-9]{9}$/.test(digitsOnly)) 
+        if (!/^[0-9]{11}$/.test(digitsOnly)) 
             return "Debe tener 9 dígitos (ej: 9 1234 5678)";
         return null;
   },
