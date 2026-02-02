@@ -3,7 +3,7 @@
 import { 
   AdminResponseDto,
   AdminRequestDto, 
-  CompanyResponsetDto, 
+  CompanyResponseDto, 
   CompanyRequestDto,
   IndividualResponseDto, 
   IndividualRequestDto,
@@ -83,7 +83,7 @@ export function mapLoginResponse(dto: any) {
 export const AdminAdapter = {
   toDTO(formData: AdminForm): AdminRequestDto {
     return {
-      Name: formData.nombre,
+      FirstName: formData.nombre,
       LastName: formData.apellido,
       Email: formData.email,
       Rut: formData.rut,
@@ -102,7 +102,7 @@ export const AdminAdapter = {
 export const CompanyAdapter = {
   toDTO(formData: CompanyForm): CompanyRequestDto {
     return {
-      CompanyName: formData.nombreEmpresa,
+      FirstName: formData.nombreEmpresa,
       LegalName: formData.razonSocial,
       Rut: formData.rut,
       Email: formData.email,
@@ -111,7 +111,7 @@ export const CompanyAdapter = {
       ConfirmPassword: formData.confirmPassword,
     };
   },
-  fromResponse(dto: CompanyResponsetDto): { message: string } {
+  fromResponse(dto: CompanyResponseDto): { message: string } {
     return { message: dto.message ?? "Registro de empresa exitoso" };
   },
 }
@@ -120,7 +120,7 @@ export const CompanyAdapter = {
 export const IndividualAdapter = {
   toDTO(formData: IndividualForm): IndividualRequestDto {
     return {
-      Name: formData.nombre,
+      FirstName: formData.nombre,
       LastName: formData.apellido,
       Email: formData.email,
       Rut: formData.rut,
@@ -140,7 +140,7 @@ export const StudentAdapter = {
     const finalEmail = `${emailLocalPart}@alumnos.ucn.cl`;
 
     return {
-      Name: formData.nombre,
+      FirstName: formData.nombre,
       LastName: formData.apellido,
       Email: finalEmail,
       Rut: formData.rut,
