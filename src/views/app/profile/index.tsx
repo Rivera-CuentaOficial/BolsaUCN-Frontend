@@ -196,6 +196,7 @@ export function UnifiedProfileView() {
                     handleSave={handleSave}
                     isSaving={isSaving}
                     userType={userType}
+                    onRefetch={refetch}
                 />
             </main>
         </div>

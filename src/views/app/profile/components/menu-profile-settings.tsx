@@ -9,11 +9,12 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui";
 import { Edit2, Lock, Mail, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   EditProfileDialog,
   ChangePasswordDialog,
   UpdateEmailDialog,
+  VerifyNewEmailDialog,
 } from "."
 import { GetUserProfileDTO } from "@/services/profileService";
 
@@ -35,6 +36,7 @@ interface ProfileSettingsMenuProps {
   handleSave: () => Promise<boolean>;
   isSaving: boolean;
   userType?: string;
+  onRefetch: () => void;
 }
 
 export function ProfileSettingsMenu({
@@ -47,21 +49,64 @@ export function ProfileSettingsMenu({
   handleSave,
   isSaving,
   userType,
+  onRefetch,
 }: ProfileSettingsMenuProps) {
-  const [activeDialog, setActiveDialog] = useState<"edit" | "password" | "email" | null>(null);
+  const [activeDialog, setActiveDialog] = useState<"edit" | "password" | "email" | "verifyEmail" | null>(null);
+  const [emailChangeInitiated, setEmailChangeInitiated] = useState(false);
+  const [pendingEmailForVerification, setPendingEmailForVerification] = useState<string | undefined>(profile.pendingEmail);
+
+  const hasPendingEmailChange = profile.pendingEmail !== undefined && profile.pendingEmail !== null;
+
+  useEffect(() => {
+    if (!hasPendingEmailChange) {
+      setEmailChangeInitiated(false);
+      setPendingEmailForVerification(undefined);
+    } else {
+      setPendingEmailForVerification(profile.pendingEmail);
+    }
+  }, [profile.pendingEmail, hasPendingEmailChange]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setActiveDialog(null);
+      setEmailChangeInitiated(false);
+    }
+  }, [isOpen]);
 
   const handleOpenDialog = (dialog: "edit" | "password" | "email") => {
+    if (dialog === "email" && ( hasPendingEmailChange || emailChangeInitiated )) {
+      setActiveDialog("verifyEmail");
+      return;
+    }
     setActiveDialog(dialog);
   };
 
   const handleCloseDialog = () => {
+    if (activeDialog === "verifyEmail" && emailChangeInitiated) {
+      setActiveDialog(null);
+      return;
+    }
     setActiveDialog(null);
   };
 
   const handleCloseAll = () => {
     handleCloseDialog();
+    setEmailChangeInitiated(false);
     onClose();
+    onRefetch();
   };
+
+  const handleOpenVerifyDialog = (newEmail: string) => {
+    setPendingEmailForVerification(newEmail);
+    setEmailChangeInitiated(true);
+    setActiveDialog("verifyEmail");
+  };
+
+  const handleVerificationSuccess = () => {
+    setEmailChangeInitiated(false);
+    handleCloseAll();
+    onRefetch();
+  }
 
   const menuItems = [
     {
@@ -74,9 +119,12 @@ export function ProfileSettingsMenu({
     {
       id: "email" as const,
       icon: Mail,
-      title: "Cambiar Correo",
-      description: "Actualiza tu dirección de correo electrónico",
-      color: "from-purple-500 to-pink-500",
+      title: (hasPendingEmailChange || emailChangeInitiated) ? "Completar Verificación" : "Cambiar Correo",
+      description: (hasPendingEmailChange || emailChangeInitiated)
+        ? `Verifica ${pendingEmailForVerification || profile.pendingEmail || "tu nuevo correo"}`
+        : "Actualiza tu dirección de correo electrónico",
+      color: (hasPendingEmailChange || emailChangeInitiated) ? "from-amber-500 to-orange-500" : "from-purple-500 to-pink-500",
+      badge: hasPendingEmailChange || emailChangeInitiated,
     },
     {
       id: "password" as const,
@@ -89,7 +137,12 @@ export function ProfileSettingsMenu({
 
   return (
     <>
-      <Dialog open={isOpen && activeDialog === null} onOpenChange={onClose}>
+      <Dialog open={isOpen && activeDialog === null} onOpenChange={(open) => {
+        if (!open) {
+          onClose();
+          onRefetch();
+        }
+      }}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-slate-900">
@@ -151,10 +204,19 @@ export function ProfileSettingsMenu({
 
       {/* Update Email Dialog */}
       <UpdateEmailDialog
-        isOpen={activeDialog === "email"}
+        isOpen={activeDialog === "email" && !hasPendingEmailChange && !emailChangeInitiated}
         onClose={handleCloseDialog}
+        onOpenVerifyDialog={handleOpenVerifyDialog}
         currentEmail={profile.email}
         userType={userType}
+      />
+
+      {/* Verify New Email Dialog */}
+      <VerifyNewEmailDialog
+        isOpen={activeDialog === "verifyEmail"}
+        onClose={handleCloseDialog}
+        pendingEmail={pendingEmailForVerification}
+        onSuccess={handleVerificationSuccess}
       />
 
       {/* Change Password Dialog */}

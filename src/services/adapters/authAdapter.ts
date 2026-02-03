@@ -73,7 +73,6 @@ export function mapLoginResponse(dto: any) {
 
   const message = 
     dto?.message ??         // camelCase
-    dto?.Message ??         // PascalCase (¡IMPORTANTE!)
     (token ? "Login exitoso" : "Credenciales inválidas");
 
   return { message, token };

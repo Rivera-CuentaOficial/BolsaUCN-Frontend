@@ -122,6 +122,7 @@ export interface GetUserProfileDTO {
     aboutMe: string;
     userType: string;
     profilePhoto?: string;
+    pendingEmail?: string;
     // Estudiantes (Role: Applicant)
     curriculumVitae?: string;
     disability?: string;
@@ -162,6 +163,15 @@ export interface ChangePasswordDTO {
     CurrentPassword: string;
     NewPassword: string;
     ConfirmNewPassword: string;
+}
+
+export interface ChangeUserEmailDTO {
+    newEmail: string;
+    currentPassword: string;
+}
+
+export interface VerifyNewEmailDTO {
+    verificationCode: string;
 }
 
 export const profileService = {
@@ -321,7 +331,7 @@ export const profileService = {
         );
         return response.data;
     },
-    
+
     //PATCH /api/user/profile/change-password
     async changePassword(data: ChangePasswordDTO): Promise<UpdateResponse> {
         const response = await api.patch<UpdateResponse>(
@@ -335,5 +345,41 @@ export const profileService = {
         );
         return response.data;
     },
+
+    //PATCH /api/user/profile/change-email
+    async changeEmail(data: ChangeUserEmailDTO): Promise<UpdateResponse> {
+        const response = await api.patch<UpdateResponse>(
+            "/user/profile/change-email",
+            data,
+            {
+            headers: {
+                'Content-Type': 'application/json'
+                },
+            }
+        );
+        return response.data;
+    },
+
+    //POST /api/user/profile/change-email/verify
+    async verifyChangeEmail(data: VerifyNewEmailDTO): Promise<UpdateResponse> {
+        const response = await api.post<UpdateResponse>(
+            "/user/profile/change-email/verify",
+            data,
+            {
+            headers: {
+                'Content-Type': 'application/json'
+                },
+            }
+        );
+        return response.data;
+    },
+
+    //POST /api/user/profile/change-email/resend-verification"
+    async resendEmailVerification(): Promise<UpdateResponse> {
+        const response = await api.post<UpdateResponse>(
+            "/user/profile/change-email/resend-verification"
+        );
+        return response.data;
+    }
 };
 

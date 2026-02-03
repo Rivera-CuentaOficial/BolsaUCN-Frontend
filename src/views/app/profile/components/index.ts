@@ -4,5 +4,6 @@ export { ProfileSidebarSection } from "./profile-sidebar-section";
 export { ChangePasswordDialog } from "./dialog-change-password";
 export { EditProfileDialog } from "./dialog-edit-profile";
 export { UpdateEmailDialog } from "./dialog-update-email";
+export { VerifyNewEmailDialog } from "./dialog-verify-new-email";
 export { ProfileSettingsMenu } from "./menu-profile-settings";
 export { CVUploadSection } from "./cv-upload-section";

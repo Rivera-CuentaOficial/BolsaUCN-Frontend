@@ -138,7 +138,6 @@ export default function LoginPage() {
       const backendError = error?.response?.data;
 
       const errorMessage =
-        backendError?.message ||
         backendError?.details ||
         "Credenciales inválidas. Por favor, revisa tu correo y contraseña.";
 

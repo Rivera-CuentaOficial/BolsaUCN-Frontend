@@ -13,10 +13,12 @@ import { Input } from "@/components/ui/input";
 import { Save, X, AtSign, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { profileService } from "@/services/profileService";
 
 interface UpdateEmailDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenVerifyDialog: (newEmail: string) => void;
   currentEmail: string;
   userType?: string;
 }
@@ -24,6 +26,7 @@ interface UpdateEmailDialogProps {
 export function UpdateEmailDialog({
   isOpen,
   onClose,
+  onOpenVerifyDialog,
   currentEmail,
   userType,
 }: UpdateEmailDialogProps) {
@@ -94,18 +97,19 @@ export function UpdateEmailDialog({
     setIsSubmitting(true);
 
     try {
-      // TODO: Call backend API endpoint when available
-      // const newEmail = isStudent ? emailLocal + STUDENT_DOMAIN : emailLocal;
-      // await profileService.updateEmail({ newEmail, password });
-      
-      toast.success("Verificación enviada", {
-        description: "Se ha enviado un correo de verificación a tu nueva dirección",
+      const newEmail = isStudent ? emailLocal + STUDENT_DOMAIN : emailLocal;
+      const response = await profileService.changeEmail({newEmail: newEmail, currentPassword: password});
+
+      toast.success("Codigo enviada", {
+        description: response.message ||"Se ha enviado un correo de verificación a tu nueva dirección",
       });
-      
-      onClose();
+
       setEmailLocal("");
       setPassword("");
       setFieldErrors({});
+
+      onClose();
+      onOpenVerifyDialog(newEmail);
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message || "Error al actualizar el correo";
       setFieldErrors({ submit: errorMessage });
