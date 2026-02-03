@@ -5,6 +5,17 @@ import { FileUpload } from "@/components/ui/FileUpload";
 import { cvService } from "@/services/cvService";
 import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
+import { FileText, Eye, Upload, AlertCircle, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface CVUploadProps {
   currentCVUrl?: string | null;
@@ -15,35 +26,17 @@ export function CVUpload({ currentCVUrl, onUploadSuccess }: CVUploadProps) {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [fileSize, setFileSize] = useState<number | null>(null);
-  const [uploadDate, setUploadDate] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const getFullUrl = (url: string): string => {
-    if (url.startsWith("http")) {
-      return url;
+  const handleViewCV = () => {
+    if (!currentCVUrl) {
+      toast.error("No hay CV disponible");
+      return;
     }
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5185";
-    return `${baseUrl}${url}`;
+    
+    // Open Cloudinary URL directly in new tab
+    window.open(currentCVUrl, "_blank");
   };
-
-  const handleViewCV = async () => {
-    setLoading(true);
-    try {
-      const response = await cvService.getCV();
-      
-      if (response.data?.url) {
-        const fullUrl = getFullUrl(response.data.url);
-        window.open(fullUrl, "_blank");
-      } else {
-        toast.error(response.message || "No se pudo obtener el CV");
-      }
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || "Error al obtener el CV";
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   const handleFileSelect = (selectedFile: File) => {
     setFile(selectedFile);
@@ -79,19 +72,21 @@ export function CVUpload({ currentCVUrl, onUploadSuccess }: CVUploadProps) {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDeleteConfirm = async () => {
     if (!currentCVUrl) return;
 
     setLoading(true);
+    setShowDeleteDialog(false);
 
     try {
       const response = await cvService.deleteCV();
 
-      if (response.data) {
+      if (response.data !== null) {
         toast.success("CV eliminado exitosamente");
         onUploadSuccess?.("");
       } else {
         setError(response.message || "Error al eliminar el CV");
+        toast.error(response.message || "Error al eliminar el CV");
       }
     } catch (err: any) {
       const errorMessage =
@@ -105,102 +100,189 @@ export function CVUpload({ currentCVUrl, onUploadSuccess }: CVUploadProps) {
 
   return (
     <div className="space-y-4">
-      <label className="block text-sm font-medium text-gray-700">
-        Curriculum Vitae (PDF)
-      </label>
+      {/* CV Restriction Notice */}
+      <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+        <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+        <div className="flex-1">
+          <p className="text-sm font-medium text-amber-900">
+            Restricción: CV de una sola página
+          </p>
+          <p className="text-xs text-amber-700 mt-1">
+            Solo se permiten CVs de una página en formato PDF. Asegúrate de que tu documento cumpla con este requisito antes de subirlo.
+          </p>
+        </div>
+      </div>
 
       {/* Current CV Display */}
-      {currentCVUrl && (
-        <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-          <div className="flex items-center gap-2">
-            <svg
-              className="w-5 h-5 text-green-600"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
-                clipRule="evenodd"
+      {currentCVUrl ? (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <FileText className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-green-900">CV cargado</p>
+                <p className="text-xs text-green-600">Tu currículum está disponible para los reclutadores</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleViewCV}
+                disabled={loading}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 border-green-300 text-green-700 hover:bg-green-50"
+              >
+                <Eye className="w-4 h-4" />
+                Ver CV
+              </Button>
+              <Button
+                onClick={() => setShowDeleteDialog(true)}
+                disabled={loading}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 border-red-300 text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="w-4 h-4" />
+                Eliminar
+              </Button>
+            </div>
+          </div>
+
+          {/* Optional: Replace CV section */}
+          <details className="group">
+            <summary className="cursor-pointer text-sm text-slate-600 hover:text-slate-900 font-medium list-none flex items-center gap-2">
+              <span className="inline-block transition-transform group-open:rotate-90">▶</span>
+              Reemplazar CV
+            </summary>
+            <div className="mt-3 pl-5 space-y-3">
+              <FileUpload
+                accept=".pdf,application/pdf"
+                maxSizeMB={10}
+                onFileSelect={handleFileSelect}
+                onError={setError}
+                disabled={loading}
               />
-            </svg>
-            <span className="text-sm text-green-700">CV cargado</span>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleViewCV}
-              disabled={loading}
-              className="text-sm text-blue-600 hover:underline disabled:opacity-50"
-            >
-              {loading ? "Cargando..." : "Ver"}
-            </button>
-            {/*<button
-              onClick={handleDelete}
-              disabled={loading}
-              className="text-sm text-red-600 hover:underline disabled:opacity-50"
-            >
-              Eliminar
-            </button>*/}
-          </div>
+              
+              {file && (
+                <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <p className="text-sm font-medium text-blue-700">{file.name}</p>
+                      <p className="text-xs text-blue-500">
+                        {(file.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setFile(null)}
+                    className="text-sm text-slate-500 hover:text-slate-700 font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              {file && (
+                <Button
+                  onClick={handleUpload}
+                  disabled={loading}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                >
+                  {loading ? "Subiendo..." : "Reemplazar CV"}
+                </Button>
+              )}
+            </div>
+          </details>
         </div>
-      )}
-
-      {/* Upload Area */}
-      <FileUpload
-        accept=".pdf,application/pdf"
-        maxSizeMB={10}
-        onFileSelect={handleFileSelect}
-        onError={setError}
-        disabled={loading}
-      />
-
-      {/* Error Message */}
-      {error && (
-        <p className="text-sm text-red-600">{error}</p>
-      )}
-
-      {/* Selected File Preview */}
-      {file && (
-        <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-center gap-2">
-            <svg
-              className="w-5 h-5 text-blue-600"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <div>
-              <p className="text-sm font-medium text-blue-700">{file.name}</p>
-              <p className="text-xs text-blue-500">
-                {(file.size / 1024 / 1024).toFixed(2)} MB
+      ) : (
+        /* No CV - Upload Interface */
+        <div className="space-y-3">
+          <div className="flex items-start gap-3 p-4 bg-slate-50 border border-slate-200 rounded-lg">
+            <FileText className="w-5 h-5 text-slate-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-slate-900">
+                No tienes CV cargado
+              </p>
+              <p className="text-xs text-slate-600 mt-1">
+                Sube tu currículum para que los reclutadores puedan conocer tu perfil profesional.
               </p>
             </div>
           </div>
-          <button
-            onClick={() => setFile(null)}
-            className="text-sm text-gray-500 hover:text-gray-700"
-          >
-            ✕
-          </button>
+
+          <FileUpload
+            accept=".pdf,application/pdf"
+            maxSizeMB={10}
+            onFileSelect={handleFileSelect}
+            onError={setError}
+            disabled={loading}
+          />
+
+          {/* Error Message */}
+          {error && (
+            <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
+          {/* Selected File Preview */}
+          {file && (
+            <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-blue-600" />
+                <div>
+                  <p className="text-sm font-medium text-blue-700">{file.name}</p>
+                  <p className="text-xs text-blue-500">
+                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setFile(null)}
+                className="text-sm text-slate-500 hover:text-slate-700 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {/* Upload Button */}
+          {file && (
+            <Button
+              onClick={handleUpload}
+              disabled={loading}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center gap-2"
+            >
+              <Upload className="w-4 h-4" />
+              {loading ? "Subiendo..." : "Subir CV"}
+            </Button>
+          )}
         </div>
       )}
 
-      {/* Upload Button */}
-      {file && (
-        <Button
-          onClick={handleUpload}
-          disabled={loading}
-          className="w-full"
-          style={{ backgroundColor: "#6D5EF7" }}
-        >
-          {loading ? "Subiendo..." : "Subir CV"}
-        </Button>
-      )}
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar CV?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Tu currículum será eliminado permanentemente y los reclutadores ya no podrán verlo.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

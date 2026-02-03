@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { getOfferTypeDisplay } from '@/lib'; 
 import { AdminItemBase } from '@/models/responses'; 
-import { ArrowRight, Briefcase, Heart, ShoppingBag, Calendar } from 'lucide-react';
+import { ArrowRight, Briefcase, Heart, ShoppingBag } from 'lucide-react';
 
 interface ValidationRowLinkProps {
     itemId: string;
@@ -38,30 +38,18 @@ export function ValidationRowLink({ itemId, item }: ValidationRowLinkProps) {
                     </div>
                 </div>
                 
-                {/* Publication Info with Badge */}
+                {/* Publication Info */}
                 <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-bold text-white text-lg truncate">{item.title}</h3>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold flex-shrink-0 ${getTypeColor(item.type)}`}>
-                            {text}
-                        </span>
-                    </div>
-                    <p className="text-sm text-white/70">Pendiente de revisión</p>
+                    <h3 className="font-bold text-white text-lg truncate mb-1">{item.title}</h3>
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${getTypeColor(item.type)}`}>
+                        <Icon className="w-3.5 h-3.5" />
+                        {text}
+                    </span>
                 </div>
             </div>
 
-            {/* Right Section - Status & Action */}
+            {/* Right Section - Action Button */}
             <div className="hidden md:flex items-center gap-4">
-                {/* Status Card */}
-                <div className="flex flex-col items-center px-4 py-2 bg-white/10 rounded-xl border border-white/20 w-[150px]">
-                    <span className="text-xs font-semibold text-white/60 uppercase tracking-wide">Estado</span>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                        <Calendar className="w-4 h-4 text-yellow-400" />
-                        <span className="text-sm font-bold text-white">Pendiente</span>
-                    </div>
-                </div>
-
-                {/* Action Button */}
                 <Link
                     href={detailUrl}
                     className="relative z-30 flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-md hover:shadow-lg active:scale-95 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 w-[150px] justify-center"

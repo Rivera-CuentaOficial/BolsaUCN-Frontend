@@ -194,16 +194,16 @@ export const usePublicationForm = () => {
       } else if (parseFloat(formData.price) < 0) {
         newErrors.price = "El precio no puede ser negativo";
       }
-    }
+    
+      const hasContactInfo = 
+        formData.showProfileEmail ||
+        formData.showProfilePhone ||
+        formData.additionalContactEmail.trim() !== "" ||
+        formData.additionalContactPhoneNumber.trim() !== "";
 
-    const hasContactInfo = 
-      formData.showProfileEmail ||
-      formData.showProfilePhone ||
-      formData.additionalContactEmail.trim() !== "" ||
-      formData.additionalContactPhoneNumber.trim() !== "";
-
-    if (!hasContactInfo) {
-      newErrors.showProfileEmail = "Debes seleccionar al menos un método de contacto para mostrar"
+      if (!hasContactInfo) {
+        newErrors.showProfileEmail = "Debes seleccionar al menos un método de contacto para mostrar"
+      }
     }
 
     setErrors(newErrors);
