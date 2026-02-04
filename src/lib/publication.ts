@@ -133,7 +133,7 @@ export function mapPublicationDetailsToAdminDetail(dto: PublicationDetailsForApp
     endDate: dto.endDate,
     location: dto.location,
     requirements: dto.requirements,
-    contactInfo: dto.additionalContactEmail || "",
+    contactInfo: dto.userEmail,
     additionalContactEmail: dto.additionalContactEmail,
     additionalContactPhoneNumber: dto.additionalContactPhoneNumber,
     aboutMe: dto.aboutMe,
