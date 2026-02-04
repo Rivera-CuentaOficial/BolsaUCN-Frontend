@@ -38,8 +38,8 @@ const offererNavLinks = [
 
 const studentNavLinks = [
   { href: "/", label: "Inicio" },
-   { href: "/offerer/create-publication", label: "Publicar" },
-  { href: "/students/your-publications", label: "Mis Publicaciones" },
+  { href: "/offerer/create-publication", label: "Publicar" },
+  { href: "/offerer/your-publications", label: "Mis Publicaciones" },
 ];
 
 function UserAvatar({ name, photoUrl }: { name?: string; photoUrl?: string }) {
@@ -138,22 +138,14 @@ export default function SiteHeader() {
         href: "/profile",
         label: "Editar perfil",
       },
-      // MODIFICACIÓN AQUÍ:
-      // Solo agregamos este item si el rol NO es Admin
+      // Postulaciones es especifica para Applicants
       ...(!auth.roles.includes(ROLES.ADMIN)
         ? [{ href: "/jobs/history", label: "Historial de postulaciones" }]
         : []),
 
       { href: "/jobs/reports", label: "Historial de trabajos" },
       { href: "/offerer/create-publication", label: "Publicar" },
-      {
-        href:
-          auth.roles.includes(ROLES.ADMIN)
-            ? "/admin/your-publications"
-            : auth.roles.includes(ROLES.OFFEROR)
-            ? "/offerer/your-publications":"/students/your-publications",
-        label: "Mis Publicaciones",
-      },
+      { href: "/offerer/your-publications", label: "Mis Publicaciones" },
     ];
 
     if (auth.roles.includes(ROLES.ADMIN)) {
@@ -161,7 +153,7 @@ export default function SiteHeader() {
         href: "/admin/users", 
         label: "Ver usuarios" });
     }
-    if (auth.superAdmin) {
+    if (auth.roles.includes(ROLES.SUPER_ADMIN)) {
       baseItems.push({ 
         href: "/auth/register/admin", 
         label: "Crear administrador"})
