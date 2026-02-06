@@ -4,13 +4,18 @@ import {
     ApplicationsForApplicantDTO, 
     ApplicationSearchParams 
 } from "@/models/responses";
-import { GetApplicationDetailsDTO } from "@/models/responses/application";
+import { 
+    GetApplicationDetailsDTO,
+    ApplicationsForOfferorResponse,
+    ApplicationsForOfferorSearchParams
+ } from "@/models/responses/application";
 
 export class ApplicationService extends BaseApiService {
     constructor() {
         super("/publications");
     }
 
+    // Para postulantes
     getMyApplications(params: ApplicationSearchParams){
         const queryParams = new URLSearchParams();
         queryParams.append('PageNumber', String(params.pageNumber));
@@ -36,6 +41,14 @@ export class ApplicationService extends BaseApiService {
             `${this.baseURL}/my-applications/${applicationId}`,
             { coverLetter }
         );
+    }
+
+    // Para oferentes
+    getApplicationsByOfferId(offerId: number, params: ApplicationsForOfferorSearchParams) {
+        return this.httpClient.get<ApiResponse<ApplicationsForOfferorResponse>>(
+            `${this.baseURL}/my-publications/${offerId}/applications`,
+            { params }
+        );  
     }
 }
 

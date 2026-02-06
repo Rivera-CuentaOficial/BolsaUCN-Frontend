@@ -34,3 +34,30 @@ export interface GetApplicationDetailsDTO{
     status: 'Pendiente' | 'Aceptada' | 'Rechazada' | string;
     statusMessage?: string;
 }
+
+// Para oferentes
+export interface ApplicationForOfferor {
+    applicationId: number;
+    applicantId: number;
+    applicantPhotoUrl: string;
+    applicantFirstName: string;
+    applicantLastName: string;
+    applicantEmail: string;
+    applicationDate: string;
+    cvUrl?: string;
+    coverLetter?: string;
+}
+export interface ApplicationsForOfferorResponse {
+    applications: ApplicationForOfferor[];
+    totalCount: number;
+    totalPages: number;
+    pageSize: number;
+    currentPage: number;
+}
+
+export interface ApplicationsForOfferorSearchParams {
+    sortBy?: "FirstName" | "ApplicationDate";
+    sortOrder?: "asc" | "desc";
+    pageNumber: number;
+    pageSize?: number;
+}

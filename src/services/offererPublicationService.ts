@@ -1,4 +1,3 @@
-import api from "./Service";
 import { BaseApiService } from "./base-api-service";
 import { ApiResponse } from "@/models/generics";
 
@@ -9,8 +8,11 @@ import type {
   ApplicantResponse,
   MyBuySell,
   OfferDetail,
+  MyPublicationsResponse,
+  MyPublicationsSearchParams
 } from "src/models/responses";
 import type { OffererPublication } from "src/models/generics";
+import { MyPublicationDetails } from "@/models/responses/publication";
 
 export class OffererPublicationService extends BaseApiService {
   constructor() {
@@ -29,24 +31,54 @@ export class OffererPublicationService extends BaseApiService {
       data
     );
   }
+  getMyPublications(params?: MyPublicationsSearchParams) {
+    return this.httpClient.get<ApiResponse<MyPublicationsResponse>>(
+      `${this.baseURL}/my-publications`,
+      { params }
+    );
+  }
+  getMyPublicationDetails(publicationId: number) {
+    return this.httpClient.get<ApiResponse<MyPublicationDetails>>(
+      `${this.baseURL}/my-publications/${publicationId}`
+    );  
+  }
+  updateApplicationStatus(applicationId: number, offerId: number, newStatus: "Aceptada" | "Rechazada") {
+    return this.httpClient.patch<ApiResponse<boolean>>(
+      `${this.baseURL}/my-publications/${offerId}/applications/${applicationId}/update-status`,
+      { newStatus }
+    );
+  }
 
+  /**
+  * @deprecated Use getMyPublications instead
+  */
   getMyPublishedPublications() {
     return this.httpClient.get<ApiResponse<MyPublishedPublication[]>>(
       `${this.baseURL}/offerent/my-published`
     );
   }
 
+  /**
+  * @deprecated Use getMyPublications instead
+  */
   getMyRejectedPublications() {
     return this.httpClient.get<ApiResponse<MyPublishedPublication[]>>(
       `${this.baseURL}/offerent/my-rejected`
     );
   }
+
+  /**
+  * @deprecated Use getMyPublications instead
+  */
   getPMyPendingPublications() {
     return this.httpClient.get<ApiResponse<MyPublishedPublication[]>>(
       `${this.baseURL}/offerent/my-pending`
     );
   }
 
+  /**
+   * @deprecated Use getMyPublicationDetails instead
+   */
   //Endpoint: /api/publications/offerent/offer/{id}
   getMyPublicationById(id: number) {
     return this.httpClient.get<ApiResponse<OfferDetail>>(
@@ -54,7 +86,9 @@ export class OffererPublicationService extends BaseApiService {
     );
   }
   //Endpoint: /api/publications/offerent/buysell/{id}
-
+  /**
+   * @deprecated Use getMyPublicationDetails instead
+   */
   getMyBullSellById(id: number) {
     return this.httpClient.get<ApiResponse<MyBuySell>>(
       `${this.baseURL}/offerent/buysell/${id}`
@@ -65,6 +99,7 @@ export class OffererPublicationService extends BaseApiService {
   // =========================================================
 
   /**
+   * @deprecated Use getApplicationsByOfferId instead
    * Método: GetOfferApplicantsForOfferer
    * Endpoint: /api/publications/offerent/my-offer/{offerId}/applicants
    * Descripción: Lista los postulantes de una oferta específica (dueño de la oferta).
@@ -75,6 +110,7 @@ export class OffererPublicationService extends BaseApiService {
     );
   }
   /**
+   * @deprecated Use getApplicationsByOfferId instead
    * Método: GetApplicantDetail
    * Endpoint: /api/publications/offerent/my-offer/{offerId}/applicants/{studentId}
    * Descripción: Obtiene el detalle de un postulante específico.
@@ -86,6 +122,7 @@ export class OffererPublicationService extends BaseApiService {
   }
 
   /**
+   * @deprecated Use updateApplicationsStatus instead
    * Método: AcceptApplicationOfferent (Actualización por estado)
    * Endpoint: /api/publications/offerent/my-offer/applicants/{status}
    * Descripción: Actualizar estado de postulaciones según "status".
@@ -100,6 +137,7 @@ export class OffererPublicationService extends BaseApiService {
   }
 
   /**
+   * @deprecated Use updateApplicationsStatus instead
    * Método: AcceptApplication
    * Endpoint: /api/publications/offerent/applications/{applicationId}/accept
    * Descripción: Acepta una postulación específica.
@@ -111,6 +149,8 @@ export class OffererPublicationService extends BaseApiService {
     );
   }
   /**
+   * @deprecated Use updateApplicationsStatus instead
+   * Método: RejectApplication
    * Rechaza una postulación específica
    * Endpoint: PATCH /api/publications/offerent/applications/{applicationId}/reject
    */
@@ -137,6 +177,7 @@ export class OffererPublicationService extends BaseApiService {
   }
 
   /**
+   * @deprecated EL nuevo flujo esta corresponde solo a Compra/Venta (crear y editar)
    * Sube una imagen y retorna la URL resultante.
    * Endpoint asumido: /publications/upload
    */

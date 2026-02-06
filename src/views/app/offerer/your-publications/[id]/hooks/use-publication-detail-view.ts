@@ -2,14 +2,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { offererPublicationService } from "src/services/offererPublicationService";
-import type { OfferDetail, MyBuySell } from "src/models/responses";
+import type { MyPublicationDetails } from "src/models/responses";
 
 export type PublicationAction = "postulantes" | "close_publication";
 
 // El hook recibe el 'id' y el 'type'
-export const useYourPublicationDetailView = (id: number, type: number) => {
+export const useYourPublicationDetailView = (id: number) => {
   const router = useRouter();
-  const [detail, setDetail] = useState< OfferDetail | MyBuySell| null>(null);
+  const [detail, setDetail] = useState<MyPublicationDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isMutating, setIsMutating] = useState(false);
@@ -19,31 +19,22 @@ export const useYourPublicationDetailView = (id: number, type: number) => {
     setError(null);
     
     try {
-      let response;
-
-      // Se usa el parámetro 'type' para discriminar el fetch
-      // 0: Oferta de Trabajo, 2: Voluntariado -> getMyPublicationById
-      if (type === 0 || type === 2) { 
-        response = await offererPublicationService.getMyPublicationById(id);
-        setDetail(response.data.data as OfferDetail); 
-      } else {
-        // 1: Compra/Venta -> getMyBullSellById
-        response = await offererPublicationService.getMyBullSellById(id);
-        setDetail(response.data.data as MyBuySell);
-      }
-
+      const response = await offererPublicationService.getMyPublicationDetails(id);
+      setDetail(response.data.data);
     } catch (err: any) {
       const status = err.response?.status;
       const message =
         status === 404
           ? "No se encontró la publicación que buscas."
+          : status === 403
+          ? "No tienes permiso para ver esta publicación."
           : "Hubo un error al cargar los datos. Por favor, intenta de nuevo.";
       setError(message);
       console.error("Error fetching publication detail:", err);
     } finally {
       setLoading(false);
     }
-  }, [id, type]);
+  }, [id]);
 
   useEffect(() => {
     if (id) {
@@ -67,14 +58,12 @@ export const useYourPublicationDetailView = (id: number, type: number) => {
     }
   };
     
-  // FUNCIÓN DE CIERRE ACTUALIZADA: Pasa el ID y el TIPO al servicio
   const handleClosePublication = useCallback(async () => {
     if (!detail) throw new Error("Publicación no cargada.");
 
     setIsMutating(true);
     try {
-        // Se llama al servicio con el ID y el TIPO
-        await offererPublicationService.closePublication(id, type); 
+        
     } catch (err: any) { // <-- Tipado para poder acceder a la respuesta de Axios
         
         // LÓGICA DE ERROR DINÁMICA: DETECTAR EL CÓDIGO 409
@@ -87,7 +76,7 @@ export const useYourPublicationDetailView = (id: number, type: number) => {
     } finally {
         setIsMutating(false);
     }
-  }, [id, type, detail]);
+  }, [id, detail]);
 
 
   const handleRetry = () => {

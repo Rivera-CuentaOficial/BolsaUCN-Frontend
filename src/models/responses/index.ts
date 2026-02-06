@@ -28,12 +28,20 @@ export {
   type OfferDetail,
   type CreateBuySellData,
   type ValidationResponse,
-  type PublicationsForValidationDTO
+  type PublicationsForValidationDTO,
+  type PublicationDetailsForApprovalDTO,
+  type MyPublicationsResponse,
+  type MyPublicationsSearchParams,
+  type PublicationForOfferor,
+  type MyPublicationDetails
 } from "./publication";
 
 export {
   type ApplicationForApplicantDTO,
   type ApplicationsForApplicantDTO,
   type ApplicationSearchParams,
-  type GetApplicationDetailsDTO
+  type GetApplicationDetailsDTO,
+  type ApplicationForOfferor,
+  type ApplicationsForOfferorResponse,
+  type ApplicationsForOfferorSearchParams
 } from "./application";

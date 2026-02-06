@@ -18,7 +18,6 @@ import {
 } from "@/models/responses";
 import { ClosePublicationVariables } from "@/models/requests";
 import { AxiosError } from "axios";
-import { studentPublicationService } from "@/services/studentsPublicationService";
 import { toast } from "sonner";
 import { offererPublicationService } from "@/services/offererPublicationService";
 import { mapPublicationDetailsToAdminDetail } from "@/lib/publication";
@@ -130,7 +129,7 @@ export const useStudentsGetPostulantDetailQuery = (
     queryFn: async () => {
       if (!offerId || !applicantId)
         throw new Error("Faltan identificadores requeridos.");
-      const response = await studentPublicationService.getApplicantDetail(
+      const response = await offererPublicationService.getApplicantDetail(
         offerId,
         applicantId
       );
@@ -201,9 +200,7 @@ export const useAcceptApplicationMutation = () => {
     mutationFn: (applicationId: number | string) => {
       const user = getUserFromToken();
       console.log("🔍 [DEBUG ACCEPT] User Data:", user, "UserType:", user?.userType);
-      if (user?.userType === "Applicant" || user?.userType === "applicant" || user?.userType === "Estudiante") {
-        return studentPublicationService.acceptApplication(applicationId);
-      }
+
       return offererPublicationService.acceptApplication(applicationId);
     },
     onSuccess: () => {
@@ -232,9 +229,7 @@ export const useRejectApplicationMutation = () => {
     mutationFn: (applicationId: number | string) => {
       const user = getUserFromToken();
       console.log("🔍 [DEBUG REJECT] User Data:", user, "UserType:", user?.userType);
-      if (user?.userType === "Estudiante") {
-        return studentPublicationService.rejectApplication(applicationId);
-      }
+
       return offererPublicationService.rejectApplication(applicationId);
     },
     onSuccess: () => {

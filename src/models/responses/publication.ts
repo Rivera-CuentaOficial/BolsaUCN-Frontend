@@ -357,3 +357,62 @@ export interface PublicationDetailsForApprovalDTO {
     imageUrls: string[];
     companyName: string;
 }
+// Get my publications
+export interface PublicationForOfferor {
+    publicationId: number;
+    title: string;
+    publicationType: 'Oferta' | 'CompraVenta';
+    publicationDate: string;
+    isOpen: boolean;
+    approvalStatus: 'Aceptado' | 'EnProceso' | 'Rechazado';
+}
+export interface MyPublicationsResponse {
+    publications: PublicationForOfferor[];
+    totalPages: number;
+    currentPage: number;
+    pageSize: number;
+    totalCount: number;
+}
+export interface MyPublicationsSearchParams {
+    searchTerm?: string;
+    filterByPublicationType?: 'Oferta' | 'CompraVenta';
+    filterByApprovalStatus?: 'Aceptado' | 'EnProceso' | 'Rechazado';
+    sortBy?: 'Title' | 'CreatedAt';
+    sortOrder?: 'asc' | 'desc';
+    pageNumber?: number;
+    pageSize?: number;
+}
+export interface MyPublicationDetails {
+    // Informacion basica
+    id: number;
+    title: string;
+    description: string;
+    location:string;
+    
+    // Informacion de contacto
+    contactEmail: string;
+    contactPhone: string;
+    additionalContactEmail?: string;
+    additionalContactPhoneNumber?: string;
+
+    // Metadata
+    publicationType: 'Oferta' | 'CompraVenta';
+    approvalStatus: 'Aceptado' | 'EnProceso' | 'Rechazado';
+    createdAt: string;
+
+    // Ofertas 
+    offerType?: 'Trabajo' | 'Voluntariado';
+    endDate?: string;
+    applicationDeadline?: string;
+    remuneration?: number;
+    isCvRequired?: boolean;
+    applicationsCount?: number;
+
+    // Compras/Ventas
+    imageUrls?: string[];
+    price?: number;
+    category?: string;
+    quantity?: number;
+    availability?: string;
+    condition?: string;
+}
