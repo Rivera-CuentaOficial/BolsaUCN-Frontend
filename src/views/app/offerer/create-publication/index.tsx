@@ -799,6 +799,53 @@ export default function PublicationFormView() {
                       </div>
                     </div>
 
+                    {/* Número de Postulantes */}
+                    <div className={sectionClass}>
+                      <div className="flex items-start gap-3 mb-4">
+                        <div className="p-2.5 rounded-xl bg-purple-100">
+                          <ClipboardList className="w-5 h-5 text-purple-600" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
+                            Número de Postulantes
+                          </h3>
+                          <p className="text-xs text-gray-600 mt-1">
+                            Indica cuántas personas necesitas contratar para este puesto
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className={labelClass}>
+                          Postulantes Requeridos *
+                        </label>
+                        <p className="text-xs text-gray-600 mb-2">
+                          Especifica cuántas vacantes hay disponibles. Las postulaciones se cerrarán automáticamente al alcanzar este límite.
+                        </p>
+                        <input
+                          type="number"
+                          name="requiredApplicants"
+                          value={formData.requiredApplicants}
+                          onChange={handleInputChange}
+                          className={inputClass(!!errors.requiredApplicants)}
+                          placeholder="1"
+                          min="1"
+                          max="50"
+                        />
+                        {errors.requiredApplicants && (
+                          <p className="text-red-500 text-xs mt-2 font-medium flex items-center gap-1">
+                            <span className="inline-block w-1 h-1 rounded-full bg-red-500"></span>
+                            {errors.requiredApplicants}
+                          </p>
+                        )}
+                        <div className="mt-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                          <p className="text-xs text-blue-900 leading-relaxed">
+                            💡 <span className="font-semibold">Tip:</span> Si necesitas contratar varias personas para el mismo puesto, indica el número total aquí. Por ejemplo, si buscas 3 ayudantes, ingresa "3".
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* CV Requerido */}
                     <div className={sectionClass}>
                       <div className="flex items-center gap-3">

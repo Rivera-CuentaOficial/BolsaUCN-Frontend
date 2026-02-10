@@ -148,6 +148,7 @@ export interface CreatePublicationData {
   Remuneration?: number | null; // Remuneración ofrecida (null para voluntariados)
   OfferType: string; 
   Location?: string;
+  RequiredApplicants?: number;
   AdditionalContactEmail?: string;
   AdditionalContactPhoneNumber?: string;
   IsCvRequired: boolean;
@@ -304,7 +305,7 @@ export interface PublicationForValidationDTO {
     type: 'Oferta' | 'CompraVenta';
     createdAt: string;
     CreatedBy: string;
-    status: 'Publicado' | 'EnProceso' | 'Rechazado';
+    status: 'Aceptada' | 'Pendiente' | 'Rechazada';
     offerType?: number; // Solo para ofertas
     price?: number;     // Solo para compras/ventas
 }
@@ -363,8 +364,7 @@ export interface PublicationForOfferor {
     title: string;
     publicationType: 'Oferta' | 'CompraVenta';
     publicationDate: string;
-    isOpen: boolean;
-    approvalStatus: 'Aceptado' | 'EnProceso' | 'Rechazado';
+    approvalStatus: 'Aceptada' | 'Pendiente' | 'Rechazada' | 'Cerrada';
 }
 export interface MyPublicationsResponse {
     publications: PublicationForOfferor[];
@@ -376,7 +376,7 @@ export interface MyPublicationsResponse {
 export interface MyPublicationsSearchParams {
     searchTerm?: string;
     filterByPublicationType?: 'Oferta' | 'CompraVenta';
-    filterByApprovalStatus?: 'Aceptado' | 'EnProceso' | 'Rechazado';
+    filterByApprovalStatus?: 'Aceptada' | 'Pendiente' | 'Rechazada' | 'Cerrada';
     sortBy?: 'Title' | 'CreatedAt';
     sortOrder?: 'asc' | 'desc';
     pageNumber?: number;
@@ -397,7 +397,7 @@ export interface MyPublicationDetails {
 
     // Metadata
     publicationType: 'Oferta' | 'CompraVenta';
-    approvalStatus: 'Aceptado' | 'EnProceso' | 'Rechazado';
+    approvalStatus: 'Aceptada' | 'Pendiente' | 'Rechazada' | 'Cerrada';
     createdAt: string;
 
     // Ofertas 
@@ -407,6 +407,7 @@ export interface MyPublicationDetails {
     remuneration?: number;
     isCvRequired?: boolean;
     applicationsCount?: number;
+    reviewStatus?: 'NoDisponible' | 'SinRevisar' | 'RevisadaPorOferente' | 'RevisadaPorPostulante' | 'RevisadaPorAmbos';
 
     // Compras/Ventas
     imageUrls?: string[];

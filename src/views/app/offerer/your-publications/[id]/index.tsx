@@ -18,9 +18,10 @@ const PUBLICATION_TYPES = [
 ];
 
 const APPROVAL_STATUS = [
-    { value: "Aceptado", text: "Aprobada", classes: "bg-green-500 text-white" },
-    { value: "EnProceso", text: "Pendiente", classes: "bg-yellow-400 text-slate-900 border border-yellow-500/50" },
-    { value: "Rechazado", text: "Rechazada", classes: "bg-red-500 text-white" },
+    { value: "Aceptada", text: "Aprobada", classes: "bg-green-500 text-white" },
+    { value: "Pendiente", text: "Pendiente", classes: "bg-yellow-400 text-slate-900 border border-yellow-500/50" },
+    { value: "Rechazada", text: "Rechazada", classes: "bg-red-500 text-white" },
+    { value: "Cerrada", text: "Cerrada", classes: "bg-gray-500 text-white" },
 ];
 
 export default function OffererPublicationDetailView() {
@@ -73,7 +74,7 @@ export default function OffererPublicationDetailView() {
     }, [publication]);
 
     const isJobOffer = publication?.publicationType === "Oferta";
-    const isPublished = publication?.approvalStatus === "Aceptado";
+    const isPublished = publication?.approvalStatus === "Aceptada";
 
     if (isLoading) {
         return (
@@ -209,12 +210,15 @@ export default function OffererPublicationDetailView() {
                     <PublicationDetailSection publication={publication} />
                 </div>
 
-                <ApplicantsDialog
-                    isOpen={isApplicantsDialogOpen}
-                    onClose={() => setIsApplicantsDialogOpen(false)}
-                    offerId={publicationId}
-                    totalApplicants={publication?.applicationsCount || 0}
-                />
+                {/* Applicants Dialog */}
+                {publication?.publicationType == "Oferta" && (
+                    <ApplicantsDialog
+                        isOpen={isApplicantsDialogOpen}
+                        onClose={() => setIsApplicantsDialogOpen(false)}
+                        offerId={publicationId}
+                        totalApplicants={publication?.applicationsCount || 0}
+                    />
+                )}
             </main>
         </div>
     );

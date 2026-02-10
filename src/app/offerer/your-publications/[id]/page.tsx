@@ -12,5 +12,5 @@ export default async function YourPublicationDetailPage({ params }: PageProps) {
 
   const numericId = Number(id);
   // Renderizamos el componente cliente que contiene toda la lógica y la UI.
-  return <YourPublicationDetailView id={numericId} />;
+  return <YourPublicationDetailView/>;
 }

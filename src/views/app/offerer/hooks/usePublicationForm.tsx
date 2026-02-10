@@ -23,6 +23,7 @@ export interface PublicationFormData {
   location: string;
   requirements: string;
   isCvRequired: boolean;
+  requiredApplicants: string;
   offerType: string; // Full Time, Part Time, etc.
   // Campos Venta
   category: string;
@@ -61,6 +62,7 @@ export const usePublicationForm = () => {
     additionalContactEmail: "",
     additionalContactPhoneNumber: "",
     isCvRequired: false,
+    requiredApplicants: "1",
     offerType: "",
     category: "",
     price: "",
@@ -151,6 +153,17 @@ export const usePublicationForm = () => {
         newErrors.location = "La ubicación es requerida";
       if (!formData.endDate) newErrors.endDate = "Fecha de término requerida";
 
+      if (!formData.requiredApplicants) {
+        newErrors.requiredApplicants = "Número de postulantes requerido";
+      } else {
+        const numApplicants = parseInt(formData.requiredApplicants, 10);
+        if (isNaN(numApplicants) || numApplicants <= 0) {
+          newErrors.requiredApplicants = "Debe ser un número entero positivo";
+        } else if (numApplicants > 50) {
+          newErrors.requiredApplicants = "Número de postulantes demasiado alto";
+        }
+      }
+
       // Validar coherencia de fechas
       if (formData.applicationDeadline && new Date(formData.applicationDeadline) < today)
         newErrors.applicationDeadline = "La fecha no puede ser pasada";
@@ -238,6 +251,7 @@ export const usePublicationForm = () => {
           AdditionalContactEmail: formData.additionalContactEmail,
           AdditionalContactPhoneNumber: formData.additionalContactPhoneNumber,
           IsCvRequired: formData.isCvRequired,
+          RequiredApplicants: parseInt(formData.requiredApplicants || "1"),
           //ImagesURL: [],
         });
       } else {

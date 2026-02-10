@@ -18,7 +18,7 @@ import type { PublicationForOfferor } from "@/models/responses";
 
 type SortType = "Title" | "CreatedAt";
 type PublicationType = "Oferta" | "CompraVenta" | "Todos";
-type ApprovalStatus = "Aceptado" | "Rechazado" | "EnProceso" | "Todos";
+type ApprovalStatus = "Aceptada" | "Rechazada" | "Pendiente" | "Cerrada" |"Todos";
 
 const PUBLICATION_TYPES = [
   { value: "Oferta", text: "Oferta de Trabajo", icon: Briefcase, iconClass: "text-indigo-500", bg: "bg-indigo-100", textCol: "text-indigo-800" },
@@ -26,9 +26,10 @@ const PUBLICATION_TYPES = [
 ];
 
 const APPROVAL_STATUS = [
-  { value: "Aceptado", text: "Aprobada", classes: "bg-green-100 text-green-700 border-green-200" },
-  { value: "EnProceso", text: "Pendiente", classes: "bg-yellow-100 text-yellow-800 border-yellow-200" },
-  { value: "Rechazado", text: "Rechazada", classes: "bg-red-100 text-red-700 border-red-200" },
+  { value: "Aceptada", text: "Aprobada", classes: "bg-green-100 text-green-700 border-green-200" },
+  { value: "Pendiente", text: "Pendiente", classes: "bg-yellow-100 text-yellow-800 border-yellow-200" },
+  { value: "Rechazada", text: "Rechazada", classes: "bg-red-100 text-red-700 border-red-200" },
+  { value: "Cerrada", text: "Cerrada", classes: "bg-gray-100 text-gray-700 border-gray-200" },
 ];
 
 const getPublicationTypeInfo = (type: string) => {
@@ -53,6 +54,7 @@ const PublicationCard = ({ pub, onClick }: PublicationCardProps) => {
   const typeInfo = getPublicationTypeInfo(pub.publicationType);
   const date = new Date(pub.publicationDate).toLocaleDateString("es-CL");
 
+
   return (
     <article 
       onClick={onClick}
@@ -72,11 +74,6 @@ const PublicationCard = ({ pub, onClick }: PublicationCardProps) => {
             </span>
           </div>
           <div className={statusInfo.classes}>{statusInfo.text}</div>
-          {!pub.isOpen && (
-            <div className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border bg-gray-100 text-gray-700 border-gray-200">
-              Cerrada
-            </div>
-          )}
         </div>
         
         <h3 className="font-black text-2xl md:text-3xl text-slate-900 truncate group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-600 group-hover:to-pink-600 transition-all mb-1">
