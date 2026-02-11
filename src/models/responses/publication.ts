@@ -417,3 +417,88 @@ export interface MyPublicationDetails {
     availability?: string;
     condition?: string;
 }
+
+// Explorar ofertas
+export interface OfferForApplicant {
+    id: number;
+    title: string;
+    description: string;
+    authorName: string;
+    offerType: string;
+    createdAt: string;
+    applicationDeadline: string;
+    availableSlots: number;
+    remuneration: number;
+}
+
+export interface OffersForApplicant {
+    offers: OfferForApplicant[];
+    totalPages: number;
+    currentPage: number;
+    pageSize: number;
+    totalCount: number;
+}
+
+export interface ExploreOffersSearchParams {
+    searchTerm?: string;
+    filterBy?: 'Trabajo' | 'Voluntariado' | 'Todos';
+    sortBy?: 'Title' | 'CreatedAt' | 'Remuneration';
+    sortOrder?: 'asc' | 'desc';
+    pageNumber: number;
+    pageSize?: number;
+}
+
+// Detalles para ofertas
+export interface OfferDetailsForApplicant {
+    id: number;
+    offerType: string;
+    title: string;
+    description: string;
+    authorName: string;
+    location: string;
+    createdAt: string;
+    remuneration: number;
+    isCVRequired: boolean;
+    endDate: string;
+    applicationDeadline: string;
+    hasApplied: boolean;
+    availableSlots: number;
+    contactEmail: string;
+    contactPhoneNumber: string;
+    additionalContactEmail?: string;
+    additionalContactPhoneNumber?: string;
+}
+
+export interface OfferDetailsForPublic {
+    id: number;
+    offerType: string;
+    title: string;
+    description: string;
+    authorName: string;
+    location: string;
+    createdAt: string;
+    remuneration: number;
+    isCVRequired: boolean;
+}
+
+// Explorar compras/ventas
+export interface BuySellForApplicant {
+    id: number;
+    title: string;
+    description: string;
+    authorName: string;
+    price: number;
+    category: string;
+    location: string;
+    createdAt: string;
+}
+
+export interface BuySellsForApplicant {
+    buySells: BuySellForApplicant[];
+    totalCount: number;
+    totalPages: number;
+    pageSize: number;
+    currentPage: number;
+}
+
+

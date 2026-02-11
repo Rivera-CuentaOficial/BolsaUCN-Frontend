@@ -36,10 +36,17 @@ export class ApplicationService extends BaseApiService {
         );
     }
 
-    updateApplicationDetails(applicationId: number, coverLetter: string) {
+    applyToOffer(publicationId: number, coverLetter: string | null) {
+        return this.httpClient.post<ApiResponse<string>>(
+            `${this.baseURL}/offers/${publicationId}/apply`,
+            { coverLetter }
+        );
+    }
+
+    updateApplicationDetails(applicationId: number, payload: { coverLetter: string | null }) {
         return this.httpClient.patch<ApiResponse<string>>(
             `${this.baseURL}/my-applications/${applicationId}`,
-            { coverLetter }
+            payload
         );
     }
 

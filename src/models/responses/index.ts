@@ -33,7 +33,14 @@ export {
   type MyPublicationsResponse,
   type MyPublicationsSearchParams,
   type PublicationForOfferor,
-  type MyPublicationDetails
+  type MyPublicationDetails,
+  type OfferForApplicant,
+  type OffersForApplicant,
+  type OfferDetailsForPublic,
+  type OfferDetailsForApplicant,
+  type ExploreOffersSearchParams,
+  type BuySellsForApplicant,
+  type BuySellForApplicant,
 } from "./publication";
 
 export {
