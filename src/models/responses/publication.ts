@@ -501,4 +501,35 @@ export interface BuySellsForApplicant {
     currentPage: number;
 }
 
+// Administracion de publicaciones
+export interface PublicationForAdmin {
+    id: number;
+    authorId: number;
+    publicationType: string;
+    title: string;
+    description: string;
+    authorName: string;
+    location: string;
+    approvalStatus: string;
+    appealsCount: number;
+    createdAt: string;
+}
+
+export interface PublicationsForAdmin {
+    publications: PublicationForAdmin[];
+    totalCount: number;
+    totalPages: number;
+    pageSize: number;
+    currentPage: number;
+}
+
+export interface PublicationsForAdminSearchParams {
+    searchTerm?: string;
+    filterBy?: "Oferta" | "CompraVenta" | "Todos";
+    sortBy?: "Title" | "CreatedAt";
+    sortOrder?: "asc" | "desc";
+    pageSize?: number;
+    pageNumber: number;
+}
+
 

@@ -1,23 +1,16 @@
 import { BaseApiService } from "@/services/base-api-service";
 import { ApiResponse } from "@/models/generics";
-import type { OfferDetailForAdmin, BuySellDetailForAdmin } from "src/models/responses";
+import type { 
+  OfferDetailForAdmin, 
+  BuySellDetailForAdmin,
+  PublicationsForAdmin,
+  PublicationsForAdminSearchParams
+} from "src/models/responses";
 import { PublicationDetailsForApprovalDTO } from "@/models/responses/publication";
 
 export class ManageService extends BaseApiService {
   constructor() {
-    super("/publications");
-  }
-  // lamentablemente por como esta hecha la logica del hook se tiene q utilizar el llamado con los detail
-  getPublishedOffers() {
-    return this.httpClient.get<ApiResponse<OfferDetailForAdmin[]>>(
-      `${this.baseURL}/offers/published`
-    );
-  }
-
-  getPublishedBuySells() {
-    return this.httpClient.get<ApiResponse<BuySellDetailForAdmin[]>>(
-        `${this.baseURL}/buysells/published`
-    );
+    super("/admin");
   }
 
   /**

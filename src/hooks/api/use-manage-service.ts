@@ -8,7 +8,7 @@ import {
   mapApplicantToView,
   getUserFromToken,
 } from "@/lib";
-import { manageService } from "@/services/manageService";
+import { manageService } from "@/services/managePublicationService";
 import {
   PublishedItem,
   OfferDetailForAdmin,

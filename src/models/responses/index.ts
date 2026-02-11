@@ -41,6 +41,9 @@ export {
   type ExploreOffersSearchParams,
   type BuySellsForApplicant,
   type BuySellForApplicant,
+  type PublicationForAdmin,
+  type PublicationsForAdmin,
+  type PublicationsForAdminSearchParams
 } from "./publication";
 
 export {

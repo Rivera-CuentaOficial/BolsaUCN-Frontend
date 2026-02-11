@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, ArrowLeft, User as UserIcon } from "lucide-react";
+import { AlertCircle, ArrowLeft, LayoutGrid, User as UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ConfirmDialog, NotificationBanner } from "@/components/ui";
 import { useUserDetail } from "./hooks";
@@ -124,6 +124,17 @@ export function UserDetailView({ id }: UserDetailViewProps) {
                         {/* Columna Izquierda: Información Principal */}
                         <div className="w-full md:w-3/4 space-y-8 order-2 lg:order-none">
                             <UserDetailSection user={user} />
+                            <div className="pb-4 border-t border-slate-100">
+                                <button
+                                    onClick={() => router.push(`/admin/users/${user.id}/publications`)}
+                                    className="w-full px-6 py-4 rounded-xl font-bold transition shadow-lg 
+                                            bg-purple-50 text-purple-600 border border-purple-100 
+                                            hover:bg-purple-100 flex justify-center items-center gap-2"
+                                >
+                                    <LayoutGrid className="w-5 h-5" />
+                                    Ver Publicaciones del Usuario
+                                </button>
+                            </div>
 
                             {/* Botón de Acción */}
                             <div className="pt-4 border-t border-slate-100">
