@@ -9,9 +9,14 @@ export interface ValidationActionRequest {
 
 export class ValidationService extends BaseApiService {
   constructor() {
-    super("/publications");
+    super("/admin/publications");
   }
 
+  /**
+   * Obtiene las publicaciones pendientes de aprobación con opciones de búsqueda, filtrado y paginación.
+   * @param params - Parámetros para filtrar, buscar, ordenar y paginar las publicaciones.
+   * @returns Lista paginada de publicaciones pendientes de aprobación.
+   */
   getPendingPublications(params?:
     {
       searchTerm?: string;
@@ -49,27 +54,16 @@ export class ValidationService extends BaseApiService {
   }
 
   /**
-   * @deprecated Use getPublicationDetailForApproval instead
+   * Valida o rechaza una publicación pendiente de aprobación.
+   * @param publicationId - ID de la publicación (no usa el prefijo bs-)
+   * @param action - Acción a realizar ("publish" para publicar, "reject" para rechazar)
+   * @returns Resultado de la operación de validación.
    */
-  getPublicationDetail(typePath: "buysells" | "offers", entityId: string) {
-    const endpoint = `${this.baseURL}/${typePath}/${entityId}/validation`;
-    return this.httpClient.get<any>(endpoint);
-  }
-
-  handleValidationAction(
-    typePath: "buysells" | "offers",
-    entityId: string,
-    action: "publish" | "reject"
-  ) {
-    const endpoint = `${this.baseURL}/${typePath}/${entityId}/${action}`;
-    return this.httpClient.patch<ApiResponse<string>>(endpoint, {});
-  }
-
   validatePublication(
     publicationId: number,
     action: "publish" | "reject"
   ) {
-    const endpoint = `${this.baseURL}/${publicationId}/validate`;
+    const endpoint = `${this.baseURL}/pending/${publicationId}/validate`;
     const payload: ValidationActionRequest = { action };
     return this.httpClient.patch<ApiResponse<ValidationResponse>>(endpoint, payload);
   }
