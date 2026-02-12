@@ -7,7 +7,9 @@ import {
 import { 
     GetApplicationDetailsDTO,
     ApplicationsForOfferorResponse,
-    ApplicationsForOfferorSearchParams
+    ApplicationsForOfferorSearchParams,
+    ApplicationsForAdminResponse,
+    ApplicationsForAdminSearchParams,
  } from "@/models/responses/application";
 
 export class ApplicationService extends BaseApiService {
@@ -54,6 +56,14 @@ export class ApplicationService extends BaseApiService {
     getApplicationsByOfferId(offerId: number, params: ApplicationsForOfferorSearchParams) {
         return this.httpClient.get<ApiResponse<ApplicationsForOfferorResponse>>(
             `${this.baseURL}/my-publications/${offerId}/applications`,
+            { params }
+        );  
+    }
+
+    // Para admins
+    getApplicationsByOfferIdForAdmin(offerId: number, params: ApplicationsForAdminSearchParams) {
+        return this.httpClient.get<ApiResponse<ApplicationsForAdminResponse>>(
+            `/admin${this.baseURL}/${offerId}/applications`,
             { params }
         );  
     }
