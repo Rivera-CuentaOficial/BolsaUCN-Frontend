@@ -43,7 +43,8 @@ export {
   type BuySellForApplicant,
   type PublicationForAdmin,
   type PublicationsForAdmin,
-  type PublicationsForAdminSearchParams
+  type PublicationsForAdminSearchParams,
+  type PublicationDetailsForAdmin
 } from "./publication";
 
 export {
@@ -53,5 +54,8 @@ export {
   type GetApplicationDetailsDTO,
   type ApplicationForOfferor,
   type ApplicationsForOfferorResponse,
-  type ApplicationsForOfferorSearchParams
+  type ApplicationsForOfferorSearchParams,
+  type ApplicationForAdmin,
+  type ApplicationsForAdminResponse,
+  type ApplicationsForAdminSearchParams
 } from "./application";

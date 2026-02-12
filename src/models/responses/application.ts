@@ -61,3 +61,32 @@ export interface ApplicationsForOfferorSearchParams {
     pageNumber: number;
     pageSize?: number;
 }
+
+// Para admin
+export interface ApplicationForAdmin {
+    applicationId: number;
+    applicantId: number;
+    applicantPhotoUrl: string;
+    applicantFirstName: string;
+    applicantLastName: string;
+    applicantEmail: string;
+    applicationDate: string;
+    status: 'Pendiente' | 'Aceptada' | 'Rechazada' | string;
+    cvUrl?: string;
+    coverLetter?: string;
+}
+
+export interface ApplicationsForAdminResponse {
+    applications: ApplicationForAdmin[];
+    totalCount: number;
+    totalPages: number;
+    pageSize: number;
+    currentPage: number;
+}
+
+export interface ApplicationsForAdminSearchParams {
+    sortBy?: "FirstName" | "ApplicationDate" | "Status";
+    sortOrder?: "asc" | "desc";
+    pageNumber: number;
+    pageSize?: number;
+}

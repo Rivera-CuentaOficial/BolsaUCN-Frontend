@@ -399,6 +399,9 @@ export interface MyPublicationDetails {
     publicationType: 'Oferta' | 'CompraVenta';
     approvalStatus: 'Aceptada' | 'Pendiente' | 'Rechazada' | 'Cerrada';
     createdAt: string;
+    reasonForClosure?: string | null;
+    reasonForRejection?: string | null;
+    appealCount: number;
 
     // Ofertas 
     offerType?: 'Trabajo' | 'Voluntariado';
@@ -503,16 +506,20 @@ export interface BuySellsForApplicant {
 
 // Administracion de publicaciones
 export interface PublicationForAdmin {
-    id: number;
-    authorId: number;
-    publicationType: string;
-    title: string;
-    description: string;
-    authorName: string;
-    location: string;
-    approvalStatus: string;
-    appealsCount: number;
-    createdAt: string;
+  id: number;
+  publicationType: string;
+  title: string;
+  description: string;
+  location: string;
+  approvalStatus: string;
+  appealsCount: number;
+  createdAt: string;
+  // Informacion del usuario
+  authorId: number;
+  authorName: string;
+  userType: string;
+  profilePhotoUrl: string;
+  authorEmail: string;
 }
 
 export interface PublicationsForAdmin {
@@ -525,11 +532,47 @@ export interface PublicationsForAdmin {
 
 export interface PublicationsForAdminSearchParams {
     searchTerm?: string;
-    filterBy?: "Oferta" | "CompraVenta" | "Todos";
+    filterByType?: "Oferta" | "CompraVenta" | "Todos";
+    filterByApprovalStatus?: "Pendiente" | "Aprobada" | "Rechazada" | "Cerrada" | "Todos";
     sortBy?: "Title" | "CreatedAt";
     sortOrder?: "asc" | "desc";
     pageSize?: number;
     pageNumber: number;
+}
+
+export interface PublicationDetailsForAdmin {
+    publicationId: number;
+    title: string;
+    description: string;
+    publicationDate: string;
+    publicationType: string;
+    approvalStatus: string;
+    location: string;
+    additionalContactEmail?: string;
+    additionalContactPhoneNumber?: string;
+
+    // Informacion del usuario
+    userId: number;
+    userEmail: string;
+    userPhoneNumber: string;
+    profilePhotoUrl: string;
+    userName: string;
+    userType: string;
+    aboutMe: string;
+    rating: number;
+
+    // Atributos de oferta
+    endDate?: string;
+    deadlineDate?: string;
+    remuneration?: number;
+    offerType?: string;
+    isCVRequired?: boolean;
+    applicantsCount?: number;
+
+    // Atributos de compra/venta
+    images: string[];
+    price?: number;
+    category?: string;
 }
 
 
