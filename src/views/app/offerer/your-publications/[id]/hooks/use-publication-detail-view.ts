@@ -1,4 +1,3 @@
-// src/views/app/offerer/your-publications/[id]/hooks/use-publication-detail-view.tsx
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { offererPublicationService } from "src/services/offererPublicationService";
@@ -6,13 +5,13 @@ import type { MyPublicationDetails } from "src/models/responses";
 
 export type PublicationAction = "postulantes" | "close_publication";
 
-// El hook recibe el 'id' y el 'type'
 export const useYourPublicationDetailView = (id: number) => {
   const router = useRouter();
   const [detail, setDetail] = useState<MyPublicationDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isMutating, setIsMutating] = useState(false);
+  const [isAppealing, setIsAppealing] = useState(false);
 
   const fetchDetail = useCallback(async () => {
     setLoading(true);
@@ -43,7 +42,6 @@ export const useYourPublicationDetailView = (id: number) => {
   }, [id, fetchDetail]);
 
   const handleAction = async (action: PublicationAction) => {
-    // ... (función handleAction sin cambios) ...
     if (!detail) return;
 
     setIsMutating(true);
@@ -63,21 +61,31 @@ export const useYourPublicationDetailView = (id: number) => {
 
     setIsMutating(true);
     try {
-        
-    } catch (err: any) { // <-- Tipado para poder acceder a la respuesta de Axios
-        
-        // LÓGICA DE ERROR DINÁMICA: DETECTAR EL CÓDIGO 409
-        if (err.response && err.response.status === 409) {
-            // Lanzamos el nuevo error con el mensaje específico para el banner
-            throw new Error("El estado actual de la publicación (Pendiente o Rechazada) no permite el cierre.");
-        }
-        
-        throw err; // Relanzar cualquier otro error
+      await offererPublicationService.closePublicationById(detail.id);
+      router.push(`/offerer/your-publications`);
+    } catch (err: any) {
+      if (err.response && err.response.status === 409) {
+        throw new Error("El estado actual de la publicación (Pendiente o Rechazada) no permite el cierre.");
+      }
+      throw err;
     } finally {
-        setIsMutating(false);
+      setIsMutating(false);
     }
-  }, [id, detail]);
+  }, [detail]);
 
+  const handleAppealPublication = useCallback(async () => {
+    if (!detail) throw new Error("Publicación no cargada.");
+
+    setIsAppealing(true);
+    try {
+      await offererPublicationService.appealRejectedPublication(detail.id);
+      await fetchDetail();
+    } catch (err: any) {
+      throw err;
+    } finally {
+      setIsAppealing(false);
+    }
+  }, [detail, fetchDetail]);
 
   const handleRetry = () => {
     fetchDetail();
@@ -88,8 +96,10 @@ export const useYourPublicationDetailView = (id: number) => {
     loading,
     error,
     isMutating,
+    isAppealing,
     handleAction,
     handleRetry,
-    handleClosePublication, 
+    handleClosePublication,
+    handleAppealPublication,
   };
 };

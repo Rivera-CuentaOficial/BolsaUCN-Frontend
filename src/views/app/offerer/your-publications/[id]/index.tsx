@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Briefcase, ShoppingBag, Heart, Users, Trash2 } from 'lucide-react';
 import { useYourPublicationDetailView } from './hooks/use-publication-detail-view'; 
 import { useNotification } from '@/hooks/common/use-notification'; 
-import { PublicationDetailSection, ApplicantsDialog } from './components'; 
+import { PublicationDetailSection, ApplicantsDialog, StatusReasonBanner } from './components'; 
 import { NotificationBanner } from "@/components/ui/notification";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from 'sonner';
@@ -35,13 +35,14 @@ export default function OffererPublicationDetailView() {
         loading: isLoading, 
         error,
         isMutating,
-        handleClosePublication, 
+        handleClosePublication,
+        handleAppealPublication 
     } = useYourPublicationDetailView(publicationId);
 
     const { notification, isVisible, close, show } = useNotification();
     const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
     const [isApplicantsDialogOpen, setIsApplicantsDialogOpen] = useState(false);
-
+    const [isAppealing, setIsAppealing] = useState(false);
 
     const handleCloseConfirm = async () => {
         setIsCloseDialogOpen(false);
@@ -54,6 +55,21 @@ export default function OffererPublicationDetailView() {
             toast.dismiss(toastId);
             const errorMessage = e?.message || "Hubo un error desconocido al intentar cerrar la publicación.";
             show("¡Error al Cerrar Publicación!", errorMessage, "error");
+        }
+    };
+
+    const handleAppealConfirm = async () => {
+        const toastId = toast.loading("Enviando apelación...");
+        try {
+            await handleAppealPublication();
+            toast.success("Apelación enviada exitosamente", {
+                id: toastId,
+                description: "Un administrador revisará tu caso pronto.",
+            });
+        } catch (e: any) {
+            toast.dismiss(toastId);
+            const errorMessage = e?.response?.data?.message || e?.message || "Error al enviar la apelación.";
+            show("Error al Apelar", errorMessage, "error");
         }
     };
 
@@ -204,6 +220,24 @@ export default function OffererPublicationDetailView() {
                         )}
                     </div>
                 </header>
+
+                {/* Status Reason Banner - Show for Rejected or Closed */}
+                {publication && (publication.approvalStatus === "Rechazada" || publication.approvalStatus === "Cerrada") && (
+                    <div className="mb-6">
+                        <StatusReasonBanner
+                            status={publication.approvalStatus}
+                            reason={
+                                publication.approvalStatus === "Rechazada" 
+                                    ? publication.reasonForRejection 
+                                    : publication.reasonForClosure
+                            }
+                            appealCount={publication.appealCount}
+                            maxAppeals={3}
+                            onAppeal={publication.approvalStatus === "Rechazada" ? handleAppealConfirm : undefined}
+                            isAppealing={isAppealing}
+                        />
+                    </div>
+                )}
 
                 {/* Main White Card - Same as Profile */}
                 <div className="bg-white text-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden p-6 md:p-8">

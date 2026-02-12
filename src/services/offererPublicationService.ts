@@ -48,6 +48,16 @@ export class OffererPublicationService extends BaseApiService {
       { newStatus }
     );
   }
+  closePublicationById(publicationId: number) {
+    return this.httpClient.patch<ApiResponse<string>>(
+      `${this.baseURL}/my-publications/${publicationId}/close`
+    );
+  }
+  appealRejectedPublication(publicationId: number) {
+    return this.httpClient.post<ApiResponse<string>>(
+      `${this.baseURL}/my-publications/${publicationId}/appeal`
+    );
+  }
 
   /**
   * @deprecated Use getMyPublications instead
@@ -162,6 +172,7 @@ export class OffererPublicationService extends BaseApiService {
   }
 
   /**
+   * @deprecated
    * Apela una publicación rechazada enviando una justificación
    * Endpoint: POST /api/publications/{id}/appeal
    */
@@ -191,6 +202,10 @@ export class OffererPublicationService extends BaseApiService {
       { headers: { "Content-Type": "multipart/form-data" } }
     );
   }
+
+  /**
+   * @deprecated Use closePublicationById instead
+   */
   closePublication(id: number, type: number){
     let endpoint: string;
 

@@ -5,6 +5,7 @@ import { PublicationDetailsForApprovalDTO, PublicationsForValidationDTO } from "
 
 export interface ValidationActionRequest {
   action: "publish" | "reject";
+  rejectionReason?: string;
 }
 
 export class ValidationService extends BaseApiService {
@@ -61,10 +62,14 @@ export class ValidationService extends BaseApiService {
    */
   validatePublication(
     publicationId: number,
-    action: "publish" | "reject"
+    action: "publish" | "reject",
+    rejectionReason?: string
   ) {
+    if (action === "reject" && !rejectionReason) {
+      throw new Error("La razón de rechazo es obligatoria");
+    }
     const endpoint = `${this.baseURL}/pending/${publicationId}/validate`;
-    const payload: ValidationActionRequest = { action };
+    const payload: ValidationActionRequest = { action, ...(rejectionReason && { rejectionReason }) };
     return this.httpClient.patch<ApiResponse<ValidationResponse>>(endpoint, payload);
   }
 }
