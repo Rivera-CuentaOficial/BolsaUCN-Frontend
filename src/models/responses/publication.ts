@@ -122,7 +122,7 @@ export interface UseAdminDetailValidateResult {
     loading: boolean;
     error: string | null;
     isMutating: boolean; 
-    handleAction: (action: 'publish' | 'reject') => void;
+    handleAction: (action: 'publish' | 'reject', rejectionReason?: string) => void;
     handleRetry: () => void;
 }
 

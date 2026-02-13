@@ -18,14 +18,14 @@ export function useAdminPublicationDetailView(id: string): UseAdminDetailValidat
     
     const isViewLoading = detailQuery.isLoading || (detailQuery.isFetching && !detailQuery.data);
 
-    const handleAction = (action: 'publish' | 'reject') => {
+    const handleAction = (action: 'publish' | 'reject', rejectionReason?: string) => {
         const publicationId = detailQuery.data?.id;
        
         if (!publicationId || validationMutation.isPending) {
             return Promise.reject( new Error('Acción no permitida en este momento.') );
         }
         return new Promise<void>((resolve, reject) => {
-            validationMutation.mutate({ id: publicationId, action }, {
+            validationMutation.mutate({ id: publicationId, action, rejectionReason }, {
                     onSuccess: () => {
                         resolve();
                     },
@@ -35,20 +35,6 @@ export function useAdminPublicationDetailView(id: string): UseAdminDetailValidat
                 }
             );
         });
-        /*
-        validationMutation.mutate({ id: publicationId, action }, {
-            onSuccess: () => {
-                const actionText = action === 'publish' ? 'publicada' : 'rechazada';
-                toast.success(`Publicación ${actionText} con éxito.`);
-                router.push('/admin/publications/validate'); 
-            },
-            onError: (error) => {
-                const actionText = action === 'publish' ? 'publicar' : 'rechazar';
-                const apiError = handleApiError(error);
-                toast.error(apiError.details || `Fallo al ${actionText} la publicación.`);
-            },
-        });
-        */
     };
     
     const handleRetry = () => {

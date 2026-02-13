@@ -73,12 +73,12 @@ export const useYourPublicationDetailView = (id: number) => {
     }
   }, [detail]);
 
-  const handleAppealPublication = useCallback(async () => {
+  const handleAppealPublication = useCallback(async (appealData: any) => {
     if (!detail) throw new Error("Publicación no cargada.");
 
     setIsAppealing(true);
     try {
-      await offererPublicationService.appealRejectedPublication(detail.id);
+      await offererPublicationService.appealRejectedPublication(detail.id, appealData);
       await fetchDetail();
     } catch (err: any) {
       throw err;

@@ -53,9 +53,17 @@ export class OffererPublicationService extends BaseApiService {
       `${this.baseURL}/my-publications/${publicationId}/close`
     );
   }
-  appealRejectedPublication(publicationId: number) {
+  appealRejectedPublication(publicationId: number, appealData: any) {
+    const formData = new FormData();
+    Object.keys(appealData).forEach((key) => {
+      if (appealData[key] !== undefined && appealData[key] !== null) {
+        formData.append(key, appealData[key].toString());
+      }
+    })
     return this.httpClient.post<ApiResponse<string>>(
-      `${this.baseURL}/my-publications/${publicationId}/appeal`
+      `${this.baseURL}/my-publications/${publicationId}/appeal`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
     );
   }
 

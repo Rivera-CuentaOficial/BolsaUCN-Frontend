@@ -148,9 +148,9 @@ export const useValidationActionMutation = () => {
     const queryClient = useQueryClient();
 
     return useMutation<any, Error, ValidationActionVariables>({
-        mutationFn: ({ id, action }) => {
+        mutationFn: ({ id, action, rejectionReason }) => {
             const publicationId = id.startsWith('bs-') ? parseInt(id.split('-')[1]) : parseInt(id);
-            return validationService.validatePublication(publicationId, action);
+            return validationService.validatePublication(publicationId, action, rejectionReason);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin", "validation", "pending"] });

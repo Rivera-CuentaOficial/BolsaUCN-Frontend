@@ -10,6 +10,7 @@ import { ValidationActionSection } from "./components/validation-profile-section
 import { ConfirmDialog } from "@/components/ui";
 import { toast } from "sonner";
 import { ValidationDetailSkeleton } from "./components/validation-detail-skeleton"; 
+import { RejectPublicationDialog } from "./components/reject-publication-dialog";
 
 export interface ValidationDetailViewProps {
   id: string;
@@ -25,6 +26,7 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
   
   const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
 
   useEffect(() => {
     if (error && /no está pendiente de aprobación/i.test(error)) {
@@ -52,12 +54,12 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
     }
   };
 
-  const handleRejectConfirm = async () => {
+  const handleRejectConfirm = async (reason: string) => {
     setIsRejectDialogOpen(false);
     const toastId = toast.loading("Rechazando oferta...");
     
     try {
-      await handleAction("reject");
+      await handleAction("reject", reason);
       toast.dismiss(toastId);
       // Redirección explícita con el parámetro de notificación
       router.push(`${backRoute}?notification=rejected`);
@@ -197,13 +199,9 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
             onCancel={() => setIsPublishDialogOpen(false)}
         />
 
-        <ConfirmDialog
+        <RejectPublicationDialog
             open={isRejectDialogOpen}
             onOpenChange={setIsRejectDialogOpen}
-            title="¿Rechazar publicación?"
-            description="La oferta será descartada y el usuario será notificado. Esta acción no se puede deshacer."
-            confirmText="Sí, Rechazar"
-            cancelText="Cancelar"
             onConfirm={handleRejectConfirm}
             onCancel={() => setIsRejectDialogOpen(false)}
         />
