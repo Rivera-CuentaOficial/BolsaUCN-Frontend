@@ -20,19 +20,30 @@ export interface ApplicationSearchParams{
     pageSize?: number;
 }
 export interface GetApplicationDetailsDTO{
+    // Application data
     id: number;
-    offerTitle: string;
-    companyName: string;
-    applicationDeadline: string;
-    createdAt: string;
-    endDate?: string;
-    remuneration: number;
-    description?: string;
-    requirements?: string;
-    contactInfo?: string;
     coverLetter?: string;
     status: 'Pendiente' | 'Aceptada' | 'Rechazada' | string;
-    statusMessage?: string;
+    statusMessage: string;
+    
+    // Offer data
+    offerTitle: string;
+    description: string;
+    applicationDeadline: string;
+    createdAt: string;
+    endDate: string;
+    remuneration: number;
+    
+    // Offeror data
+    offerorName: string;
+    offerorUserType: string;
+    profilePhotoUrl?: string;
+    
+    // Contact data
+    contactEmail: string;
+    contactPhoneNumber: string;
+    additionalContactEmail?: string;
+    additionalContactPhoneNumber?: string;
 }
 
 // Para oferentes
