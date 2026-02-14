@@ -410,6 +410,7 @@ export interface MyPublicationDetails {
     remuneration?: number;
     isCvRequired?: boolean;
     applicationsCount?: number;
+    remainingSlots?: number;
     reviewStatus?: 'NoDisponible' | 'SinRevisar' | 'RevisadaPorOferente' | 'RevisadaPorPostulante' | 'RevisadaPorAmbos';
 
     // Compras/Ventas

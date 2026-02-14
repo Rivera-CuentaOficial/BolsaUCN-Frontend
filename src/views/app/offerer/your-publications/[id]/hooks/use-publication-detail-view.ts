@@ -91,6 +91,10 @@ export const useYourPublicationDetailView = (id: number) => {
     fetchDetail();
   };
 
+  const refetch = () => {
+    fetchDetail();
+  };
+
   return {
     detail,
     loading,
@@ -101,5 +105,6 @@ export const useYourPublicationDetailView = (id: number) => {
     handleRetry,
     handleClosePublication,
     handleAppealPublication,
+    refetch,
   };
 };

@@ -17,18 +17,21 @@ interface ApplicantsDialogProps {
   onClose: () => void;
   offerId: number;
   totalApplicants: number;
+  availableSlots: number;
 }
 
 export function ApplicantsDialog({ 
   isOpen, 
   onClose, 
   offerId,
-  totalApplicants 
+  totalApplicants,
+  availableSlots 
 }: ApplicantsDialogProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<"FirstName" | "ApplicationDate">("ApplicationDate");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [localAvailableSlots, setLocalAvailableSlots] = useState(availableSlots);
   const pageSize = 10;
   const queryClient = useQueryClient();
 
@@ -54,6 +57,10 @@ export function ApplicantsDialog({
     }
   };
 
+  const handleAvailableSlotsChange = (newCount: number) => {
+    setLocalAvailableSlots(newCount);
+  }
+
   const toggleSortOrder = () => {
     setSortOrder(prev => prev === "asc" ? "desc" : "asc");
     setCurrentPage(1);
@@ -65,14 +72,28 @@ export function ApplicantsDialog({
   };
 
   const handleAccept = async (applicationId: number) => {
+    // Verificar si quedan cupos disponibles antes de aceptar
+    if (localAvailableSlots <= 0) {
+      toast.error("No quedan cupos disponibles para aceptar esta postulación.");
+      return;
+    }
     const toastId = toast.loading("Aceptando postulación...");
     try {
       await offererPublicationService.updateApplicationStatus(applicationId, offerId, "Aceptada");
+      handleAvailableSlotsChange(localAvailableSlots - 1); // Reducir el conteo local de cupos disponibles
       toast.success("Postulación aceptada exitosamente", { id: toastId });
       queryClient.invalidateQueries({ queryKey: ["applications", offerId] });
       queryClient.invalidateQueries({ queryKey: ["my-publications"] });
+      queryClient.invalidateQueries({ queryKey: ["my-publication-detail", offerId] });
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Error al aceptar postulación", { id: toastId });
+    }
+    // Si después de aceptar la postulación no quedan cupos disponibles, mostrar un mensaje informativo
+    if (localAvailableSlots <= 0) {
+      toast.info("Se han alcanzado el máximo de postulaciones aceptadas para esta oferta.", {
+        id: toastId
+      });
+      handleClose();
     }
   };
 
@@ -87,6 +108,11 @@ export function ApplicantsDialog({
       toast.error(error.response?.data?.message || "Error al rechazar postulación", { id: toastId });
     }
   };
+
+  const handleClose = () => {
+    queryClient.invalidateQueries({ queryKey: ["my-publication-detail", offerId] });
+    onClose();
+  }
 
   if (!isOpen) return null;
 
@@ -176,6 +202,7 @@ export function ApplicantsDialog({
           <ApplicationCard 
             key={app.applicationId} 
             application={app}
+            availableSlots={localAvailableSlots}
             isExpanded={expandedId === app.applicationId}
             onToggleExpand={() => handleToggleExpand(app.applicationId)}
             onAccept={() => handleAccept(app.applicationId)}
@@ -195,7 +222,7 @@ export function ApplicantsDialog({
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-2xl font-black">Postulaciones</h2>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="p-2 hover:bg-white/20 rounded-full transition"
             >
               <X className="w-6 h-6" />
@@ -252,6 +279,29 @@ interface ApplicationCardProps {
   onToggleExpand: () => void;
   onAccept: () => void;
   onReject: () => void;
+  availableSlots: number;
+}
+
+// Helper function to get status badge styling
+function getStatusBadge(status: string) {
+  switch (status) {
+    case 'Aceptada':
+      return {
+        text: 'Aceptada',
+        className: 'bg-green-100 text-green-700 border-green-200'
+      };
+    case 'Rechazada':
+      return {
+        text: 'Rechazada',
+        className: 'bg-red-100 text-red-700 border-red-200'
+      };
+    case 'Pendiente':
+    default:
+      return {
+        text: 'Pendiente',
+        className: 'bg-amber-100 text-amber-700 border-amber-200'
+      };
+  }
 }
 
 function ApplicationCard({ 
@@ -259,10 +309,12 @@ function ApplicationCard({
   isExpanded, 
   onToggleExpand,
   onAccept,
-  onReject 
+  onReject,
+  availableSlots
 }: ApplicationCardProps) {
   const fullName = `${application.applicantFirstName} ${application.applicantLastName}`;
   const initials = `${application.applicantFirstName[0]}${application.applicantLastName[0]}`.toUpperCase();
+  const statusBadge = getStatusBadge(application.status);
 
   return (
     <div className="bg-slate-50 rounded-xl border-2 border-slate-200 transition-all overflow-hidden">
@@ -316,8 +368,16 @@ function ApplicationCard({
             </div>
           </div>
 
-          {/* Expand Icon */}
+          {/* Status Badge & Expand Icon */}
           <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Status Badge */}
+            <div className={cn(
+              "px-2.5 py-1 rounded-md text-xs font-semibold border",
+              statusBadge.className
+            )}>
+              {statusBadge.text}
+            </div>
+            
             {application.cvUrl && (
               <div className="bg-purple-100 text-purple-700 px-2 py-1 rounded-lg text-xs font-bold">
                 CV
@@ -427,30 +487,32 @@ function ApplicationCard({
             </a>
           )}
 
-          {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onAccept();
-              }}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold transition"
-            >
-              <CheckCircle className="w-5 h-5" />
-              Aceptar
-            </button>
-            
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onReject();
-              }}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition"
-            >
-              <XCircle className="w-5 h-5" />
-              Rechazar
-            </button>
-          </div>
+          {/* Acciones */}
+          {application.status === 'Pendiente' && availableSlots > 0 && (
+            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAccept();
+                }}
+                className="flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold transition"
+              >
+                <CheckCircle className="w-5 h-5" />
+                Aceptar
+              </button>
+              
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onReject();
+                }}
+                className="flex items-center justify-center gap-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition"
+              >
+                <XCircle className="w-5 h-5" />
+                Rechazar
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -55,6 +55,7 @@ export interface ApplicationForOfferor {
     applicantLastName: string;
     applicantEmail: string;
     applicationDate: string;
+    status: 'Pendiente' | 'Aceptada' | 'Rechazada' | string;
     cvUrl?: string;
     coverLetter?: string;
 }

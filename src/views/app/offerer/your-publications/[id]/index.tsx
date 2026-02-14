@@ -41,7 +41,8 @@ export default function OffererPublicationDetailView() {
         error,
         isMutating,
         handleClosePublication,
-        handleAppealPublication 
+        handleAppealPublication,
+        refetch
     } = useYourPublicationDetailView(publicationId);
 
     const { notification, isVisible, close, show } = useNotification();
@@ -49,6 +50,11 @@ export default function OffererPublicationDetailView() {
     const [isApplicantsDialogOpen, setIsApplicantsDialogOpen] = useState(false);
     const [isAppealDialogOpen, setIsAppealDialogOpen] = useState(false);
     const [isAppealing, setIsAppealing] = useState(false);
+
+    const handleCloseMenu = () => {
+        setIsApplicantsDialogOpen(false);
+        refetch(); // Refrescar los detalles de la publicación al cerrar el menú de postulantes
+    }
 
     const handleCloseConfirm = async () => {
         setIsCloseDialogOpen(false);
@@ -256,9 +262,10 @@ export default function OffererPublicationDetailView() {
                 {publication?.publicationType == "Oferta" && (
                     <ApplicantsDialog
                         isOpen={isApplicantsDialogOpen}
-                        onClose={() => setIsApplicantsDialogOpen(false)}
+                        onClose={handleCloseMenu}
                         offerId={publicationId}
                         totalApplicants={publication?.applicationsCount || 0}
+                        availableSlots={publication?.remainingSlots || 0}
                     />
                 )}
 

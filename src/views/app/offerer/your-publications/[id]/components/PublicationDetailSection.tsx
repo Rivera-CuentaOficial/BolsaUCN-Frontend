@@ -155,6 +155,19 @@ export function PublicationDetailSection({ publication }: Props) {
                 </div>
               </div>
             )}
+            {publication.remainingSlots !== undefined && (
+              <div className="flex items-start gap-3 bg-indigo-50 p-4 rounded-2xl">
+                <div className="bg-indigo-100 p-2 rounded-xl">
+                  <Package className="w-5 h-5 text-indigo-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm uppercase tracking-wider text-slate-500 mb-1">
+                    Cupos Restantes
+                  </h3>
+                  <p className="text-slate-900 font-bold text-lg">{publication.remainingSlots}</p>
+                </div>
+              </div>
+            )}
           </div>
         </section>
       )}
