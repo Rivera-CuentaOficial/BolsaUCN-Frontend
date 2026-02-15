@@ -11,7 +11,6 @@ interface GetCVResponse {
 }
 
 export interface GetCVDTO {
-    originalFileName: string;
     url: string;
     fileSizeBytes: number;
     uploadDate: string;
@@ -32,8 +31,8 @@ export const cvService = {
   },
 
   //GET /api/user/cv
-  async getCV(): Promise<GetCVResponse> {
-    const response = await api.get<GetCVResponse>("/user/cv");
+  async getCV(userId: string): Promise<GetCVResponse> {
+    const response = await api.get<GetCVResponse>(`/user/cv/${userId}`);
     return response.data;
   },
 

@@ -28,6 +28,7 @@ export function getUserTypeFromToken(): string {
 }
 
 export function getUserFromToken(): {
+  userId?: string;
   name?: string;
   email?: string;
   sub?: string;
@@ -49,6 +50,8 @@ export function getUserFromToken(): {
       )
     );
 
+    const ID_URI = 
+      "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier";
     const NAME_URI =
       "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name";
     const EMAIL_URI =
@@ -57,6 +60,7 @@ export function getUserFromToken(): {
       "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
 
     return {
+      userId: json[ID_URI],
       name:
         json.name ||
         json.unique_name ||

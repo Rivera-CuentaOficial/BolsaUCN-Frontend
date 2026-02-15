@@ -1,5 +1,3 @@
-// frontend/src/app/offers/[id]/page.tsx (REPLACE ENTIRE FILE)
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -61,6 +59,8 @@ export default function OfferDetailPage() {
 
   const [coverLetter, setCoverLetter] = useState("");
   const [cvFile, setCvFile] = useState<File | null>(null);
+  const [hasCV, setHasCV] = useState(false);
+  const [checkingCV, setCheckingCV] = useState(false);
   const [uploadingCV, setUploadingCV] = useState(false);
   const [applyLoading, setApplyLoading] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
@@ -105,6 +105,27 @@ export default function OfferDetailPage() {
     }
   }, [authenticatedOffer]);
 
+    useEffect(() => {
+    const checkCV = async () => {
+      if (!logged || !canApply || !offer?.isCVRequired) {
+        return;
+      }
+      const user = getUserFromToken();
+      if (!user?.userId) return;
+      setCheckingCV(true);
+      try {
+        const response = await cvService.getCV(user.userId);
+        setHasCV(response.data?.url != null);
+      } catch (e) {
+        setHasCV(false);
+      } finally {
+        setCheckingCV(false);
+      }
+    };
+
+    checkCV();
+  }, [logged, canApply, offer?.isCVRequired]);
+
   const handleUploadCV = async () => {
     if (!cvFile) {
       toast.error("Selecciona un archivo primero");
@@ -116,6 +137,7 @@ export default function OfferDetailPage() {
       await cvService.uploadCV(cvFile);
       toast.success("CV subido exitosamente");
       setCvFile(null);
+      setHasCV(true);
     } catch (e: any) {
       const errorMsg = e?.response?.data?.message || "No se pudo subir el CV";
       toast.error(errorMsg);
@@ -544,41 +566,57 @@ export default function OfferDetailPage() {
                             <p className="text-sm font-bold text-blue-900">
                               Esta oferta requiere CV
                             </p>
-                            <p className="text-xs text-blue-700 mt-1">
-                              Asegúrate de tener tu CV cargado en tu perfil, o
-                              súbelo aquí.
-                            </p>
+                            {checkingCV ? (
+                              <p className="text-xs text-blue-700 mt-1">
+                                Verificando tu CV...
+                              </p>
+                            ) : hasCV ? (
+                              <p className="text-xs text-green-700 mt-1 flex items-center gap-1">
+                                <CheckCircle2 className="w-4 h-4" />
+                                Ya tienes un CV cargado en tu perfil
+                              </p>
+                            ) : (
+                              <p className="text-xs text-blue-700 mt-1">
+                                Asegúrate de tener tu CV cargado en tu perfil, o
+                                súbelo aquí.
+                              </p>
+                            )}
                           </div>
                         </div>
 
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                          <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border-2 border-blue-300 bg-white px-4 py-2.5 text-sm font-bold text-blue-900 hover:bg-blue-50 transition">
-                            Seleccionar CV
-                            <input
-                              type="file"
-                              accept=".pdf,.doc,.docx"
-                              onChange={(e) =>
-                                setCvFile(e.target.files?.[0] ?? null)
-                              }
-                              className="hidden"
-                            />
-                          </label>
+                        {/* Only show upload UI if user doesn't have CV */}
+                        {!hasCV && !checkingCV && (
+                          <>
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                              <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border-2 border-blue-300 bg-white px-4 py-2.5 text-sm font-bold text-blue-900 hover:bg-blue-50 transition">
+                                Seleccionar CV
+                                <input
+                                  type="file"
+                                  accept=".pdf,.doc,.docx"
+                                  onChange={(e) =>
+                                    setCvFile(e.target.files?.[0] ?? null)
+                                  }
+                                  className="hidden"
+                                />
+                              </label>
 
-                          {cvFile && (
-                            <>
-                              <span className="text-sm text-blue-900 truncate font-medium">
-                                {cvFile.name}
-                              </span>
-                              <button
-                                onClick={handleUploadCV}
-                                disabled={uploadingCV}
-                                className="px-4 py-2.5 text-sm bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition disabled:opacity-50 font-bold"
-                              >
-                                {uploadingCV ? "Subiendo..." : "Subir CV"}
-                              </button>
-                            </>
-                          )}
-                        </div>
+                              {cvFile && (
+                                <>
+                                  <span className="text-sm text-blue-900 truncate font-medium">
+                                    {cvFile.name}
+                                  </span>
+                                  <button
+                                    onClick={handleUploadCV}
+                                    disabled={uploadingCV}
+                                    className="px-4 py-2.5 text-sm bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition disabled:opacity-50 font-bold"
+                                  >
+                                    {uploadingCV ? "Subiendo..." : "Subir CV"}
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </>
+                        )}
 
                         <p className="text-xs text-blue-700">
                           También puedes gestionar tu CV en{" "}
