@@ -124,7 +124,7 @@ export interface GetUserProfileDTO {
     profilePhoto?: string;
     pendingEmail?: string;
     // Estudiantes (Role: Applicant)
-    curriculumVitae?: string;
+    hasCV: boolean;
     disability?: string;
 }
 

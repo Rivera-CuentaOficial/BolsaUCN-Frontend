@@ -167,8 +167,9 @@ export function UnifiedProfileView() {
                             {/* CV Upload Section (Student Only) */}
                             {userType === "Estudiante" && (
                                 <CVUploadSection
-                                    currentCV={profile.curriculumVitae}
+                                    hasCV={profile.hasCV}
                                     onUploadSuccess={handleCVUploadSuccess}
+                                    showNotification={show}
                                 />
                             )}
                         </div>

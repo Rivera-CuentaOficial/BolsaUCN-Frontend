@@ -2,13 +2,15 @@
 
 import { CVUpload } from "@/components/profile/CVUpload";
 import { FileText } from "lucide-react";
+import type { NotificationType } from "@/hooks/common/use-notification";
 
 interface CVUploadSectionProps {
-    currentCV?: string;
+    hasCV: boolean;
     onUploadSuccess: (url: string | undefined) => void;
+    showNotification: (title: string, message: string, type?: NotificationType) => void;
 }
 
-export function CVUploadSection({ currentCV, onUploadSuccess }: CVUploadSectionProps) {
+export function CVUploadSection({ hasCV, onUploadSuccess, showNotification }: CVUploadSectionProps) {
     return (
         <div className="pt-4 border-t border-slate-200">
             <div className="flex items-center gap-2 mb-4">
@@ -20,8 +22,9 @@ export function CVUploadSection({ currentCV, onUploadSuccess }: CVUploadSectionP
             
             <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
                 <CVUpload 
-                    currentCVUrl={currentCV} 
+                    hasCV={hasCV}
                     onUploadSuccess={onUploadSuccess}
+                    showNotification={showNotification}
                 />
             </div>
         </div>

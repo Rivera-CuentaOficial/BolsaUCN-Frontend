@@ -5,7 +5,7 @@ import { FileUpload } from "@/components/ui/FileUpload";
 import { cvService } from "@/services/cvService";
 import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
-import { FileText, Eye, Upload, AlertCircle, Trash2 } from "lucide-react";
+import { FileText, Upload, AlertCircle, Trash2, Download } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,26 +16,30 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import type { NotificationType } from "@/hooks/common/use-notification";
 
 interface CVUploadProps {
-  currentCVUrl?: string | null;
+  hasCV: boolean;
   onUploadSuccess?: (url: string) => void;
+  showNotification?: (title: string, message: string, type?: NotificationType) => void;
 }
 
-export function CVUpload({ currentCVUrl, onUploadSuccess }: CVUploadProps) {
+export function CVUpload({ hasCV, onUploadSuccess, showNotification }: CVUploadProps) {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [hasCVState, setHasCVState] = useState<boolean>(hasCV);
 
-  const handleViewCV = () => {
-    if (!currentCVUrl) {
-      toast.error("No hay CV disponible");
+  const handleDownloadCV = async () => {
+    if (!hasCVState) {
+      toast.error("No hay CV disponible para descargar");
       return;
     }
-    
-    // Open Cloudinary URL directly in new tab
-    window.open(currentCVUrl, "_blank");
+
+    setLoading(true);
+    await cvService.downloadCV();
+    setLoading(false);
   };
 
   const handleFileSelect = (selectedFile: File) => {
@@ -57,6 +61,7 @@ export function CVUpload({ currentCVUrl, onUploadSuccess }: CVUploadProps) {
 
       if (response.data) {
         toast.success("CV subido exitosamente");
+        setHasCVState(true);
         onUploadSuccess?.(response.data);
         setFile(null);
       } else {
@@ -64,16 +69,30 @@ export function CVUpload({ currentCVUrl, onUploadSuccess }: CVUploadProps) {
       }
     } catch (err: any) {
       const errorMessage =
-        err.response?.data?.message || "Error al subir el archivo";
-      setError(errorMessage);
-      toast.error(errorMessage);
+        err.response?.data?.details || "Error al subir el archivo";
+      
+      // Check if it's the pending applications error
+      if (errorMessage.includes("postulaciones pendientes")) {
+        if (showNotification) {
+          showNotification(
+            "No se puede actualizar el CV",
+            "No puedes actualizar tu CV porque tienes postulaciones pendientes que requieren un CV. Por favor, espera a que se procesen tus postulaciones antes de actualizar tu currículum.",
+            "error"
+          );
+        } else {
+          toast.error(errorMessage);
+        }
+      } else {
+        setError(errorMessage);
+        toast.error(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteConfirm = async () => {
-    if (!currentCVUrl) return;
+    if (!hasCVState) return;
 
     setLoading(true);
     setShowDeleteDialog(false);
@@ -83,6 +102,7 @@ export function CVUpload({ currentCVUrl, onUploadSuccess }: CVUploadProps) {
 
       if (response.data !== null) {
         toast.success("CV eliminado exitosamente");
+        setHasCVState(false);
         onUploadSuccess?.("");
       } else {
         setError(response.message || "Error al eliminar el CV");
@@ -90,9 +110,23 @@ export function CVUpload({ currentCVUrl, onUploadSuccess }: CVUploadProps) {
       }
     } catch (err: any) {
       const errorMessage =
-        err.response?.data?.message || "Error al eliminar el archivo";
-      setError(errorMessage);
-      toast.error(errorMessage);
+        err.response?.data?.details || "Error al eliminar el archivo";
+      
+      // Check if it's the pending applications error
+      if (errorMessage.includes("postulaciones pendientes")) {
+        if (showNotification) {
+          showNotification(
+            "No se puede eliminar el CV",
+            "No puedes eliminar tu CV porque tienes postulaciones pendientes que requieren un CV. Por favor, espera a que se procesen tus postulaciones antes de eliminar tu currículum.",
+            "error"
+          );
+        } else {
+          toast.error(errorMessage);
+        }
+      } else {
+        setError(errorMessage);
+        toast.error(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -113,8 +147,8 @@ export function CVUpload({ currentCVUrl, onUploadSuccess }: CVUploadProps) {
         </div>
       </div>
 
-      {/* Current CV Display */}
-      {currentCVUrl ? (
+      {/* Current CV Display - Use hasCV from endpoint, not prop */}
+      {hasCVState ? (
         <div className="space-y-3">
           <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg shadow-sm">
             <div className="flex items-center gap-3">
@@ -128,14 +162,14 @@ export function CVUpload({ currentCVUrl, onUploadSuccess }: CVUploadProps) {
             </div>
             <div className="flex gap-2">
               <Button
-                onClick={handleViewCV}
+                onClick={handleDownloadCV}
                 disabled={loading}
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-2 border-green-300 text-green-700 hover:bg-green-50"
+                className="flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-50"
               >
-                <Eye className="w-4 h-4" />
-                Ver CV
+                <Download className="w-4 h-4" />
+                Descargar
               </Button>
               <Button
                 onClick={() => setShowDeleteDialog(true)}
