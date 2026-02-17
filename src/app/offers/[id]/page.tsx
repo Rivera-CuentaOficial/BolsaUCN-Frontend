@@ -114,8 +114,8 @@ export default function OfferDetailPage() {
       if (!user?.userId) return;
       setCheckingCV(true);
       try {
-        const response = await cvService.getCV(user.userId);
-        setHasCV(response.data?.url != null);
+        const response = await cvService.hasCV();
+        setHasCV(response.data?.hasCV === true);
       } catch (e) {
         setHasCV(false);
       } finally {
@@ -139,7 +139,7 @@ export default function OfferDetailPage() {
       setCvFile(null);
       setHasCV(true);
     } catch (e: any) {
-      const errorMsg = e?.response?.data?.message || "No se pudo subir el CV";
+      const errorMsg = e?.response?.data?.details || "No se pudo subir el CV";
       toast.error(errorMsg);
     } finally {
       setUploadingCV(false);

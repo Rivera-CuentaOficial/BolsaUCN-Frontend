@@ -56,7 +56,7 @@ export interface ApplicationForOfferor {
     applicantEmail: string;
     applicationDate: string;
     status: 'Pendiente' | 'Aceptada' | 'Rechazada' | string;
-    cvUrl?: string;
+    hasCV: boolean;
     coverLetter?: string;
 }
 export interface ApplicationsForOfferorResponse {
@@ -84,7 +84,7 @@ export interface ApplicationForAdmin {
     applicantEmail: string;
     applicationDate: string;
     status: 'Pendiente' | 'Aceptada' | 'Rechazada' | string;
-    cvUrl?: string;
+    hasCV: boolean;
     coverLetter?: string;
 }
 

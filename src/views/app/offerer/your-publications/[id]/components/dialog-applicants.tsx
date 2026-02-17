@@ -2,7 +2,8 @@ import { useState } from "react";
 import { 
   X, Mail, Calendar, FileText, ChevronLeft, ChevronRight, 
   User, ChevronDown, ChevronUp, CheckCircle, 
-  XCircle, Eye
+  XCircle, Eye,
+  Download
 } from "lucide-react";
 import { useGetApplicationsByOfferId } from "../hooks";
 import { offererPublicationService } from "@/services/offererPublicationService";
@@ -11,6 +12,7 @@ import { formatDate, cn } from "@/lib";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/Button";
 
 interface ApplicantsDialogProps {
   isOpen: boolean;
@@ -106,6 +108,16 @@ export function ApplicantsDialog({
       queryClient.invalidateQueries({ queryKey: ["my-publications"] });
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Error al rechazar postulación", { id: toastId });
+    }
+  };
+
+  const handleDownloadCV = async (applicationId: number, applicantName: string) => {
+    const toastId = toast.loading("Descargando CV...");
+    try {
+      await offererPublicationService.downloadApplicantCV(offerId, applicationId);
+      toast.success(`CV de ${applicantName} descargado exitosamente`, { id: toastId });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Error al descargar el CV", { id: toastId });
     }
   };
 
@@ -207,6 +219,8 @@ export function ApplicantsDialog({
             onToggleExpand={() => handleToggleExpand(app.applicationId)}
             onAccept={() => handleAccept(app.applicationId)}
             onReject={() => handleReject(app.applicationId)}
+            onDownloadCV={() => handleDownloadCV(app.applicationId, `${app.applicantFirstName} ${app.applicantLastName}`)}
+            offerId={offerId}
           />
         ))}
       </div>
@@ -279,7 +293,9 @@ interface ApplicationCardProps {
   onToggleExpand: () => void;
   onAccept: () => void;
   onReject: () => void;
+  onDownloadCV: () => void;
   availableSlots: number;
+  offerId: number;
 }
 
 // Helper function to get status badge styling
@@ -310,7 +326,9 @@ function ApplicationCard({
   onToggleExpand,
   onAccept,
   onReject,
-  availableSlots
+  onDownloadCV,
+  availableSlots,
+  offerId
 }: ApplicationCardProps) {
   const fullName = `${application.applicantFirstName} ${application.applicantLastName}`;
   const initials = `${application.applicantFirstName[0]}${application.applicantLastName[0]}`.toUpperCase();
@@ -378,7 +396,7 @@ function ApplicationCard({
               {statusBadge.text}
             </div>
             
-            {application.cvUrl && (
+            {application.hasCV && (
               <div className="bg-purple-100 text-purple-700 px-2 py-1 rounded-lg text-xs font-bold">
                 CV
               </div>
@@ -439,18 +457,18 @@ function ApplicationCard({
                 </p>
               </div>
 
-              {/* CV View Button */}
-              {application.cvUrl && (
-                <a
-                  href={application.cvUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition w-full"
+              {/* CV Download Button */}
+              {application.coverLetter && application.hasCV && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDownloadCV();
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition"
                 >
-                  <Eye className="w-5 h-5" />
-                  Ver CV
-                </a>
+                  <Download className="w-5 h-5" />
+                  Descargar CV
+                </button>
               )}
             </div>
 
@@ -474,17 +492,17 @@ function ApplicationCard({
           </div>
 
           {/* If no cover letter but has CV, show CV button full width */}
-          {!application.coverLetter && application.cvUrl && (
-            <a
-              href={application.cvUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition w-full"
+          {!application.coverLetter && application.hasCV && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDownloadCV();
+              }}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition"
             >
-              <Eye className="w-5 h-5" />
-              Ver CV
-            </a>
+              <Download className="w-5 h-5" />
+              Descargar CV
+            </button>
           )}
 
           {/* Acciones */}

@@ -42,6 +42,27 @@ export class OffererPublicationService extends BaseApiService {
       `${this.baseURL}/my-publications/${publicationId}`
     );  
   }
+  async downloadApplicantCV(offerId: number, applicationId: number): Promise<void> {
+    const response = await this.httpClient.get(`${this.baseURL}/my-publications/${offerId}/applications/${applicationId}/cv`,{ responseType: 'blob' });
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+
+    const contentDisposition = response.headers['content-disposition'];
+    let fileName = 'CV.pdf';
+    if (contentDisposition) {
+      const fileNameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+      if (fileNameMatch && fileNameMatch[1]) {
+        fileName = fileNameMatch[1].replace(/['"]/g, '');
+      }
+    }
+
+    link.href = url;
+    link.setAttribute('download', fileName); // Nombre del archivo a descargar
+    document.body.appendChild(link);
+    link.click();
+    link.remove();  
+    window.URL.revokeObjectURL(url);
+  }
   updateApplicationStatus(applicationId: number, offerId: number, newStatus: "Aceptada" | "Rechazada") {
     return this.httpClient.patch<ApiResponse<boolean>>(
       `${this.baseURL}/my-publications/${offerId}/applications/${applicationId}/update-status`,
