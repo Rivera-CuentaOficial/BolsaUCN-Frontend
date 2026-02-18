@@ -9,10 +9,13 @@ import { toast } from "sonner";
 import { 
   ArrowLeft, AlertCircle, Settings2, FileText, 
   Calendar, DollarSign, Mail, Phone, 
-  Clock, Tag, Briefcase, User, Building2
+  Clock, Tag, Briefcase, User, Building2,
+  XCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ConfirmDialog } from "@/components/ui";
+import { useCancelApplication } from "@/hooks/api/use-application-service";
 
 function formatCLDate(iso?: string | null) {
   if (!iso) return "—";
@@ -34,6 +37,7 @@ const STATUS_OPTIONS = [
   { value: "Pendiente", text: "Pendiente", classes: "bg-yellow-100 text-yellow-800 border-yellow-200" },
   { value: "Aceptada", text: "Aceptada", classes: "bg-green-100 text-green-800 border-green-200" },
   { value: "Rechazada", text: "Rechazada", classes: "bg-red-100 text-red-800 border-red-200" },
+  { value: "CanceladaPorPostulante", text: "Cancelada", classes: "bg-gray-100 text-gray-800 border-gray-200" },
 ];
 
 const getStatusBadge = (status: string) => {
@@ -73,6 +77,9 @@ export default function ApplicationDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedCoverLetter, setEditedCoverLetter] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const cancelMutation = useCancelApplication();
+
 
   useEffect(() => {
     let mounted = true;
@@ -140,6 +147,22 @@ export default function ApplicationDetailPage() {
     setEditedCoverLetter(application?.coverLetter || "");
     setIsEditing(false);
   };
+
+  const handleCancelApplication = async () => {
+    setIsCancelDialogOpen(false);
+    const toastId = toast.loading("Cancelando postulación...");
+    
+    try {
+        await cancelMutation.mutateAsync(applicationId);
+        toast.success("Postulación cancelada exitosamente", { id: toastId });
+        router.push("/jobs/history?notification=cancelled");
+    } catch (e: any) {
+        toast.dismiss(toastId);
+        const errorMessage = e?.response?.data?.message || e?.message || "Hubo un error al cancelar la postulación.";
+        toast.error(errorMessage);
+    }
+  };
+  const canCancel = application?.status === "Pendiente";
 
   if (loading) {
     return (
@@ -253,6 +276,17 @@ export default function ApplicationDetailPage() {
               
               <div className="flex items-center gap-3 mt-2">
                 <div className={statusInfo.classes}>{statusInfo.text}</div>
+
+                {canCancel && (
+                  <Button
+                      onClick={() => setIsCancelDialogOpen(true)}
+                      disabled={cancelMutation.isPending}
+                      className="mt-4 bg-red-600/80 hover:bg-red-600 text-white rounded-full font-bold px-6 py-3 flex items-center gap-2 shadow-lg transition-all"
+                  >
+                      <XCircle className="w-5 h-5" />
+                      {cancelMutation.isPending ? "Cancelando..." : "Cancelar Postulación"}
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -503,6 +537,17 @@ export default function ApplicationDetailPage() {
               </div>
             </section>
           </div>
+
+          <ConfirmDialog
+            open={isCancelDialogOpen}
+            onOpenChange={setIsCancelDialogOpen}
+            onConfirm={handleCancelApplication}
+            title="¿Cancelar Postulación?"
+            description="Esta acción cancelará tu postulación a esta oferta. Podrás volver a postular más tarde si la oferta sigue disponible. ¿Deseas continuar?"
+            confirmText="Sí, Cancelar Postulación"
+            cancelText="No Cancelar"
+          />
+          
         </div>
       </main>
     </div>

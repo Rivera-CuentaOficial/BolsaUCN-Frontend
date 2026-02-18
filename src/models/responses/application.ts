@@ -23,7 +23,7 @@ export interface GetApplicationDetailsDTO{
     // Application data
     id: number;
     coverLetter?: string;
-    status: 'Pendiente' | 'Aceptada' | 'Rechazada' | string;
+    status: 'Pendiente' | 'Aceptada' | 'Rechazada' | 'CanceladaPorPostulante' | string;
     statusMessage: string;
     
     // Offer data
@@ -55,7 +55,7 @@ export interface ApplicationForOfferor {
     applicantLastName: string;
     applicantEmail: string;
     applicationDate: string;
-    status: 'Pendiente' | 'Aceptada' | 'Rechazada' | string;
+    status: 'Pendiente' | 'Aceptada' | 'Rechazada' | 'CanceladaPorPostulante' | string;
     hasCV: boolean;
     coverLetter?: string;
 }

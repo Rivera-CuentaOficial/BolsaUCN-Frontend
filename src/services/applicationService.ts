@@ -45,6 +45,12 @@ export class ApplicationService extends BaseApiService {
         );
     }
 
+    cancelApplication(applicationId: number) {
+        return this.httpClient.patch<ApiResponse<string>>(
+            `${this.baseURL}/my-applications/${applicationId}/cancel`
+        );
+    }
+
     updateApplicationDetails(applicationId: number, payload: { coverLetter: string | null }) {
         return this.httpClient.patch<ApiResponse<string>>(
             `${this.baseURL}/my-applications/${applicationId}`,
