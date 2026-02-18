@@ -404,6 +404,7 @@ export interface MyPublicationDetails {
     appealCount: number;
 
     // Ofertas 
+    offerStatus?: 'EnRevision' | 'RecibiendoPostulaciones' | 'RealizandoTrabajo' | 'CalificacionesEnProceso' | 'Finalizada' | 'CanceladaAntesDelTrabajo';
     offerType?: 'Trabajo' | 'Voluntariado';
     endDate?: string;
     applicationDeadline?: string;

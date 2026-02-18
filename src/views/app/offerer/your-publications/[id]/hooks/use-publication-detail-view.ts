@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { offererPublicationService } from "src/services/offererPublicationService";
 import type { MyPublicationDetails } from "src/models/responses";
 
-export type PublicationAction = "postulantes" | "close_publication";
+export type PublicationAction = "postulantes" | "close_publication" | "advance_offer";
 
 export const useYourPublicationDetailView = (id: number) => {
   const router = useRouter();
@@ -56,22 +56,45 @@ export const useYourPublicationDetailView = (id: number) => {
     }
   };
     
-  const handleClosePublication = useCallback(async () => {
+  const handleCancelOffer = useCallback(async () => {
     if (!detail) throw new Error("Publicación no cargada.");
+    if (detail.offerStatus !== "RecibiendoPostulaciones") {
+      throw new Error("El estado actual de la publicación no permite cancelar la oferta.");
+    }
 
     setIsMutating(true);
     try {
-      await offererPublicationService.closePublicationById(detail.id);
-      router.push(`/offerer/your-publications`);
+      await offererPublicationService.cancelOfferById(detail.id);
+      await fetchDetail();
     } catch (err: any) {
-      if (err.response && err.response.status === 409) {
-        throw new Error("El estado actual de la publicación (Pendiente o Rechazada) no permite el cierre.");
+      throw err;
+    } finally {
+      setIsMutating(false);
+    }
+  }, [detail, fetchDetail]);
+
+  const handleAdvanceOffer = useCallback(async () => {
+    if (!detail) throw new Error("Publicación no cargada.");
+
+    // Solo se permite avanzar si la oferta está en "RecibiendoPostulaciones" o "RealizandoTrabajo"
+    if (detail.offerStatus !== 'RecibiendoPostulaciones' && detail.offerStatus !== 'RealizandoTrabajo') {
+      throw new Error("Solo se puede avanzar durante las etapas de Recibiendo Postulaciones o Realizando Trabajo.");
+    }
+
+    setIsMutating(true);
+    try {
+      await offererPublicationService.advanceOfferById(detail.id);
+      await fetchDetail();
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || '';
+      if (errorMessage.includes('postulantes aceptados')) {
+        throw new Error("No puedes avanzar sin haber aceptado al menos un postulante. Por favor acepta al menos un postulante antes de avanzar, o cancela la oferta si ya no puedes cumplir con los requisitos.");
       }
       throw err;
     } finally {
       setIsMutating(false);
     }
-  }, [detail]);
+  }, [detail, fetchDetail]);
 
   const handleAppealPublication = useCallback(async (appealData: any) => {
     if (!detail) throw new Error("Publicación no cargada.");
@@ -103,7 +126,8 @@ export const useYourPublicationDetailView = (id: number) => {
     isAppealing,
     handleAction,
     handleRetry,
-    handleClosePublication,
+    handleCancelOffer,
+    handleAdvanceOffer,
     handleAppealPublication,
     refetch,
   };

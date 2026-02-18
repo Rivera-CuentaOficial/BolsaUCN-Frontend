@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Briefcase, ShoppingBag, Heart, Users, Trash2 } from 'lucide-react';
+import { ArrowLeft, Briefcase, ShoppingBag, Heart, Users, Trash2, ArrowRight, XCircle } from 'lucide-react';
 import { useYourPublicationDetailView } from './hooks/use-publication-detail-view'; 
 import { useNotification } from '@/hooks/common/use-notification'; 
 import { 
@@ -29,6 +29,15 @@ const APPROVAL_STATUS = [
     { value: "Cerrada", text: "Cerrada", classes: "bg-gray-500 text-white" },
 ];
 
+const OFFER_STATUS = [
+    { value: "EnRevision", text: "En Revisión", classes: "bg-gray-500 text-white", description: "Esperando aprobación administrativa" },
+    { value: "RecibiendoPostulaciones", text: "Recibiendo Postulaciones", classes: "bg-blue-500 text-white", description: "Abierta para postulaciones" },
+    { value: "RealizandoTrabajo", text: "Realizando Trabajo", classes: "bg-indigo-500 text-white", description: "Trabajo en progreso" },
+    { value: "CalificacionesEnProceso", text: "Calificaciones en Proceso", classes: "bg-purple-500 text-white", description: "Período de calificaciones" },
+    { value: "Finalizada", text: "Finalizada", classes: "bg-green-600 text-white", description: "Oferta completada" },
+    { value: "CanceladaAntesDelTrabajo", text: "Cancelada", classes: "bg-red-600 text-white", description: "Oferta cancelada antes del trabajo" },
+];
+
 export default function OffererPublicationDetailView() {
     const params = useParams();
     const router = useRouter();
@@ -40,13 +49,15 @@ export default function OffererPublicationDetailView() {
         loading: isLoading, 
         error,
         isMutating,
-        handleClosePublication,
+        handleCancelOffer,
+        handleAdvanceOffer,
         handleAppealPublication,
         refetch
     } = useYourPublicationDetailView(publicationId);
 
     const { notification, isVisible, close, show } = useNotification();
-    const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
+    const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+    const [isAdvanceDialogOpen, setIsAdvanceDialogOpen] = useState(false);
     const [isApplicantsDialogOpen, setIsApplicantsDialogOpen] = useState(false);
     const [isAppealDialogOpen, setIsAppealDialogOpen] = useState(false);
     const [isAppealing, setIsAppealing] = useState(false);
@@ -56,19 +67,68 @@ export default function OffererPublicationDetailView() {
         refetch(); // Refrescar los detalles de la publicación al cerrar el menú de postulantes
     }
 
-    const handleCloseConfirm = async () => {
-        setIsCloseDialogOpen(false);
-        const toastId = toast.loading("Cerrando publicación...");
+    const handleCancelConfirm = async () => {
+        setIsCancelDialogOpen(false);
+        const toastId = toast.loading("Cancelando oferta...");
         try {
-            await handleClosePublication();
-            toast.dismiss(toastId);
-            router.push(`/offerer/your-publications?notification=closed`); 
+            await handleCancelOffer();
+            toast.success("Oferta cancelada exitosamente", { id: toastId });
+            //router.push(`/offerer/your-publications?notification=cancelled`); 
         } catch (e: any) {
             toast.dismiss(toastId);
-            const errorMessage = e?.message || "Hubo un error desconocido al intentar cerrar la publicación.";
-            show("¡Error al Cerrar Publicación!", errorMessage, "error");
+            const errorMessage = e?.response?.data?.details || e?.details || "Hubo un error al cancelar la oferta.";
+            show("Error al Cancelar Oferta", errorMessage, "error");
         }
     };
+
+    const handleAdvanceConfirm = async () => {
+        setIsAdvanceDialogOpen(false);
+        const toastId = toast.loading("Avanzando estado de la oferta...");
+        try {
+            await handleAdvanceOffer();
+            toast.success("Estado avanzado exitosamente", { id: toastId });
+            refetch();
+        } catch (e: any) {
+            toast.dismiss(toastId);
+            const errorMessage = e?.response?.data?.details || e?.details || "Hubo un error al avanzar el estado.";
+            
+            if (errorMessage.includes('postulantes aceptados') || errorMessage.includes('No puedes avanzar sin haber aceptado')) {
+                show(
+                    "No se puede avanzar", 
+                    "Debes aceptar al menos un postulante antes de avanzar al siguiente estado. Revisa la lista de postulantes y acepta al menos uno, o cancela la oferta si ya no es necesaria.",
+                    "error"
+                );
+            } else {
+                show("Error al Avanzar Estado", errorMessage, "error");
+            }
+        }
+    };
+
+    // Determina si se pueden mostrar los botones de acción basados en el estado actual de la publicación
+    const canCancel = publication?.publicationType === "Oferta" 
+        && publication?.offerStatus === 'RecibiendoPostulaciones' 
+        && publication?.approvalStatus === 'Aceptada';
+    
+    const canAdvance = publication?.publicationType === "Oferta" 
+        && (publication?.offerStatus === 'RecibiendoPostulaciones' || publication?.offerStatus === 'RealizandoTrabajo')
+        && publication?.approvalStatus === 'Aceptada';
+
+    const getAdvanceDialogContent = () => {
+        if (publication?.offerStatus === 'RecibiendoPostulaciones') {
+            return {
+                title: "¿Cerrar Postulaciones?",
+                description: `Esta acción cerrará el periodo de postulaciones y avanzará la oferta a la etapa "Realizando Trabajo". Este proceso ocurriría automáticamente al llegar a la fecha límite de postulación (${publication.applicationDeadline ? new Date(publication.applicationDeadline).toLocaleDateString('es-CL') : 'no definida'}). ¿Deseas continuar?`
+            };
+        } else if (publication?.offerStatus === 'RealizandoTrabajo') {
+            return {
+                title: "¿Finalizar Trabajo?",
+                description: `Esta acción marcará el trabajo como completado y avanzará la oferta a la etapa "Calificaciones en Proceso". Este proceso ocurriría automáticamente al llegar a la fecha de término (${publication.endDate ? new Date(publication.endDate).toLocaleDateString('es-CL') : 'no definida'}). ¿Deseas continuar?`
+            };
+        }
+        return { title: "", description: "" };
+    };
+
+    const advanceDialogContent = getAdvanceDialogContent();
 
     const handleAppealSubmit = async (appealData: any) => {
         const toastId = toast.loading("Enviando apelación...");
@@ -101,6 +161,20 @@ export default function OffererPublicationDetailView() {
           { text: "Desconocido", classes: "bg-gray-500 text-white" };
         const baseClasses = "px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-sm";
         return { text: statusInfo.text, classes: `${baseClasses} ${statusInfo.classes}` };
+    }, [publication]);
+
+    const offerStatus = useMemo(() => {
+        if (!publication || publication.publicationType !== "Oferta" || !publication.offerStatus) {
+            return null;
+        }
+        const statusInfo = OFFER_STATUS.find(s => s.value === publication.offerStatus) || 
+        { text: "Desconocido", classes: "bg-gray-500 text-white", description: "" };
+        const baseClasses = "px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-sm";
+        return { 
+            text: statusInfo.text, 
+            classes: `${baseClasses} ${statusInfo.classes}`,
+            description: statusInfo.description
+        };
     }, [publication]);
 
     const isJobOffer = publication?.publicationType === "Oferta";
@@ -164,13 +238,23 @@ export default function OffererPublicationDetailView() {
             <NotificationBanner data={notification} isVisible={isVisible} onClose={close} />
             
             <ConfirmDialog
-                open={isCloseDialogOpen}
-                onOpenChange={() => setIsCloseDialogOpen(false)}
-                onConfirm={handleCloseConfirm}
-                title="¿Cerrar Publicación?"
-                description="Esta acción cerrará la publicación permanentemente. No se podrán recibir más postulaciones."
-                confirmText="Cerrar Publicación"
+                open={isAdvanceDialogOpen}
+                onOpenChange={() => setIsAdvanceDialogOpen(false)}
+                onConfirm={handleAdvanceConfirm}
+                title={advanceDialogContent.title}
+                description={advanceDialogContent.description}
+                confirmText="Sí, Avanzar"
                 cancelText="Cancelar"
+            />
+
+            <ConfirmDialog
+                open={isCancelDialogOpen}
+                onOpenChange={() => setIsCancelDialogOpen(false)}
+                onConfirm={handleCancelConfirm}
+                title="¿Cancelar Oferta Permanentemente?"
+                description="Esta acción es IRREVERSIBLE y solo debe usarse en caso de emergencia o cuando sea imposible cumplir con el contrato laboral de los postulantes aceptados. Aunque no afectará tus estadísticas directamente (no habrá etapa de calificaciones), un patrón de cancelaciones podría resultar en intervención administrativa. ¿Estás seguro de que deseas continuar?"
+                confirmText="Sí, Cancelar Oferta"
+                cancelText="No Cancelar"
             />
             
             <main className="grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
@@ -203,16 +287,24 @@ export default function OffererPublicationDetailView() {
                                 {publicationTitle}
                             </h1>
                             
-                            {/* Status Badge */}
-                            <div className="flex items-center gap-3 mt-2">
+                            {/* Status Badges */}
+                            <div className="flex items-center flex-wrap gap-3 mt-2">
+                                {/* Approval Status */}
                                 <div className={publicationStatus.classes}>
                                     {publicationStatus.text}
                                 </div>
+                                
+                                {/* Offer Status (only for job offers) */}
+                                {offerStatus && (
+                                    <div className={offerStatus.classes} title={offerStatus.description}>
+                                        {offerStatus.text}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         {/* Action Buttons */}
-                        {isPublished && isJobOffer && (
+                        {isPublished && isJobOffer && (canCancel || canAdvance) && (
                             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                                 <button
                                     onClick={() => setIsApplicantsDialogOpen(true)}
@@ -222,14 +314,27 @@ export default function OffererPublicationDetailView() {
                                     <span>Postulantes ({publication.applicationsCount || 0})</span>
                                 </button>
                                 
-                                <button
-                                    onClick={() => setIsCloseDialogOpen(true)}
-                                    disabled={isMutating}
-                                    className="w-full sm:w-auto px-6 py-3 bg-red-600/80 hover:bg-red-600 backdrop-blur-md border border-red-500/50 disabled:bg-red-900/50 disabled:cursor-not-allowed text-white rounded-full font-bold transition shadow-lg flex items-center justify-center gap-2"
-                                >
-                                    <Trash2 className="w-5 h-5 flex-shrink-0" />
-                                    <span>{isMutating ? "Cerrando..." : "Cerrar Publicación"}</span>
-                                </button>
+                                {canAdvance && (
+                                    <button
+                                        onClick={() => setIsAdvanceDialogOpen(true)}
+                                        disabled={isMutating}
+                                        className="w-full sm:w-auto px-6 py-3 bg-blue-600/80 hover:bg-blue-600 backdrop-blur-md border border-blue-500/50 disabled:bg-blue-900/50 disabled:cursor-not-allowed text-white rounded-full font-bold transition shadow-lg flex items-center justify-center gap-2"
+                                    >
+                                        <ArrowRight className="w-5 h-5 flex-shrink-0" />
+                                        <span>{isMutating ? "Avanzando..." : "Avanzar Estado"}</span>
+                                    </button>
+                                )}
+                                
+                                {canCancel && (
+                                    <button
+                                        onClick={() => setIsCancelDialogOpen(true)}
+                                        disabled={isMutating}
+                                        className="w-full sm:w-auto px-6 py-3 bg-red-600/80 hover:bg-red-600 backdrop-blur-md border border-red-500/50 disabled:bg-red-900/50 disabled:cursor-not-allowed text-white rounded-full font-bold transition shadow-lg flex items-center justify-center gap-2"
+                                    >
+                                        <XCircle className="w-5 h-5 flex-shrink-0" />
+                                        <span>{isMutating ? "Cancelando..." : "Cancelar Oferta"}</span>
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>

@@ -69,9 +69,14 @@ export class OffererPublicationService extends BaseApiService {
       { newStatus }
     );
   }
-  closePublicationById(publicationId: number) {
+  advanceOfferById(publicationId: number) {
     return this.httpClient.patch<ApiResponse<string>>(
-      `${this.baseURL}/my-publications/${publicationId}/close`
+      `${this.baseURL}/my-publications/${publicationId}/advance`
+    );
+  }
+  cancelOfferById(publicationId: number) {
+    return this.httpClient.patch<ApiResponse<string>>(
+      `${this.baseURL}/my-publications/${publicationId}/cancel`
     );
   }
   appealRejectedPublication(publicationId: number, appealData: any) {
