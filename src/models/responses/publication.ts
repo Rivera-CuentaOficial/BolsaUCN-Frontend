@@ -577,4 +577,33 @@ export interface PublicationDetailsForAdmin {
     category?: string;
 }
 
+// Admin - Ver publicaciones de un usuario
+export interface UserPublicationForAdmin {
+  publicationId: number;
+  title: string;
+  publicationStatus: string;
+  publicationType: string;
+  createdAt: string;
+  hasBeenAppealed: boolean;
+}
+
+export interface UserPublicationsForAdmin {
+  publications: UserPublicationForAdmin[];
+  totalCount: number;
+  totalPages: number;
+  pageNumber: number;
+  pageSize: number;
+}
+
+export interface UserPublicationsSearchParams {
+  searchByTitle?: string;
+  filterByPublicationStatus?: string;
+  filterByOfferType?: string;
+  filterByPublicationType?: string;
+  sortBy?: string;
+  sortOrder?: string;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
 

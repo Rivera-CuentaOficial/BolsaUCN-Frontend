@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, User, Settings, Briefcase, Building2, UserCog } from "lucide-react";
+import { ArrowLeft, User, Settings, Briefcase, Building2, UserCog, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button, NotificationBanner } from "@/components/ui";
 import { useUnifiedProfile } from "./hooks";
+import { useDownloadMyReviewsPdf } from "@/hooks/common/use-reviews";
 
 import {
     ProfileDetailSection,
@@ -17,6 +18,7 @@ import {
 export function UnifiedProfileView() {
     const router = useRouter();
     const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(false);
+    const downloadPdf = useDownloadMyReviewsPdf();
 
     const {
         userType,
@@ -61,7 +63,7 @@ export function UnifiedProfileView() {
         return (
             <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-slate-900">
                 <div className="absolute inset-0 z-0">
-                    <img src="/fondo.png" alt="Fondo UCN" className="w-full h-full object-cover opacity-60"/>
+                    <img src="/fondo.png" alt="Fondo UCN" className="w-full h-full object-cover opacity-60" />
                     <div className="absolute inset-0 bg-gradient-to-r from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/50 to-purple-950/90" />
                 </div>
@@ -98,7 +100,7 @@ export function UnifiedProfileView() {
 
             {/* Fondo Morado Continuo */}
             <div className="absolute inset-0 z-0">
-                <img src="/fondo.png" alt="Fondo UCN" className="w-full h-full object-cover opacity-60"/>
+                <img src="/fondo.png" alt="Fondo UCN" className="w-full h-full object-cover opacity-60" />
                 <div className="absolute inset-0 bg-gradient-to-r from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/50 to-purple-950/90" />
             </div>
@@ -138,14 +140,24 @@ export function UnifiedProfileView() {
                             </p>
                         </div>
 
-                        {/* Single Update Profile Button */}
-                        <button
-                            onClick={() => setIsSettingsMenuOpen(true)}
-                            className="px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white rounded-full font-bold transition shadow-lg flex items-center gap-2"
-                        >
-                            <Settings className="w-5 h-5" />
-                            Actualizar Perfil
-                        </button>
+                        {/* Action Buttons */}
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <button
+                                onClick={() => downloadPdf.mutate()}
+                                disabled={downloadPdf.isPending}
+                                className="px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white rounded-full font-bold transition shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <Download className="w-5 h-5" />
+                                {downloadPdf.isPending ? "Descargando..." : "Descargar Reporte"}
+                            </button>
+                            <button
+                                onClick={() => setIsSettingsMenuOpen(true)}
+                                className="px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white rounded-full font-bold transition shadow-lg flex items-center gap-2"
+                            >
+                                <Settings className="w-5 h-5" />
+                                Actualizar Perfil
+                            </button>
+                        </div>
                     </div>
                 </header>
 

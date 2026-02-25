@@ -45,6 +45,9 @@ export {
   type PublicationsForAdmin,
   type PublicationsForAdminSearchParams,
   type PublicationDetailsForAdmin
+  type UserPublicationForAdmin,
+  type UserPublicationsForAdmin,
+  type UserPublicationsSearchParams
 } from "./publication";
 
 export {
@@ -59,3 +62,17 @@ export {
   type ApplicationsForAdminResponse,
   type ApplicationsForAdminSearchParams
 } from "./application";
+
+export {
+  type MyReviewDTO,
+  type MyReviewsDTO,
+  type MyReviewDetailsDTO,
+  type ApplicantReviewForOfferorDTO,
+  type OfferorReviewForApplicantDTO,
+  type MyReviewsSearchParamsDTO,
+  type GetReviewDTO,
+  type GetReviewsDTO,
+  type GetReviewDetailsDTO,
+  type GetReviewsSearchParamsDTO,
+  type HideReviewInfoDTO,
+} from "./review";

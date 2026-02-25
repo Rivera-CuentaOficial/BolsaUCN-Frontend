@@ -161,8 +161,7 @@ export default function SiteHeader() {
 
     return baseItems.map((item) => {
       if (item.label !== "Historial de trabajos") return item;
-      let newHref = "/jobs/reviews/student";
-      if (auth.roles.includes(ROLES.OFFEROR)) newHref = "/jobs/reviews/employer";
+      let newHref = "/jobs/reviews";
       if (auth.roles.includes(ROLES.ADMIN)) newHref = "/jobs/reports";
       return { ...item, href: newHref };
     });
