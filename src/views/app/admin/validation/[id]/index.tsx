@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ArrowLeft, AlertCircle, Sparkles, CheckCircle2, XCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { useAdminPublicationDetailView } from "./hooks/use-validation-detail-view";
+import { usePublicationDetailsForApproval } from "./hooks";
 import { handleApiError, getPresentationType } from "@/lib";
 import { ValidationDetailSection } from "./components/validation-detail-section";
 import { ValidationActionSection } from "./components/validation-profile-section"; 
@@ -18,8 +18,8 @@ export interface ValidationDetailViewProps {
 
 export default function ValidationDetailView({ id }: ValidationDetailViewProps) {
   const router = useRouter();
-  const { detail, loading, error, isMutating, handleAction, handleRetry } =
-    useAdminPublicationDetailView(id);
+  const { details, isLoading, error, isMutating, handleAction, handleRetry } =
+    usePublicationDetailsForApproval(id);
 
   // Ruta exacta a la que volveremos
   const backRoute = "/admin/publications/validate";
@@ -72,14 +72,9 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
   };
 
   // 1. ESTADO DE CARGA
-  if (loading || !detail) {
+  if (isLoading || !details) {
     return (
-      <div className="flex flex-col min-h-screen relative bg-slate-900 overflow-hidden">
-         <div className="fixed inset-0 z-0 pointer-events-none">
-             <img src="/fondo.png" alt="Fondo" className="w-full h-full object-cover opacity-60"/>
-             <div className="absolute inset-0 bg-gradient-to-br from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
-             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/50 to-purple-950/90" />
-         </div>
+      <div className="flex flex-col min-h-screen relative bg-ucn-purple overflow-hidden">
          <ValidationDetailSkeleton />
       </div>
     );
@@ -89,7 +84,7 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
   if (error && !/no está pendiente de aprobación/i.test(error)) {
     const errorDetails = error || "Error desconocido.";
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900 relative text-white">
+      <div className="min-h-screen flex items-center justify-center bg-ucn-purple relative text-white">
          <div className="absolute inset-0 bg-linear-to-br from-violet-900 to-slate-900" />
          <div className="relative z-10 max-w-xl mx-auto p-8 bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2rem] text-center shadow-2xl">
             <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-400" />
@@ -116,14 +111,7 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
 
   // 3. CONTENIDO PRINCIPAL
   return (
-    <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-slate-900">
-      
-      {/* Fondo Morado Fijo */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-          <img src="/fondo.png" alt="Fondo" className="w-full h-full object-cover opacity-60"/>
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/50 to-purple-950/90" />
-      </div>
+    <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-ucn-purple">
 
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
         
@@ -140,10 +128,10 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
           <div className="flex flex-col gap-2">
              <div className="inline-flex items-center gap-2 self-start px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold uppercase tracking-wider shadow-lg">
                 <Sparkles className="w-3 h-3" />
-                {getPresentationType(detail.type)}
+                {getPresentationType(details.publicationType)}
              </div>
              <h1 className="text-3xl md:text-5xl font-black tracking-tight drop-shadow-lg leading-tight">
-                {detail.title || "Sin Título"}
+                {details.title || "Sin Título"}
              </h1>
           </div>
         </header>
@@ -154,7 +142,7 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
             
             {/* Columna Izquierda: Información */}
             <div className="w-full lg:w-2/3 space-y-8 order-2 lg:order-none">
-              <ValidationDetailSection detail={detail} />
+              <ValidationDetailSection detail={details} />
 
               {/* Botones de Acción */}
               <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-100">
@@ -181,7 +169,7 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
             {/* Columna Derecha: Perfil */}
             <div className="w-full lg:w-1/3 lg:sticky lg:top-8 space-y-6 order-1 lg:order-none">
               <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                <ValidationActionSection detail={detail} handleAction={handleAction} isMutating={isMutating} />
+                <ValidationActionSection detail={details} handleAction={handleAction} isMutating={isMutating} />
               </div>
             </div>
           </div>

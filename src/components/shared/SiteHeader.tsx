@@ -14,7 +14,7 @@ import {
   logoutAndRedirect,
   cn,
 } from "@/lib";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import { profileService } from "@/services/profileService";
 
 const userLinks = [
@@ -31,18 +31,18 @@ const adminNavLinks = [
 ];
 
 const offererNavLinks = [
-  { href: "/offers", label: "Inicio" },
+  { href: "/offers", label: "Explorar" },
   { href: "/offerer/create-publication", label: "Publicar" },
   { href: "/offerer/your-publications", label: "Mis Publicaciones" },
 ];
 
 const studentNavLinks = [
-  { href: "/", label: "Inicio" },
+  { href: "/", label: "Explorar" },
   { href: "/offerer/create-publication", label: "Publicar" },
   { href: "/offerer/your-publications", label: "Mis Publicaciones" },
 ];
 
-function UserAvatar({ name, photoUrl }: { name?: string; photoUrl?: string }) {
+function UserAvatar({ name, photoUrl, showName = true }: { name?: string; photoUrl?: string; showName?: boolean }) {
   const initials =
     name
       ?.trim()
@@ -68,9 +68,11 @@ function UserAvatar({ name, photoUrl }: { name?: string; photoUrl?: string }) {
           )}
         </div>
       </div>
-      <span className="hidden sm:inline text-[var(--ink)] font-medium">
-        {name ?? "Usuario"}
-      </span>
+      {showName && (
+        <span className="text-[var(--ink)] font-medium">
+          {name ?? "Usuario"}
+        </span>
+      )}
     </div>
   );
 }
@@ -87,9 +89,10 @@ export default function SiteHeader() {
   });
 
   const [open, setOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
-  // Function to reload the profile photo
   const loadPhoto = async () => {
     const res = await profileService.getProfilePhoto();
     if (res.data?.photoUrl) {
@@ -138,12 +141,11 @@ export default function SiteHeader() {
         href: "/profile",
         label: "Editar perfil",
       },
-      // Postulaciones es especifica para Applicants
       ...(!auth.roles.includes(ROLES.ADMIN)
-        ? [{ href: "/jobs/history", label: "Historial de postulaciones" }]
+        ? [{ href: "/jobs/history", label: "Mis Postulaciones" }]
         : []),
 
-      { href: "/jobs/reports", label: "Historial de trabajos" },
+      { href: "/jobs/reviews", label: "Mis Reseñas" },
       { href: "/offerer/create-publication", label: "Publicar" },
       { href: "/offerer/your-publications", label: "Mis Publicaciones" },
     ];
@@ -166,32 +168,29 @@ export default function SiteHeader() {
       return { ...item, href: newHref };
     });
   }, [auth.userType, auth.roles, auth.superAdmin]);
-  
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
       if (!menuRef.current?.contains(e.target as Node)) setOpen(false);
+      if (!mobileMenuRef.current?.contains(e.target as Node)) setMobileMenuOpen(false);
     };
-    if (open) document.addEventListener("mousedown", onDocClick);
+    if (open || mobileMenuOpen) document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
-  }, [open]);
+  }, [open, mobileMenuOpen]);
 
   const isAdmin = auth.roles.includes(ROLES.ADMIN);
   const isOfferer = auth.roles.includes(ROLES.OFFEROR);
   const isStudent = auth.roles.includes(ROLES.APPLICANT);
 
-  const mainLinks = isAdmin ? adminNavLinks : isOfferer ? offererNavLinks :isStudent ? studentNavLinks :userLinks;
-
-  // Lógica para determinar a dónde redirige el Logo
+  const mainLinks = isAdmin ? adminNavLinks : isOfferer ? offererNavLinks : isStudent ? studentNavLinks : userLinks;
   const logoHref = isAdmin ? "/admin/publications" : "/";
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-(--border) bg-white/80 backdrop-blur-xl">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        {/* Logo con href dinámico */}
         <Link
           href={logoHref}
-          className="flex items-center gap-2 font-extrabold text-xl group"
+          className="flex items-center gap-2 font-extrabold text-xl group z-50"
         >
           <span className="text-(--ink)">Bolsa</span>
           <span className="px-3 py-1 rounded-xl bg-white text-(--primary) border border-(--primary) font-bold shadow-sm">
@@ -199,7 +198,8 @@ export default function SiteHeader() {
           </span>
         </Link>
 
-        <div className="flex items-center gap-1">
+        {/* Desktop Navigation */}
+        <div className="hidden lg:flex items-center gap-1">
           {mainLinks.map((l) => (
             <Link
               key={l.href}
@@ -230,6 +230,7 @@ export default function SiteHeader() {
                 <UserAvatar
                   name={auth.name}
                   photoUrl={auth.photoUrl ?? undefined}
+                  showName={true}
                 />
                 <ChevronDown
                   className={cn(
@@ -246,6 +247,7 @@ export default function SiteHeader() {
                       key={item.href}
                       href={item.href}
                       className="block px-4 py-3 text-sm text-(--ink) hover:bg-(--chip) transition-colors"
+                      onClick={() => setOpen(false)}
                     >
                       {item.label}
                     </Link>
@@ -259,6 +261,90 @@ export default function SiteHeader() {
                   </button>
                 </div>
               )}
+            </div>
+          )}
+        </div>
+
+        {/* Mobile Menu - User Avatar/Name or Login Button */}
+        <div className="lg:hidden" ref={mobileMenuRef}>
+          {!auth.logged ? (
+            <Link
+              href="/auth/login"
+              className="rounded-xl px-5 py-2.5 font-semibold text-white bg-gradient-to-r from-(--primary) to-(--pop) hover:opacity-90 transition-all shadow-md hover:shadow-lg text-sm"
+            >
+              Ingresar
+            </Link>
+          ) : (
+            <button
+              onClick={() => setMobileMenuOpen(v => !v)}
+              className="cursor-pointer flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-(--chip) transition-all"
+            >
+              <UserAvatar
+                name={auth.name}
+                photoUrl={auth.photoUrl ?? undefined}
+                showName={false}
+              />
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5 text-(--ink)" />
+              ) : (
+                <Menu className="w-5 h-5 text-(--ink)" />
+              )}
+            </button>
+          )}
+
+          {/* Mobile Dropdown Menu */}
+          {mobileMenuOpen && auth.logged && (
+            <div className="absolute right-4 top-16 w-64 rounded-2xl border border-(--border) bg-white shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2">
+              {/* User Info Header */}
+              <div className="px-4 py-3 border-b border-(--border) bg-(--chip)">
+                <UserAvatar
+                  name={auth.name}
+                  photoUrl={auth.photoUrl ?? undefined}
+                  showName={true}
+                />
+              </div>
+
+              {/* Main Navigation Links */}
+              <div className="border-b border-(--border)">
+                {mainLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={cn(
+                      "block px-4 py-3 text-sm text-(--ink) hover:bg-(--chip) transition-colors",
+                      pathname === link.href && "bg-(--chip) text-(--primary) font-semibold"
+                    )}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+
+              {/* User Dropdown Items */}
+              <div className="border-b border-(--border)">
+                {dropdownItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="block px-4 py-3 text-sm text-(--ink) hover:bg-(--chip) transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Logout Button */}
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  logoutAndRedirect("/");
+                }}
+                className="cursor-pointer w-full text-left px-4 py-3 text-sm text-(--pop) font-medium hover:bg-red-50 transition-colors"
+              >
+                Cerrar sesión
+              </button>
             </div>
           )}
         </div>

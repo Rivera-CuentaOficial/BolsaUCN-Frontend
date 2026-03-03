@@ -2,11 +2,11 @@
 
 import React from "react";
 import { Star, Mail, User, ExternalLink } from "lucide-react";
-import { AdminDetail, UseAdminDetailValidateResult } from "@/models/responses";
+import { PublicationDetailsForApprovalDTO, UseAdminDetailValidateResult } from "@/models/responses";
 import Link from "next/link";
 
 interface ValidationActionSectionProps {
-  detail: AdminDetail;
+  detail: PublicationDetailsForApprovalDTO;
   isMutating: UseAdminDetailValidateResult["isMutating"];
   handleAction: UseAdminDetailValidateResult["handleAction"];
 }
@@ -78,14 +78,14 @@ export function ValidationActionSection({
       {/* INFO DETALLADA */}
       <div className="space-y-4 pt-4 border-t border-gray-200">
         {/* INFORMACIÓN DE CONTACTO */}
-        {detail.contactInfo && (
+        {detail.userEmail && (
           <div className="bg-white p-4 rounded-xl border border-gray-200">
             <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1">
               <Mail className="w-3 h-3" />
               Contacto Institucional
             </dt>
             <dd className="text-sm font-medium text-gray-900 break-all">
-              {detail.contactInfo}
+              {detail.userEmail}
             </dd>
           </div>
         )}

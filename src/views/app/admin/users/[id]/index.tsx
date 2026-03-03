@@ -38,13 +38,7 @@ export function UserDetailView({ id }: UserDetailViewProps) {
     // 1. ESTADO DE CARGA: Skeleton con Fondo Morado
     if (isLoading || !user) {
         return (
-            <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-slate-900">
-                {/* Fondo */}
-                <div className="absolute inset-0 z-0">
-                    <img src="/fondo.png" alt="Fondo UCN" className="w-full h-full object-cover opacity-60" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/50 to-purple-950/90" />
-                </div>
+            <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-ucn-purple">
                 {/* Skeleton */}
                 <UserDetailLoading />
             </div>
@@ -74,14 +68,7 @@ export function UserDetailView({ id }: UserDetailViewProps) {
 
     // 3. VISTA PRINCIPAL
     return (
-        <div className="flex flex-col min-h-screen relative z-0 text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-slate-900">
-
-            {/* Fondo Morado Continuo */}
-            <div className="absolute inset-0 z-0">
-                <img src="/fondo.png" alt="Fondo UCN" className="w-full h-full object-cover opacity-60" />
-                <div className="absolute inset-0 bg-gradient-to-r from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/50 to-purple-950/90" />
-            </div>
+        <div className="flex flex-col min-h-screen relative z-0 text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-ucn-purple">
 
             <NotificationBanner
                 data={{

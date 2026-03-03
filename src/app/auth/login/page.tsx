@@ -147,7 +147,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen h-full flex items-center justify-center bg-[#0d8ef2] px-4">
+    <div className="min-h-screen h-full flex items-center justify-center bg-ucn-blue px-4">
       <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-xl w-[360px] flex flex-col items-center relative">
         {/* Logo */}
         <div className="absolute -top-10 flex flex-col items-center">

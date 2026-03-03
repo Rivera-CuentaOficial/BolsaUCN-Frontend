@@ -118,7 +118,7 @@ export interface AdminDetail {
 }
 
 export interface UseAdminDetailValidateResult {
-    detail: AdminDetail | null;
+    detail: PublicationDetailsForApprovalDTO | null;
     loading: boolean;
     error: string | null;
     isMutating: boolean;
@@ -127,7 +127,7 @@ export interface UseAdminDetailValidateResult {
 }
 
 export interface UseAdminDetailManageResult {
-    detail: AdminDetail | null;
+    detail: PublicationDetailsForApprovalDTO | null;
     loading: boolean;
     error: string | null;
     isMutating: boolean;
@@ -344,39 +344,42 @@ export interface PaginatedValidationItems {
     totalCount: number;
 }
 export interface PublicationDetailsForApprovalDTO {
+    // Informacion basica
     publicationId: number;
-    userId: number;
-    userEmail: string;
-    userName: string;
     title: string;
     description: string;
-    images: string[];
-    publicationDate: string;
-    endDate: string;
-    publicationType: string;
-    isOpen: boolean;
-    approvalStatus: string;
     location: string;
+    publicationDate: string;
+    publicationType: string;
+    approvalStatus: string;
+    numberOfAppeals: number;
+    lastRejectionReason?: string | null;
     additionalContactEmail?: string;
     additionalContactPhoneNumber?: string;
+
+    // Informacion del usuario
+    userId: number;
+    userEmail: string;
+    profilePhotoUrl: string;
+    userName: string;
     aboutMe: string;
     rating: number;
 
-    // Offer attributes
-    deadlineDate: string;
-    requirements: string;
-    remuneration: number;
-    offerType: string;
+    // Informacion de oferta (si aplica)
+    endDate?: string;
+    applicationDeadline?: string;
+    remuneration?: number;
+    isCVRequired?: boolean;
+    offerType?: string;
 
-    // BuySell attributes
-    category: string;
-    price: number;
-
-    // Legacy attributes for frontend compatibility
-    active: boolean;
-    isActive: boolean;
-    imageUrls: string[];
-    companyName: string;
+    // Informacion de compra/venta (si aplica)
+    imageUrls?: string[];
+    isEmailAvailable?: boolean;
+    isPhoneNumberAvailable?: boolean;
+    price?: number;
+    category?: string;
+    quantity?: string;
+    condition?: string;
 }
 // Get my publications
 export interface PublicationForOfferor {
@@ -409,6 +412,7 @@ export interface MyPublicationDetails {
     title: string;
     description: string;
     location: string;
+    maxAppeals: number;
 
     // Informacion de contacto
     contactEmail: string;

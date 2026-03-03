@@ -131,17 +131,7 @@ export default function ValidationView() {
 
   return (
     <Suspense fallback={<div className="min-h-screen bg-[#6D5EF7]" />}>
-      <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-slate-900">
-        
-        {/* Background */}
-        <div className="fixed inset-0 z-0">
-          <img
-            src="/fondo.png"
-            alt="Fondo UCN"
-            className="w-full h-full object-cover opacity-20"
-          />
-          <div className="absolute inset-0 bg-gradient-to-br from-[#6D5EF7] via-[#8B5CF6] to-[#A855F7]" />
-        </div>
+      <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-ucn-purple">
 
         <NotificationBanner
           data={notification}

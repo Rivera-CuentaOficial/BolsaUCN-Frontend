@@ -46,7 +46,7 @@ export class ValidationService extends BaseApiService {
    * @param publicationId - ID de la publicación (no usa el prefijo bs-)
    * @returns Detalles de la publicación para aprobación.
    */
-  getPublicationDetailForApproval(
+  getPublicationDetailsForApproval(
     publicationId: string | number
   ) {
     return this.httpClient.get<ApiResponse<PublicationDetailsForApprovalDTO>>(

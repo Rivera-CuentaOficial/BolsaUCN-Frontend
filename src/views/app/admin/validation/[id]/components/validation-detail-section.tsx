@@ -1,8 +1,8 @@
 "use client";
 import React from "react";
 import { formatDate, thousandSeparatorPipe } from "@/lib";
-import { AdminDetail } from "@/models/responses";
-import { Mail, Phone, MapPin, Calendar, DollarSign, Briefcase, FileText } from "lucide-react";
+import { PublicationDetailsForApprovalDTO } from "@/models/responses";
+import { Mail, Phone, MapPin, Calendar, DollarSign, Briefcase, FileText, Tag } from "lucide-react";
 
 function formatPrice(clp: number | undefined | null): string {
   if (clp === undefined || clp === null) return "No disponible";
@@ -10,24 +10,30 @@ function formatPrice(clp: number | undefined | null): string {
 }
 
 interface ValidationDetailSectionProps {
-  detail: AdminDetail;
+  detail: PublicationDetailsForApprovalDTO;
 }
 
 export function ValidationDetailSection({
   detail,
 }: ValidationDetailSectionProps) {
-  const isJobOffer = detail.type !== "Compra/Venta";
+  const isJobOffer = detail.publicationType !== "CompraVenta";
 
   return (
     <div className="space-y-6">
       {/* Imagen */}
-      {detail.images && detail.images.length > 0 && (
-        <div className="overflow-hidden rounded-2xl shadow-lg">
-          <img
-            src={detail.images[0]}
-            alt={detail.title}
-            className="w-full object-cover h-64 md:h-96"
-          />
+      {detail.imageUrls && detail.imageUrls.length > 0 && (
+        <div className="mt-6">
+          <h3 className="font-bold text-lg text-slate-900 mb-4">Imágenes del Producto</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {detail.imageUrls.map((url, idx) => (
+              <img
+                key={idx}
+                src={url}
+                alt={`Imagen ${idx + 1}`}
+                className="w-full h-48 object-cover rounded-xl border-2 border-slate-200 hover:border-purple-400 transition"
+              />
+            ))}
+          </div>
         </div>
       )}
 
@@ -73,6 +79,15 @@ export function ValidationDetailSection({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* ID de Publicación */}
+          <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+              ID de Publicación
+            </dt>
+            <dd className="text-sm font-medium text-gray-900">
+              #{detail.publicationId}
+            </dd>
+          </div>
           {/* Fecha de Publicación */}
           <div className="bg-white p-4 rounded-xl border border-slate-200">
             <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
@@ -95,6 +110,17 @@ export function ValidationDetailSection({
             </dd>
           </div>
 
+          {/* Tipo de Publicación */}
+          <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+              <Tag className="w-3 h-3" />
+              Tipo de Publicación
+            </dt>
+            <dd className="text-sm font-medium text-gray-900">
+              {detail.publicationType === "CompraVenta" ? "Compra/Venta" : "Oferta de Trabajo"}
+            </dd>
+          </div>
+
           {/* Fecha Límite (Job Offers) */}
           {isJobOffer && (
             <div className="bg-white p-4 rounded-xl border border-slate-200">
@@ -102,7 +128,7 @@ export function ValidationDetailSection({
                 Cierre de Postulaciones
               </dt>
               <dd className="text-sm font-medium text-gray-900">
-                {formatDate(detail.deadlineDate || "")}
+                {formatDate(detail.applicationDeadline || "")}
               </dd>
             </div>
           )}
@@ -119,18 +145,16 @@ export function ValidationDetailSection({
             </div>
           )}
 
-          {/* Ubicación (Job Offers) */}
-          {isJobOffer && (
-            <div className="bg-white p-4 rounded-xl border border-slate-200">
-              <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1">
-                <MapPin className="w-3 h-3" />
-                Ubicación
-              </dt>
-              <dd className="text-sm font-medium text-gray-900">
-                {detail.location || "No especificada"}
-              </dd>
-            </div>
-          )}
+          {/* Ubicación */}
+          <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              Ubicación
+            </dt>
+            <dd className="text-sm font-medium text-gray-900">
+              {detail.location || "No especificada"}
+            </dd>
+          </div>
 
           {/* Categoría (BuySell) */}
           {!isJobOffer && (
@@ -159,7 +183,7 @@ export function ValidationDetailSection({
             </dd>
           </div>
 
-          {/* CV Requerido (Job Offers) */}
+          {/* CV Requerido */}
           {isJobOffer && (
             <div className="bg-white p-4 rounded-xl border border-slate-200">
               <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
@@ -167,6 +191,29 @@ export function ValidationDetailSection({
               </dt>
               <dd className="text-sm font-medium text-gray-900">
                 {detail.isCVRequired ? "Sí" : "No"}
+              </dd>
+            </div>
+          )}
+
+          {/* Veces que ha sido apelada */}
+          {detail.numberOfAppeals > 0 && (
+            <div className="bg-white p-4 rounded-xl border border-slate-200">
+              <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                Número de Apelaciones
+              </dt>
+              <dd className="text-sm font-medium text-gray-900">
+                {detail.numberOfAppeals}
+              </dd>
+            </div>
+          )}
+            {/* Razón de Rechazo Anterior */}
+            {detail.lastRejectionReason && (
+            <div className="bg-white p-4 rounded-xl border border-slate-200 sm:col-span-2">
+              <dt className="text-xs font-semibold text-red-500 uppercase tracking-wide mb-1">
+                Razón de Rechazo Anterior
+              </dt>
+              <dd className="text-sm font-medium text-gray-900">
+                {detail.lastRejectionReason}
               </dd>
             </div>
           )}

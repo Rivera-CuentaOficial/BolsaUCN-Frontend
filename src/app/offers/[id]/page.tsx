@@ -224,16 +224,7 @@ export default function OfferDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-slate-900">
-        <div className="fixed inset-0 z-0 pointer-events-none">
-          <img
-            src="/fondo.png"
-            alt="Fondo UCN"
-            className="w-full h-full object-cover opacity-60"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/50 to-purple-950/90" />
-        </div>
+      <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-ucn-purple">
 
         <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 max-w-5xl">
           <div className="animate-pulse space-y-6">
@@ -251,16 +242,7 @@ export default function OfferDetailPage() {
       : "No se pudo cargar la oferta";
 
     return (
-      <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-slate-900">
-        <div className="fixed inset-0 z-0 pointer-events-none">
-          <img
-            src="/fondo.png"
-            alt="Fondo UCN"
-            className="w-full h-full object-cover opacity-60"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/50 to-purple-950/90" />
-        </div>
+      <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-ucn-purple">
 
         <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 max-w-5xl">
           <div className="bg-white/10 backdrop-blur-md rounded-[2.5rem] p-12 text-center">
@@ -282,17 +264,7 @@ export default function OfferDetailPage() {
     hasApplied || (authenticatedOffer?.hasApplied ?? false);
 
   return (
-    <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-slate-900">
-      {/* Background */}
-      <div className="absolute inset-0 z-0">
-        <img
-          src="/fondo.png"
-          alt="Fondo UCN"
-          className="w-full h-full object-cover opacity-60"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/50 to-purple-950/90" />
-      </div>
+    <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-ucn-purple">
 
       <main className="grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 max-w-5xl">
         {/* Header */}

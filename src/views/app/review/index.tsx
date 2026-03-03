@@ -427,6 +427,7 @@ export function ReviewsPage() {
                 </div>
 
                 <div className="flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full shadow-lg">
+                  {review.reviewStatus !== "Cerrada" && review.reviewStatus !== "Completada" && (
                   <div className="flex flex-col leading-tight">
                     <p className="text-[10px] font-bold uppercase tracking-wide">
                       Abierta hasta
@@ -439,6 +440,7 @@ export function ReviewsPage() {
                       })}
                     </p>
                   </div>
+                  )}
 
                   <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
                 </div>
@@ -534,18 +536,7 @@ export function ReviewsPage() {
   // ========================================
   return (
     <Suspense fallback={<div className="min-h-screen bg-slate-900" />}>
-      <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-slate-900">
-
-        {/* Fixed Background */}
-        <div className="fixed inset-0 z-0 pointer-events-none">
-          <img
-            src="/fondo.png"
-            alt="Fondo UCN"
-            className="w-full h-full object-cover opacity-60"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/50 to-purple-950/90" />
-        </div>
+      <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-ucn-purple">
 
         <NotificationBanner data={notification} isVisible={isNotificationVisible} onClose={close} />
 

@@ -831,18 +831,7 @@ function ExploreOffersContent() {
   // Show initial choice dialog if no exploreType is selected
   if (!exploreType) {
     return (
-      <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-slate-900">
-        {/* Background Layers */}
-        <div className="fixed inset-0 z-0 pointer-events-none">
-          <img
-            src="/fondo.png"
-            alt="Fondo UCN"
-            className="w-full h-full object-cover opacity-60"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/50 to-purple-950/90" />
-        </div>
-
+      <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-ucn-purple">
         <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 flex flex-col items-center justify-center min-h-[80vh] max-w-4xl">
           <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="text-center mb-10">
@@ -905,23 +894,13 @@ function ExploreOffersContent() {
 
   // Show main explore content after type is selected
   return (
-    <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-slate-900">
-      {/* Background Layers */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <img
-          src="/fondo.png"
-          alt="Fondo UCN"
-          className="w-full h-full object-cover opacity-60"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/50 to-purple-950/90" />
-      </div>
+    <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-ucn-purple">
 
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 max-w-7xl">
         <header className="mb-10">
           <div className="flex flex-col gap-4 mb-6">
             <div className="flex-1">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold uppercase tracking-wider shadow-lg transform rotate-1 mb-3">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold uppercase tracking-wider shadow-lg transform mb-3">
                 <Settings2 className="w-3.5 h-3.5" />
                 Explora Oportunidades
               </div>

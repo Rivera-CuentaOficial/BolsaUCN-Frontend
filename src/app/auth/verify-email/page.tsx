@@ -96,7 +96,7 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-blue-600 px-4">
+    <div className="flex items-center justify-center min-h-screen bg-ucn-blue px-4">
       <NotificationBanner data={notification} isVisible={isVisible} onClose={close} />
       <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-8">
         {/* Logo */}
