@@ -5,9 +5,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { manageService } from "@/services/managePublicationService";
+import { adminPublicationService } from "@/services/adminPublicationService";
 import type { PublicationDetailsForAdmin } from "@/models/responses";
 
-type ActionType = "close_publication";
+type ActionType = "close_publication" | "cancel_publication";
 
 export const useAdminPublicationDetailView = (id: number) => {
   const router = useRouter();
@@ -61,9 +62,25 @@ export const useAdminPublicationDetailView = (id: number) => {
     }
   }, [detail, router]);
 
+  const handleCancelPublication = useCallback(async () => {
+    if (!detail) throw new Error("Publicación no cargada.");
+
+    setIsMutating(true);
+    try {
+      await adminPublicationService.cancelPublication(detail.publicationId);
+      router.push("/admin/publications/manage");
+    } catch (err: any) {
+      throw err;
+    } finally {
+      setIsMutating(false);
+    }
+  }, [detail, router]);
+
   const handleAction = (action: ActionType, data?: { reason?: string }) => {
     if (action === "close_publication") {
       handleClosePublication(data?.reason!);
+    } else if (action === "cancel_publication") {
+      handleCancelPublication();
     }
   };
 

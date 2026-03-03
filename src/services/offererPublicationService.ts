@@ -4,6 +4,7 @@ import { ApiResponse } from "@/models/generics";
 import type {
   CreatePublicationData,
   CreateBuySellData,
+  EditBuySellData,
   MyPublishedPublication,
   ApplicantResponse,
   MyBuySell,
@@ -26,9 +27,27 @@ export class OffererPublicationService extends BaseApiService {
     );
   }
   createBuySell(data: CreateBuySellData) {
+    const formData = new FormData();
+    Object.keys(data).forEach((key) => {
+      const value = (data as any)[key];
+      if (value === undefined || value === null) return;
+
+      if (Array.isArray(value)) {
+        value.forEach((v: any) => {
+          if (v instanceof File) formData.append(key, v);
+          else formData.append(key, String(v));
+        });
+      } else if (value instanceof File) {
+        formData.append(key, value);
+      } else {
+        formData.append(key, String(value));
+      }
+    });
+
     return this.httpClient.post<ApiResponse<OffererPublication>>(
       `${this.baseURL}/buysells`,
-      data
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
     );
   }
   getMyPublications(params?: MyPublicationsSearchParams) {
@@ -77,6 +96,40 @@ export class OffererPublicationService extends BaseApiService {
   cancelOfferById(publicationId: number) {
     return this.httpClient.patch<ApiResponse<string>>(
       `${this.baseURL}/my-publications/${publicationId}/cancel`
+    );
+  }
+  editBuySell(publicationId: number, data: EditBuySellData) {
+    const formData = new FormData();
+    Object.keys(data).forEach((key) => {
+      const value = (data as any)[key];
+      if (value === undefined || value === null) return;
+
+      if (key === 'ImagesToDelete' && Array.isArray(value)) {
+        value.forEach((imgUrl: string) => {
+          formData.append('ImagesToDelete', imgUrl);
+        });
+      } else if (key === 'ImagesToUpload' && Array.isArray(value)) {
+        value.forEach((file: File) => {
+          formData.append('ImagesToUpload', file);
+        });
+      } else if (Array.isArray(value)) {
+        value.forEach((v: any) => {
+          formData.append(key, String(v));
+        });
+      } else {
+        formData.append(key, String(value));
+      }
+    });
+
+    return this.httpClient.patch<ApiResponse<string>>(
+      `${this.baseURL}/my-publications/${publicationId}/edit`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+  }
+  toggleBuySellVisibility(publicationId: number) {
+    return this.httpClient.patch<ApiResponse<string>>(
+      `${this.baseURL}/my-publications/${publicationId}/toggle-visibility`
     );
   }
   appealRejectedPublication(publicationId: number, appealData: any) {

@@ -3,9 +3,12 @@ import { ApiResponse } from "@/models/generics";
 import type {
   OffersForApplicant,
   ExploreOffersSearchParams,
+  ExploreBuySellsSearchParams,
   BuySellsForApplicant,
   OfferDetailsForPublic,
   OfferDetailsForApplicant,
+  BuySellDetailsForApplicant,
+  BuySellDetailsForPublic,
 } from "@/models/responses";
 
 export class ExplorePublicationService extends BaseApiService {
@@ -20,7 +23,7 @@ export class ExplorePublicationService extends BaseApiService {
     );
   }
 
-  getExploreBuySells(params: any) {
+  getExploreBuySells(params: ExploreBuySellsSearchParams) {
     return this.httpClient.get<ApiResponse<BuySellsForApplicant>>(
       `${this.baseURL}/explore/buysells`,
       { params }
@@ -40,13 +43,13 @@ export class ExplorePublicationService extends BaseApiService {
   }
 
   getBuySellDetailsPublic(publicationId: number) {
-    return this.httpClient.get<ApiResponse<any>>(
+    return this.httpClient.get<ApiResponse<BuySellDetailsForPublic>>(
       `${this.baseURL}/explore/buysells/${publicationId}/public`
     );
   }
 
   getBuySellDetailsForApplicant(publicationId: number) {
-    return this.httpClient.get<ApiResponse<any>>(
+    return this.httpClient.get<ApiResponse<BuySellDetailsForApplicant>>(
       `${this.baseURL}/explore/buysells/${publicationId}`
     );
   }

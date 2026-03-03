@@ -2,20 +2,24 @@
 import { useMemo, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Briefcase, ShoppingBag, Heart, Users, Trash2, ArrowRight, XCircle } from 'lucide-react';
+import { ArrowLeft, Briefcase, ShoppingBag, Heart, Users, Trash2, ArrowRight, XCircle, Edit2, Eye, EyeOff, Settings } from 'lucide-react';
 import { useYourPublicationDetailView } from './hooks/use-publication-detail-view'; 
 import { useNotification } from '@/hooks/common/use-notification'; 
 import { 
     PublicationDetailSection, 
     ApplicantsDialog, 
     StatusReasonBanner,
-    AppealFormDialog
+    AppealFormDialog,
+    EditBuySellDialog,
+    PublicationActionsMenu
 } from './components'; 
 import { NotificationBanner } from "@/components/ui/notification";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from 'sonner';
 import { cn } from 'src/lib';
 import { Button } from '@/components/ui';
+import { EditBuySellData } from '@/models/responses/publication';
+import { offererPublicationService } from '@/services/offererPublicationService';
 
 const PUBLICATION_TYPES = [
     { value: "Oferta", text: "Oferta de Trabajo", icon: Briefcase, iconClass: "text-indigo-500" },
@@ -61,6 +65,11 @@ export default function OffererPublicationDetailView() {
     const [isApplicantsDialogOpen, setIsApplicantsDialogOpen] = useState(false);
     const [isAppealDialogOpen, setIsAppealDialogOpen] = useState(false);
     const [isAppealing, setIsAppealing] = useState(false);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isSavingEdit, setIsSavingEdit] = useState(false);
+    const [isCancelBuySellDialogOpen, setIsCancelBuySellDialogOpen] = useState(false);
+    const [isTogglingVisibility, setIsTogglingVisibility] = useState(false);
+    const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
 
     const handleCloseMenu = () => {
         setIsApplicantsDialogOpen(false);
@@ -144,6 +153,63 @@ export default function OffererPublicationDetailView() {
             const errorMessage = e?.response?.data?.message || e?.message || "Error al enviar la apelación.";
             show("Error al Apelar", errorMessage, "error");
             throw e; // Re-lanzar para que el componente de apelación también pueda manejarlo si lo necesita
+        }
+    };
+
+    const handleEditBuySellSubmit = async (editData: EditBuySellData): Promise<boolean> => {
+        if (!publication) return false;
+        
+        setIsSavingEdit(true);
+        const toastId = toast.loading("Actualizando publicación...");
+        
+        try {
+            await offererPublicationService.editBuySell(publication.id, editData);
+            toast.success("Publicación actualizada exitosamente", { id: toastId });
+            await refetch(); // Refresh publication data
+            return true;
+        } catch (e: any) {
+            toast.dismiss(toastId);
+            const errorMessage = e?.response?.data?.message || e?.message || "Error al actualizar la publicación.";
+            show("Error al Actualizar", errorMessage, "error");
+            return false;
+        } finally {
+            setIsSavingEdit(false);
+        }
+    };
+
+    const handleCancelBuySellConfirm = async () => {
+        if (!publication) return;
+        
+        setIsCancelBuySellDialogOpen(false);
+        const toastId = toast.loading("Cancelando publicación...");
+        
+        try {
+            await offererPublicationService.cancelOfferById(publication.id);
+            toast.success("Publicación cancelada exitosamente", { id: toastId });
+            await refetch(); // Refresh publication data
+        } catch (e: any) {
+            toast.dismiss(toastId);
+            const errorMessage = e?.response?.data?.message || e?.message || "Error al cancelar la publicación.";
+            show("Error al Cancelar", errorMessage, "error");
+        }
+    };
+
+    const handleToggleVisibility = async () => {
+        if (!publication) return;
+        
+        setIsTogglingVisibility(true);
+        const toastId = toast.loading("Actualizando visibilidad...");
+        
+        try {
+            await offererPublicationService.toggleBuySellVisibility(publication.id);
+            toast.success("Visibilidad actualizada exitosamente", { id: toastId });
+            await refetch(); // Refresh publication data
+        } catch (e: any) {
+            toast.dismiss(toastId);
+            const errorMessage = e?.response?.data?.message || e?.message || "Error al cambiar la visibilidad.";
+            show("Error al Cambiar Visibilidad", errorMessage, "error");
+        } finally {
+            setIsTogglingVisibility(false);
         }
     };
 
@@ -256,6 +322,16 @@ export default function OffererPublicationDetailView() {
                 confirmText="Sí, Cancelar Oferta"
                 cancelText="No Cancelar"
             />
+
+            <ConfirmDialog
+                open={isCancelBuySellDialogOpen}
+                onOpenChange={() => setIsCancelBuySellDialogOpen(false)}
+                onConfirm={handleCancelBuySellConfirm}
+                title="¿Cancelar Publicación?"
+                description="Esta acción cerrará la publicación permanentemente. Los interesados ya no podrán ver esta publicación. Esta acción no se puede deshacer. ¿Estás seguro de que deseas continuar?"
+                confirmText="Sí, Cancelar Publicación"
+                cancelText="No Cancelar"
+            />
             
             <main className="grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
                 
@@ -300,6 +376,28 @@ export default function OffererPublicationDetailView() {
                                         {offerStatus.text}
                                     </div>
                                 )}
+                                
+                                {/* Visibility Status (only for accepted BuySell publications) */}
+                                {!isJobOffer && publication?.approvalStatus === "Aceptada" && publication.availability && (
+                                    <div className={cn(
+                                        "px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-sm",
+                                        publication.availability === "Disponible" 
+                                            ? "bg-green-500 text-white" 
+                                            : "bg-gray-500 text-white"
+                                    )}>
+                                        {publication.availability === "Disponible" ? (
+                                            <span className="flex items-center gap-1">
+                                                <Eye className="w-3 h-3" />
+                                                Visible
+                                            </span>
+                                        ) : (
+                                            <span className="flex items-center gap-1">
+                                                <EyeOff className="w-3 h-3" />
+                                                Oculta
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -335,6 +433,19 @@ export default function OffererPublicationDetailView() {
                                         <span>{isMutating ? "Cancelando..." : "Cancelar Oferta"}</span>
                                     </button>
                                 )}
+                            </div>
+                        )}
+
+                        {/* Action Buttons for BuySell Publications */}
+                        {!isJobOffer && (publication.approvalStatus === "Aceptada" || publication.approvalStatus === "Pendiente") && (
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setIsActionsMenuOpen(true)}
+                                    className="px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white rounded-full font-bold transition shadow-lg flex items-center justify-center gap-2"
+                                >
+                                    <Settings className="w-5 h-5 flex-shrink-0" />
+                                    <span>Acciones</span>
+                                </button>
                             </div>
                         )}
                     </div>
@@ -383,7 +494,29 @@ export default function OffererPublicationDetailView() {
                         isSubmitting={isAppealing}
                         publication={publication}
                     />
-                )}  
+                )}
+
+                {/* Edit BuySell Dialog */}
+                {publication?.publicationType === "CompraVenta" && (
+                    <>
+                        <PublicationActionsMenu
+                            isOpen={isActionsMenuOpen}
+                            onClose={() => setIsActionsMenuOpen(false)}
+                            publication={publication}
+                            onEditClick={() => setIsEditDialogOpen(true)}
+                            onToggleVisibilityClick={handleToggleVisibility}
+                            onCancelClick={() => setIsCancelBuySellDialogOpen(true)}
+                            isTogglingVisibility={isTogglingVisibility}
+                        />
+                        <EditBuySellDialog
+                            isOpen={isEditDialogOpen}
+                            onClose={() => setIsEditDialogOpen(false)}
+                            publication={publication}
+                            onSave={handleEditBuySellSubmit}
+                            isSaving={isSavingEdit}
+                        />
+                    </>
+                )}
             </main>
         </div>
     );

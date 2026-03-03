@@ -12,7 +12,23 @@ export function PublicationDetailSection({ publication }: Props) {
 
   return (
     <div className="space-y-8">
-      
+      {/* Images */}
+          {publication.imageUrls && publication.imageUrls.length > 0 && (
+            <div className="mt-6">
+              <h3 className="font-bold text-lg text-slate-900 mb-4">Imágenes del Producto</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {publication.imageUrls.map((url, idx) => (
+                  <img
+                    key={idx}
+                    src={url}
+                    alt={`Imagen ${idx + 1}`}
+                    className="w-full h-48 object-cover rounded-xl border-2 border-slate-200 hover:border-purple-400 transition"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
       {/* Description Section */}
       <section className="pb-6 border-b border-slate-200">
         <h2 className="text-2xl font-black text-slate-900 mb-4 flex items-center gap-2">
@@ -26,7 +42,7 @@ export function PublicationDetailSection({ publication }: Props) {
 
       {/* Basic Information Grid */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-200">
-        
+
         {/* Location */}
         <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-2xl">
           <div className="bg-purple-100 p-2 rounded-xl">
@@ -61,9 +77,9 @@ export function PublicationDetailSection({ publication }: Props) {
             <Tag className="w-5 h-5 text-indigo-600" />
             Detalles de la Oferta
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
+
             {publication.offerType && (
               <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-2xl">
                 <div className="bg-indigo-100 p-2 rounded-xl">
@@ -179,9 +195,9 @@ export function PublicationDetailSection({ publication }: Props) {
             <Tag className="w-5 h-5 text-purple-600" />
             Detalles del Producto
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
+
             {publication.price !== undefined && publication.price !== null && (
               <div className="flex items-start gap-3 bg-green-50 p-4 rounded-2xl">
                 <div className="bg-green-100 p-2 rounded-xl">
@@ -254,23 +270,6 @@ export function PublicationDetailSection({ publication }: Props) {
               </div>
             )}
           </div>
-
-          {/* Images */}
-          {publication.imageUrls && publication.imageUrls.length > 0 && (
-            <div className="mt-6">
-              <h3 className="font-bold text-lg text-slate-900 mb-4">Imágenes del Producto</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {publication.imageUrls.map((url, idx) => (
-                  <img
-                    key={idx}
-                    src={url}
-                    alt={`Imagen ${idx + 1}`}
-                    className="w-full h-48 object-cover rounded-xl border-2 border-slate-200 hover:border-purple-400 transition"
-                  />
-                ))}
-              </div>
-            </div>
-          )}
         </section>
       )}
 
@@ -280,82 +279,103 @@ export function PublicationDetailSection({ publication }: Props) {
           <Mail className="w-5 h-5 text-purple-600" />
           Información de Contacto
         </h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Primary Contact Email */}
-          <div className="flex items-center gap-3 bg-white p-4 rounded-xl border border-purple-100">
-            <div className="bg-purple-100 p-2 rounded-lg">
-              <Mail className="w-4 h-4 text-purple-600" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="font-bold text-xs uppercase tracking-wider text-slate-500 mb-1">
-                Email Principal
-              </h3>
-              <a 
-                href={`mailto:${publication.contactEmail}`}
-                className="text-slate-900 hover:text-purple-600 font-medium truncate block transition"
-              >
-                {publication.contactEmail}
-              </a>
-            </div>
-          </div>
-
-          {/* Primary Contact Phone */}
-          <div className="flex items-center gap-3 bg-white p-4 rounded-xl border border-purple-100">
-            <div className="bg-purple-100 p-2 rounded-lg">
-              <Phone className="w-4 h-4 text-purple-600" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="font-bold text-xs uppercase tracking-wider text-slate-500 mb-1">
-                Teléfono Principal
-              </h3>
-              <a 
-                href={`tel:${publication.contactPhone}`}
-                className="text-slate-900 hover:text-purple-600 font-medium transition"
-              >
-                {publication.contactPhone}
-              </a>
-            </div>
-          </div>
-
-          {/* Additional Contact Email */}
-          {publication.additionalContactEmail && (
-            <div className="flex items-center gap-3 bg-white p-4 rounded-xl border border-indigo-100">
-              <div className="bg-indigo-100 p-2 rounded-lg">
-                <Mail className="w-4 h-4 text-indigo-600" />
+          {/* For Offers: Show all contact info */}
+          {isOffer && (
+            <>
+              {/* Primary Contact Email */}
+              <div className="flex items-center gap-3 bg-white p-4 rounded-xl border border-purple-100">
+                <div className="bg-purple-100 p-2 rounded-lg">
+                  <Mail className="w-4 h-4 text-purple-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-bold text-xs uppercase tracking-wider text-slate-500 mb-1">
+                    Email
+                  </h3>
+                  <a
+                    href={`mailto:${publication.contactEmail}`}
+                    className="text-slate-900 hover:text-purple-600 font-medium truncate block transition"
+                  >
+                    {publication.contactEmail}
+                  </a>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="font-bold text-xs uppercase tracking-wider text-slate-500 mb-1">
-                  Email Adicional
-                </h3>
-                <a 
-                  href={`mailto:${publication.additionalContactEmail}`}
-                  className="text-slate-900 hover:text-indigo-600 font-medium truncate block transition"
-                >
-                  {publication.additionalContactEmail}
-                </a>
+
+              {/* Primary Contact Phone */}
+              <div className="flex items-center gap-3 bg-white p-4 rounded-xl border border-purple-100">
+                <div className="bg-purple-100 p-2 rounded-lg">
+                  <Phone className="w-4 h-4 text-purple-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-bold text-xs uppercase tracking-wider text-slate-500 mb-1">
+                    Teléfono
+                  </h3>
+                  <a
+                    href={`tel:${publication.contactPhone}`}
+                    className="text-slate-900 hover:text-purple-600 font-medium transition"
+                  >
+                    {publication.contactPhone}
+                  </a>
+                </div>
               </div>
-            </div>
+            </>
           )}
 
-          {/* Additional Contact Phone */}
-          {publication.additionalContactPhoneNumber && (
-            <div className="flex items-center gap-3 bg-white p-4 rounded-xl border border-indigo-100">
-              <div className="bg-indigo-100 p-2 rounded-lg">
-                <Phone className="w-4 h-4 text-indigo-600" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="font-bold text-xs uppercase tracking-wider text-slate-500 mb-1">
-                  Teléfono Adicional
-                </h3>
-                <a 
-                  href={`tel:${publication.additionalContactPhoneNumber}`}
-                  className="text-slate-900 hover:text-indigo-600 font-medium transition"
-                >
-                  {publication.additionalContactPhoneNumber}
-                </a>
-              </div>
-            </div>
+          {/* For BuySell: Show only selected contact info */}
+          {isBuySell && (
+            <>
+              {/* Email (only if showEmail is true) */}
+              {publication.showEmail && (
+                <div className="flex items-center gap-3 bg-white p-4 rounded-xl border border-purple-100">
+                  <div className="bg-purple-100 p-2 rounded-lg">
+                    <Mail className="w-4 h-4 text-purple-600" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-xs uppercase tracking-wider text-slate-500 mb-1">
+                      Email de Contacto
+                    </h3>
+                    <a
+                      href={`mailto:${publication.additionalContactEmail || publication.contactEmail}`}
+                      className="text-slate-900 hover:text-purple-600 font-medium truncate block transition"
+                    >
+                      {publication.additionalContactEmail || publication.contactEmail}
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Phone (only if showPhoneNumber is true) */}
+              {publication.showPhoneNumber && (
+                <div className="flex items-center gap-3 bg-white p-4 rounded-xl border border-purple-100">
+                  <div className="bg-purple-100 p-2 rounded-lg">
+                    <Phone className="w-4 h-4 text-purple-600" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-xs uppercase tracking-wider text-slate-500 mb-1">
+                      Teléfono de Contacto
+                    </h3>
+                    <a
+                      href={`tel:${publication.additionalContactPhoneNumber || publication.contactPhone}`}
+                      className="text-slate-900 hover:text-purple-600 font-medium transition"
+                    >
+                      {publication.additionalContactPhoneNumber || publication.contactPhone}
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Show message if no contact info is selected */}
+              {!publication.showEmail && !publication.showPhoneNumber && (
+                <div className="col-span-full flex items-center justify-center gap-3 bg-amber-50 p-6 rounded-xl border border-amber-200">
+                  <div className="text-center">
+                    <p className="text-slate-700 font-medium">
+                      El publicante no ha compartido información de contacto para esta publicación.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

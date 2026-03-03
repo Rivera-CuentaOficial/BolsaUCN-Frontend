@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import LoadingSpinner from "../components/loading-spinner";
 import { useRouter } from "next/navigation";
-import { usePublicationForm } from "../hooks/usePublicationForm";
+import { usePublicationForm } from "../hooks/use-publication-form";
 import {
   ArrowLeft,
   Sparkles,
@@ -17,6 +17,12 @@ import {
   Phone,
   CheckCircle2,
   ClipboardList,
+  Package,
+  Info,
+  Tag,
+  Image as ImageIcon,
+  X,
+  Upload,
 } from "lucide-react";
 import { NotificationBanner } from "@/components/ui/notification";
 
@@ -33,6 +39,11 @@ export default function PublicationFormView() {
     isLoading,
     isSubmitting,
     handleInputChange,
+    handlePhoneChange,
+    formatPhoneDisplay,
+    handleImageChange,
+    handleRemoveImage,
+    handleClearImages,
     handleSubmit,
     notification,
     isVisible,
@@ -406,14 +417,21 @@ export default function PublicationFormView() {
                               <p className="text-xs text-gray-600 mb-2">
                                 Si prefieres no usar tu teléfono guardado en tu perfil, proporciona uno alternativo aquí:
                               </p>
-                              <input
-                                type="tel"
-                                name="additionalContactPhoneNumber"
-                                value={formData.additionalContactPhoneNumber}
-                                onChange={handleInputChange}
-                                className={inputClass(!!errors.additionalContactPhoneNumber)}
-                                placeholder="+56 9 1234 5678"
-                              />
+                              <div className="relative">
+                                <input
+                                  type="tel"
+                                  name="additionalContactPhoneNumber"
+                                  value={formatPhoneDisplay(formData.additionalContactPhoneNumber)}
+                                  onChange={handlePhoneChange}
+                                  className={`${inputClass(!!errors.additionalContactPhoneNumber)} pl-20`}
+                                  placeholder="9 1234 5678"
+                                  maxLength={11}
+                                />
+                                <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-gray-600 bg-gray-50 px-2 py-1 rounded border border-gray-200 pointer-events-none z-10">
+                                  <Phone size={14} />
+                                  <span className="text-sm font-semibold">+56</span>
+                                </div>
+                              </div>
                               <div className="mt-2 bg-purple-50 border border-purple-200 rounded-lg p-2">
                                 <p className="text-xs text-purple-800 leading-relaxed">
                                   ℹ️ <span className="font-semibold">Importante:</span> Esta información no se guarda en tu perfil. Asegúrate de usar un teléfono válido.
@@ -423,6 +441,11 @@ export default function PublicationFormView() {
                                 <p className="text-red-500 text-xs mt-2 font-medium flex items-center gap-1">
                                   <span className="inline-block w-1 h-1 rounded-full bg-red-500"></span>
                                   {errors.additionalContactPhoneNumber}
+                                </p>
+                              )}
+                              {!errors.additionalContactPhoneNumber && formData.additionalContactPhoneNumber && (
+                                <p className="text-gray-500 text-xs mt-1">
+                                  Tu teléfono completo: <span className="font-medium">+56{formData.additionalContactPhoneNumber}</span>
                                 </p>
                               )}
                             </div>
@@ -516,20 +539,26 @@ export default function PublicationFormView() {
                           <input
                             type="tel"
                             name="additionalContactPhoneNumber"
-                            value={formData.additionalContactPhoneNumber}
-                            onChange={handleInputChange}
-                            className={inputClass(!!errors.additionalContactPhoneNumber)}
-                            placeholder="+56 9 1234 5678"
+                            value={formatPhoneDisplay(formData.additionalContactPhoneNumber)}
+                            onChange={handlePhoneChange}
+                            className={`${inputClass(!!errors.additionalContactPhoneNumber)} pl-20`}
+                            placeholder="9 1234 5678"
+                            maxLength={11}
                           />
-                          <Phone
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                            size={18}
-                          />
+                          <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-gray-600 bg-gray-50 px-2 py-1 rounded border border-gray-200 pointer-events-none z-10">
+                            <Phone size={14} />
+                            <span className="text-sm font-semibold">+56</span>
+                          </div>
                         </div>
                         {errors.additionalContactPhoneNumber && (
                           <p className="text-red-500 text-xs mt-2 font-medium flex items-center gap-1">
                             <span className="inline-block w-1 h-1 rounded-full bg-red-500"></span>
                             {errors.additionalContactPhoneNumber}
+                          </p>
+                        )}
+                        {!errors.additionalContactPhoneNumber && formData.additionalContactPhoneNumber && (
+                          <p className="text-gray-500 text-xs mt-1">
+                            Tu teléfono completo: <span className="font-medium">+56{formData.additionalContactPhoneNumber}</span>
                           </p>
                         )}
                       </div>
@@ -549,82 +578,326 @@ export default function PublicationFormView() {
                           Detalles del Artículo
                         </h3>
                         <p className="text-xs text-gray-600 mt-1">
-                          Categoría y precio de venta
+                          Información principal del producto
                         </p>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className={labelClass}>Categoría *</label>
-                        <div className="relative">
-                          <select
-                            name="category"
-                            value={formData.category}
-                            onChange={handleInputChange}
-                            className={
-                              inputClass(!!errors.category) + " appearance-none"
-                            }
-                          >
-                            <option value="" className="text-gray-900 bg-white">
-                              Selecciona...
-                            </option>
-                            <option
-                              value="Libros Universitarios"
-                              className="text-gray-900 bg-white"
+                    <div className="space-y-6">
+                      {/* Categoría y Condición */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className={labelClass}>Categoría *</label>
+                          <div className="relative">
+                            <select
+                              name="category"
+                              value={formData.category}
+                              onChange={handleInputChange}
+                              className={
+                                inputClass(!!errors.category) + " appearance-none"
+                              }
                             >
-                              Libros Universitarios
-                            </option>
-                            <option
-                              value="Materiales"
-                              className="text-gray-900 bg-white"
-                            >
-                              Materiales / Insumos
-                            </option>
-                            <option
-                              value="Tutorías"
-                              className="text-gray-900 bg-white"
-                            >
-                              Tutorías
-                            </option>
-                            <option
-                              value="Otros"
-                              className="text-gray-900 bg-white"
-                            >
-                              Otros
-                            </option>
-                          </select>
-                          <BookOpen
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                            size={18}
-                          />
+                              <option value="" className="text-gray-900 bg-white">
+                                Selecciona...
+                              </option>
+                              <option value="Electronica" className="text-gray-900 bg-white">
+                                Electrónica
+                              </option>
+                              <option value="Ropa" className="text-gray-900 bg-white">
+                                Ropa
+                              </option>
+                              <option value="Hogar" className="text-gray-900 bg-white">
+                                Hogar
+                              </option>
+                              <option value="Vehiculos" className="text-gray-900 bg-white">
+                                Vehículos
+                              </option>
+                              <option value="Deportes" className="text-gray-900 bg-white">
+                                Deportes
+                              </option>
+                              <option value="Libros" className="text-gray-900 bg-white">
+                                Libros
+                              </option>
+                              <option value="Musica" className="text-gray-900 bg-white">
+                                Música
+                              </option>
+                              <option value="Juguetes" className="text-gray-900 bg-white">
+                                Juguetes
+                              </option>
+                              <option value="Mascotas" className="text-gray-900 bg-white">
+                                Mascotas
+                              </option>
+                              <option value="Otros" className="text-gray-900 bg-white">
+                                Otros
+                              </option>
+                            </select>
+                            <BookOpen
+                              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                              size={18}
+                            />
+                          </div>
+                          {errors.category && (
+                            <p className="text-red-500 text-xs mt-2 font-medium">
+                              {errors.category}
+                            </p>
+                          )}
                         </div>
-                        {errors.category && (
-                          <p className="text-red-500 text-xs mt-2 font-medium">
-                            {errors.category}
+
+                        <div>
+                          <label className={labelClass}>Condición *</label>
+                          <div className="relative">
+                            <select
+                              name="condition"
+                              value={formData.condition}
+                              onChange={handleInputChange}
+                              className={
+                                inputClass(!!errors.condition) + " appearance-none"
+                              }
+                            >
+                              <option value="" className="text-gray-900 bg-white">
+                                Selecciona...
+                              </option>
+                              <option value="Nuevo" className="text-gray-900 bg-white">
+                                Nuevo
+                              </option>
+                              <option value="ComoNuevo" className="text-gray-900 bg-white">
+                                Como Nuevo
+                              </option>
+                              <option value="Usado" className="text-gray-900 bg-white">
+                                Usado
+                              </option>
+                              <option value="NoAplica" className="text-gray-900 bg-white">
+                                No Aplica
+                              </option>
+                            </select>
+                            <Tag
+                              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                              size={18}
+                            />
+                          </div>
+                          {errors.condition && (
+                            <p className="text-red-500 text-xs mt-2 font-medium">
+                              {errors.condition}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Precio y Cantidad */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className={labelClass}>Precio (CLP) *</label>
+                          <div className="relative">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">
+                              $
+                            </span>
+                            <input
+                              type="number"
+                              name="price"
+                              value={formData.price}
+                              onChange={handleInputChange}
+                              className={inputClass(!!errors.price) + " pl-8"}
+                              placeholder="1000"
+                              min="0"
+                              max="100000000"
+                            />
+                          </div>
+                          {errors.price && (
+                            <p className="text-red-500 text-xs mt-2 font-medium">
+                              {errors.price}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className={labelClass}>Cantidad *</label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              name="quantity"
+                              value={formData.quantity}
+                              onChange={handleInputChange}
+                              className={inputClass(!!errors.quantity)}
+                              placeholder="1"
+                              min="1"
+                            />
+                            <Package
+                              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                              size={18}
+                            />
+                          </div>
+                          {errors.quantity && (
+                            <p className="text-red-500 text-xs mt-2 font-medium">
+                              {errors.quantity}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Ubicación y Disponibilidad */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className={labelClass}>Ubicación *</label>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              name="location"
+                              value={formData.location}
+                              onChange={handleInputChange}
+                              className={inputClass(!!errors.location)}
+                              placeholder="Ej: Coquimbo, Antofagasta"
+                            />
+                            <MapPin
+                              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                              size={18}
+                            />
+                          </div>
+                          {errors.location && (
+                            <p className="text-red-500 text-xs mt-2 font-medium">
+                              {errors.location}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className={labelClass}>Disponibilidad *</label>
+                          <div className="relative">
+                            <select
+                              name="availability"
+                              value={formData.availability}
+                              onChange={handleInputChange}
+                              className={
+                                inputClass(!!errors.availability) + " appearance-none"
+                              }
+                            >
+                              <option value="Disponible" className="text-gray-900 bg-white">
+                                Disponible
+                              </option>
+                              <option value="Vendido" className="text-gray-900 bg-white">
+                                Vendido
+                              </option>
+                            </select>
+                            <Info
+                              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                              size={18}
+                            />
+                          </div>
+                          {errors.availability && (
+                            <p className="text-red-500 text-xs mt-2 font-medium">
+                              {errors.availability}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* --- SECCIÓN DE IMÁGENES PARA VENTA --- */}
+                {isProduct && (
+                  <div className={sectionClass + " animate-in fade-in slide-in-from-bottom-4 duration-500"}>
+                    <div className="flex items-start gap-3 mb-4">
+                      <div className="p-2.5 rounded-xl bg-purple-100">
+                        <ImageIcon className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
+                          Imágenes del Producto
+                        </h3>
+                        <p className="text-xs text-gray-600 mt-1">
+                          Agrega hasta 3 imágenes (Opcional)
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Image Upload Input */}
+                      <div>
+                        <label
+                          htmlFor="image-upload"
+                          className={`
+                            relative flex flex-col items-center justify-center
+                            w-full h-32 px-4 py-6 rounded-xl border-2 border-dashed
+                            ${formData.images.length >= 3 
+                              ? "border-gray-300 bg-gray-50 cursor-not-allowed" 
+                              : "border-purple-300 bg-purple-50 hover:bg-purple-100 cursor-pointer transition-all"
+                            }
+                          `}
+                        >
+                          <div className="flex flex-col items-center justify-center text-center">
+                            <Upload className={`w-8 h-8 mb-2 ${formData.images.length >= 3 ? "text-gray-400" : "text-purple-600"}`} />
+                            <span className={`text-sm font-medium ${formData.images.length >= 3 ? "text-gray-500" : "text-purple-600"}`}>
+                              {formData.images.length >= 3 
+                                ? "Máximo de 3 imágenes alcanzado" 
+                                : "Haz clic para subir imágenes"
+                              }
+                            </span>
+                            <span className="text-xs text-gray-500 mt-1">
+                              PNG, JPG o WEBP (max. 5MB cada una)
+                            </span>
+                          </div>
+                          <input
+                            id="image-upload"
+                            type="file"
+                            accept="image/png,image/jpeg,image/jpg,image/webp"
+                            multiple
+                            onChange={handleImageChange}
+                            disabled={formData.images.length >= 3}
+                            className="hidden"
+                          />
+                        </label>
+                        {errors.images && (
+                          <p className="text-red-500 text-xs mt-2 font-medium flex items-center gap-1">
+                            <span className="inline-block w-1 h-1 rounded-full bg-red-500"></span>
+                            {errors.images}
                           </p>
                         )}
                       </div>
 
-                      <div>
-                        <label className={labelClass}>Precio (CLP) *</label>
-                        <div className="relative">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">
-                            $
-                          </span>
-                          <input
-                            type="number"
-                            name="price"
-                            value={formData.price}
-                            onChange={handleInputChange}
-                            className={inputClass(!!errors.price) + " pl-8"}
-                            placeholder="1000"
-                          />
+                      {/* Image Preview Grid */}
+                      {formData.images.length > 0 && (
+                        <div className="grid grid-cols-3 gap-4">
+                          {formData.images.map((image, index) => (
+                            <div
+                              key={index}
+                              className="relative group rounded-lg overflow-hidden border-2 border-gray-200 aspect-square"
+                            >
+                              <img
+                                src={URL.createObjectURL(image)}
+                                alt={`Preview ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveImage(index)}
+                                className="absolute top-2 right-2 p-1.5 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                                aria-label="Eliminar imagen"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                                <p className="text-white text-xs font-medium truncate">
+                                  {image.name}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                        {errors.price && (
-                          <p className="text-red-500 text-xs mt-2 font-medium">
-                            {errors.price}
-                          </p>
+                      )}
+
+                      {/* Image Counter */}
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">
+                          {formData.images.length} de 3 imágenes seleccionadas
+                        </span>
+                        {formData.images.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={handleClearImages}
+                            className="text-red-600 hover:text-red-700 font-medium"
+                          >
+                            Eliminar todas
+                          </button>
                         )}
                       </div>
                     </div>

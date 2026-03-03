@@ -21,7 +21,7 @@ export function AppealFormDialog({
   onSubmit,
   isSubmitting,
 }: AppealFormDialogProps) {
-  const { formData, errors, handleInputChange, validateForm, reset } = useAppealForm({
+  const { formData, errors, handleInputChange, handlePhoneChange, formatPhoneDisplay, validateForm, reset } = useAppealForm({
     publication,
   });
 
@@ -46,7 +46,11 @@ export function AppealFormDialog({
       Description: formData.description,
       Location: formData.location || undefined,
       AdditionalContactEmail: formData.additionalContactEmail || undefined,
-      AdditionalContactPhoneNumber: formData.additionalContactPhoneNumber || undefined,
+      AdditionalContactPhoneNumber: formData.additionalContactPhoneNumber 
+        ? (formData.additionalContactPhoneNumber.startsWith('+56') 
+            ? formData.additionalContactPhoneNumber 
+            : `+56${formData.additionalContactPhoneNumber}`)
+        : undefined,
     };
 
     if (isOffer) {
@@ -416,9 +420,15 @@ export function AppealFormDialog({
                     className={inputClass(!!errors.category)}
                   >
                     <option value="">Selecciona...</option>
-                    <option value="Libros Universitarios">Libros Universitarios</option>
-                    <option value="Materiales">Materiales / Insumos</option>
-                    <option value="Tutorías">Tutorías</option>
+                    <option value="Electronica">Electrónica</option>
+                    <option value="Ropa">Ropa</option>
+                    <option value="Hogar">Hogar</option>
+                    <option value="Vehiculos">Vehículos</option>
+                    <option value="Deportes">Deportes</option>
+                    <option value="Libros">Libros</option>
+                    <option value="Musica">Música</option>
+                    <option value="Juguetes">Juguetes</option>
+                    <option value="Mascotas">Mascotas</option>
                     <option value="Otros">Otros</option>
                   </select>
                   {errors.category && <p className={errorClass}>{errors.category}</p>}
@@ -543,17 +553,29 @@ export function AppealFormDialog({
               <label htmlFor="additionalContactPhoneNumber" className={labelClass}>
                 Teléfono Adicional <span className="text-xs font-normal text-gray-500">(Opcional)</span>
               </label>
-              <input
-                type="tel"
-                id="additionalContactPhoneNumber"
-                name="additionalContactPhoneNumber"
-                value={formData.additionalContactPhoneNumber}
-                onChange={handleInputChange}
-                className={inputClass(!!errors.additionalContactPhoneNumber)}
-                placeholder="+56 9 1234 5678"
-              />
+              <div className="relative">
+                <input
+                  type="tel"
+                  id="additionalContactPhoneNumber"
+                  name="additionalContactPhoneNumber"
+                  value={formatPhoneDisplay(formData.additionalContactPhoneNumber)}
+                  onChange={handlePhoneChange}
+                  className={`${inputClass(!!errors.additionalContactPhoneNumber)} pl-20`}
+                  placeholder="9 1234 5678"
+                  maxLength={11}
+                />
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-gray-600 bg-gray-100 px-2 py-1 rounded border border-gray-200 pointer-events-none z-10">
+                  <Phone size={14} />
+                  <span className="text-sm font-semibold">+56</span>
+                </div>
+              </div>
               {errors.additionalContactPhoneNumber && (
                 <p className={errorClass}>{errors.additionalContactPhoneNumber}</p>
+              )}
+              {!errors.additionalContactPhoneNumber && formData.additionalContactPhoneNumber && (
+                <p className="text-gray-500 text-xs mt-1">
+                  Tu teléfono completo: <span className="font-medium">+56{formData.additionalContactPhoneNumber}</span>
+                </p>
               )}
             </div>
           </div>

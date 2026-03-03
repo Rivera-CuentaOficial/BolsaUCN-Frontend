@@ -110,13 +110,13 @@ export const validators = {
         return null;
     },
 
-    //Valida el telefono con codigo de area chilena
+    //Valida el telefono con codigo de area chilena (solo los 9 dígitos locales, sin +56)
     phone: (value: string) => {
         if (!value.trim()) return "El teléfono es requerido";
 
         const digitsOnly = value.replace(/\D/g, '');
 
-        if (!/^[0-9]{11}$/.test(digitsOnly)) 
+        if (!/^[0-9]{9}$/.test(digitsOnly)) 
             return "Debe tener 9 dígitos (ej: 9 1234 5678)";
         return null;
   },

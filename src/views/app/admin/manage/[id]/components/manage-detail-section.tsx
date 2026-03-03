@@ -2,7 +2,7 @@
 import React from "react";
 import { formatDate, thousandSeparatorPipe } from "@/lib";
 import { PublicationDetailsForAdmin } from "@/models/responses";
-import { Mail, Phone, MapPin, Calendar, DollarSign, Briefcase, FileText, ShoppingCart } from "lucide-react";
+import { Mail, Phone, MapPin, Calendar, DollarSign, Briefcase, FileText, ShoppingCart, Eye, EyeOff } from "lucide-react";
 
 function formatPrice(clp: number | undefined | null): string {
   if (clp === undefined || clp === null) return "No disponible";
@@ -81,6 +81,27 @@ export function ManageDetailSection({
               </span>
             </dd>
           </div>
+
+          {/* Visibilidad (BuySell only) */}
+          {!isJobOffer && detail.availability && (
+            <div className="bg-white p-4 rounded-xl border border-slate-200">
+              <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                Visibilidad
+              </dt>
+              <dd className="text-sm font-medium">
+                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${detail.availability === "Disponible"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-gray-100 text-gray-800"
+                  }`}>
+                  {detail.availability === "Disponible" ? (
+                    <><Eye className="w-3 h-3" /> Visible</>
+                  ) : (
+                    <><EyeOff className="w-3 h-3" /> Oculta</>
+                  )}
+                </span>
+              </dd>
+            </div>
+          )}
 
           {/* Fecha Límite (Job Offers) */}
           {isJobOffer && detail.deadlineDate && (
@@ -161,60 +182,115 @@ export function ManageDetailSection({
         </div>
       </section>
 
-      {/* INFORMACIÓN DE CONTACTO ADICIONAL */}
-      {(detail.additionalContactEmail || detail.additionalContactPhoneNumber) && (
-        <section className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4">
-          <div className="flex items-start gap-3">
-            <div className="p-2.5 rounded-xl bg-purple-100">
-              <Mail className="w-5 h-5 text-purple-600" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-1">
-                Información de Contacto Adicional
-              </h3>
-              <p className="text-xs text-gray-600">
-                Datos de contacto alternativos proporcionados por el publicador
-              </p>
-            </div>
+      {/* INFORMACIÓN DE CONTACTO */}
+      <section className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2.5 rounded-xl bg-purple-100">
+            <Mail className="w-5 h-5 text-purple-600" />
           </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-1">
+              Información de Contacto
+            </h3>
+            <p className="text-xs text-gray-600">
+              {isJobOffer
+                ? "Datos de contacto del publicador"
+                : "Datos de contacto seleccionados para esta publicación"}
+            </p>
+          </div>
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {detail.additionalContactEmail && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* For Offers: Always show all contact info */}
+          {isJobOffer && (
+            <>
               <div className="bg-white p-4 rounded-xl border border-slate-200">
                 <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1">
                   <Mail className="w-3 h-3" />
-                  Email Adicional
+                  Email de Perfil
                 </dt>
                 <dd>
-                  <a 
-                    href={`mailto:${detail.additionalContactEmail}`}
+                  <a
+                    href={`mailto:${detail.userEmail}`}
                     className="text-sm font-medium text-purple-600 hover:text-purple-800 hover:underline break-all"
                   >
-                    {detail.additionalContactEmail}
+                    {detail.userEmail}
                   </a>
                 </dd>
               </div>
-            )}
 
-            {detail.additionalContactPhoneNumber && (
               <div className="bg-white p-4 rounded-xl border border-slate-200">
                 <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1">
                   <Phone className="w-3 h-3" />
-                  Teléfono Adicional
+                  Teléfono de Perfil
                 </dt>
                 <dd>
-                  <a 
-                    href={`tel:${detail.additionalContactPhoneNumber}`}
+                  <a
+                    href={`tel:${detail.userPhoneNumber}`}
                     className="text-sm font-medium text-purple-600 hover:text-purple-800 hover:underline"
                   >
-                    {detail.additionalContactPhoneNumber}
+                    {detail.userPhoneNumber}
                   </a>
                 </dd>
               </div>
-            )}
-          </div>
-        </section>
-      )}
+            </>
+          )}
+
+          {/* For BuySell: Only show selected contact info */}
+          {!isJobOffer && (
+            <>
+              {detail.showEmail && (
+                <div className="bg-white p-4 rounded-xl border border-slate-200">
+                  <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1">
+                    <Mail className="w-3 h-3" />
+                    Email de Contacto
+                  </dt>
+                  <dd>
+                    <a
+                      href={`mailto:${detail.additionalContactEmail || detail.userEmail}`}
+                      className="text-sm font-medium text-purple-600 hover:text-purple-800 hover:underline break-all"
+                    >
+                      {detail.additionalContactEmail || detail.userEmail}
+                    </a>
+                  </dd>
+                  {detail.additionalContactEmail && (
+                    <p className="text-xs text-gray-500 mt-1">(Email alternativo)</p>
+                  )}
+                </div>
+              )}
+
+              {detail.showPhoneNumber && (
+                <div className="bg-white p-4 rounded-xl border border-slate-200">
+                  <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1">
+                    <Phone className="w-3 h-3" />
+                    Teléfono de Contacto
+                  </dt>
+                  <dd>
+                    <a
+                      href={`tel:${detail.additionalContactPhoneNumber || detail.userPhoneNumber}`}
+                      className="text-sm font-medium text-purple-600 hover:text-purple-800 hover:underline"
+                    >
+                      {detail.additionalContactPhoneNumber || detail.userPhoneNumber}
+                    </a>
+                  </dd>
+                  {detail.additionalContactPhoneNumber && (
+                    <p className="text-xs text-gray-500 mt-1">(Teléfono alternativo)</p>
+                  )}
+                </div>
+              )}
+
+              {/* Show message if no contact info is selected */}
+              {!detail.showEmail && !detail.showPhoneNumber && (
+                <div className="col-span-full bg-amber-50 p-4 rounded-xl border border-amber-200">
+                  <p className="text-sm text-amber-800 font-medium">
+                    El publicante no ha compartido información de contacto para esta publicación.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

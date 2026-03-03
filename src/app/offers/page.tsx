@@ -22,10 +22,14 @@ import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { handleApiError, cn, getUserFromToken, isLoggedIn } from "@/lib";
 import { useGetExploreOffers } from "@/hooks/api/use-explore-offers";
-import type { OfferForApplicant } from "@/models/responses";
+import { useGetExploreBuySells } from "@/hooks/api/use-explore-buysells";
+import type { OfferForApplicant, BuySellForApplicant } from "@/models/responses";
+import Image from "next/image";
 
 type SortType = "Title" | "CreatedAt" | "Remuneration";
+type BuySellSortType = "Title" | "CreatedAt" | "Price";
 type FilterType = "Trabajo" | "Voluntariado" | "Todos";
+type BuySellFilterType = "Electronica" | "Ropa" | "Hogar" | "Vehiculos" | "Deportes" | "Libros" | "Musica" | "Juguetes" | "Mascotas" | "Otros" | "Todos";
 type ExploreType = "offers" | "buysells";
 
 const OFFER_TYPES = [
@@ -128,6 +132,84 @@ const OfferCard = ({ offer, onClick }: OfferCardProps) => {
             </span>
           </div>
           <div className="text-xs font-bold">Por: {offer.authorName}</div>
+        </div>
+      </div>
+
+      <div className="flex items-center pl-4 border-l border-slate-100">
+        <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-purple-600 transition-colors duration-300 shadow-sm">
+          <ArrowRight className="text-slate-400 w-6 h-6 group-hover:text-white transition-colors duration-300" />
+        </div>
+      </div>
+    </article>
+  );
+};
+
+interface BuySellCardProps {
+  buySell: BuySellForApplicant;
+  onClick: () => void;
+}
+
+const BuySellCard = ({ buySell, onClick }: BuySellCardProps) => {
+  const firstImage = buySell.imageUrls && buySell.imageUrls.length > 0 
+    ? buySell.imageUrls[0] 
+    : "/generic.png";
+
+  return (
+    <article
+      onClick={onClick}
+      className={cn(
+        "group relative flex items-center gap-6 p-6 rounded-[2rem] transition-all duration-300 cursor-pointer w-full",
+        "bg-white text-slate-800 shadow-xl",
+        "hover:scale-[1.01] hover:shadow-2xl hover:bg-white",
+        "border-4 border-transparent hover:border-purple-300"
+      )}
+    >
+      <div className="relative w-32 h-32 flex-shrink-0 rounded-2xl overflow-hidden bg-slate-100 shadow-md">
+        <Image
+          src={firstImage}
+          alt={buySell.title}
+          fill
+          className="object-cover"
+          sizes="128px"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = "/generic.png";
+          }}
+        />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex flex-wrap items-center gap-3 mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-100">
+            <ShoppingBag className="w-4 h-4 text-cyan-500" />
+            <span className="text-xs font-black uppercase tracking-wider text-cyan-800">
+              {buySell.category}
+            </span>
+          </div>
+          <div className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border bg-green-100 text-green-700 border-green-200">
+            {formatCurrency(buySell.price)}
+          </div>
+          <div className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border bg-amber-100 text-amber-700 border-amber-200">
+            {buySell.condition}
+          </div>
+        </div>
+
+        <h3 className="font-black text-2xl md:text-3xl text-slate-900 truncate group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-600 group-hover:to-pink-600 transition-all mb-1">
+          {buySell.title}
+        </h3>
+
+        <p className="text-sm text-slate-600 line-clamp-2 mb-2">
+          {buySell.description}
+        </p>
+
+        <div className="flex items-center gap-4 text-slate-400 pl-1">
+          <div className="flex items-center gap-1">
+            <ClockIcon className="w-3.5 h-3.5" />
+            <span className="text-xs font-bold">
+              {formatDate(buySell.createdAt)}
+            </span>
+          </div>
+          <div className="text-xs font-bold">Por: {buySell.authorName}</div>
         </div>
       </div>
 
@@ -264,6 +346,138 @@ const FilterBar = ({
   );
 };
 
+interface BuySellFilterBarProps {
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
+  filterType: BuySellFilterType;
+  setFilterType: (type: BuySellFilterType) => void;
+  sort: BuySellSortType;
+  setSort: (sort: BuySellSortType) => void;
+  sortOrder: "asc" | "desc";
+  toggleSortOrder: () => void;
+  clearFilters: () => void;
+}
+
+const BuySellFilterBar = ({
+  searchTerm,
+  setSearchTerm,
+  filterType,
+  setFilterType,
+  sort,
+  setSort,
+  sortOrder,
+  toggleSortOrder,
+  clearFilters,
+}: BuySellFilterBarProps) => {
+  const baseClass =
+    "w-full bg-white/10 backdrop-blur-md border border-white/30 text-white placeholder:text-white/60 rounded-full px-5 py-3.5 text-sm font-bold focus:bg-white focus:text-purple-900 focus:placeholder:text-purple-300 focus:ring-4 focus:ring-white/20 transition-all outline-none shadow-lg hover:bg-white/20";
+  const iconClass =
+    "absolute left-4 top-1/2 -translate-y-1/2 text-white/70 pointer-events-none";
+
+  return (
+    <div className="p-6 rounded-[2rem] bg-white/10 backdrop-blur-md border border-white/20 shadow-xl mb-10 w-full">
+      <div className="flex flex-col xl:flex-row gap-4 items-stretch">
+        <div className="flex-1 relative group">
+          <Search
+            className={`${iconClass} w-5 h-5 group-focus-within:text-purple-500`}
+          />
+          <input
+            type="text"
+            placeholder="Buscar por título..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={`${baseClass} pl-12`}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 w-full xl:w-auto">
+          <div className="relative w-full group">
+            <ListFilter
+              className={`${iconClass} w-4 h-4 group-focus-within:text-purple-500`}
+            />
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value as BuySellFilterType)}
+              className={`${baseClass} pl-10 cursor-pointer appearance-none`}
+            >
+              <option value="Todos" className="text-slate-800">
+                Todas las categorías
+              </option>
+              <option value="Electronica" className="text-slate-800">
+                Electrónica
+              </option>
+              <option value="Ropa" className="text-slate-800">
+                Ropa
+              </option>
+              <option value="Hogar" className="text-slate-800">
+                Hogar
+              </option>
+              <option value="Vehiculos" className="text-slate-800">
+                Vehículos
+              </option>
+              <option value="Deportes" className="text-slate-800">
+                Deportes
+              </option>
+              <option value="Libros" className="text-slate-800">
+                Libros
+              </option>
+              <option value="Musica" className="text-slate-800">
+                Música
+              </option>
+              <option value="Juguetes" className="text-slate-800">
+                Juguetes
+              </option>
+              <option value="Mascotas" className="text-slate-800">
+                Mascotas
+              </option>
+              <option value="Otros" className="text-slate-800">
+                Otros
+              </option>
+            </select>
+          </div>
+
+          <div className="relative w-full group">
+            <ArrowUpDown
+              className={`${iconClass} w-4 h-4 group-focus-within:text-purple-500`}
+            />
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as BuySellSortType)}
+              className={`${baseClass} pl-10 cursor-pointer appearance-none`}
+            >
+              <option value="CreatedAt" className="text-slate-800">
+                Por fecha
+              </option>
+              <option value="Title" className="text-slate-800">
+                Por título
+              </option>
+              <option value="Price" className="text-slate-800">
+                Por precio
+              </option>
+            </select>
+          </div>
+
+          <Button
+            variant="outline"
+            onClick={toggleSortOrder}
+            className="w-full h-[53px] bg-white/20 text-white hover:bg-white/30 border-white/50 text-sm font-black rounded-full"
+          >
+            {sortOrder === "asc" ? "↑ A-Z" : "↓ Z-A"}
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={clearFilters}
+            className="w-full h-[53px] bg-white/20 text-white hover:bg-white/30 border-white/50 text-sm font-black rounded-full"
+          >
+            Limpiar
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function ExploreOffersContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -275,6 +489,7 @@ function ExploreOffersContent() {
     (searchParams.get("exploreType") as ExploreType) || null
   );
   
+  // Offers state
   const [searchTerm, setSearchTerm] = useState(
     searchParams.get("search") || ""
   );
@@ -292,27 +507,55 @@ function ExploreOffersContent() {
   );
   const pageSize = 9;
 
+  // BuySells state
+  const [buySellSearchTerm, setBuySellSearchTerm] = useState(
+    searchParams.get("search") || ""
+  );
+  const [buySellFilterType, setBuySellFilterType] = useState<BuySellFilterType>(
+    (searchParams.get("type") as BuySellFilterType) || "Todos"
+  );
+  const [buySellSort, setBuySellSort] = useState<BuySellSortType>(
+    (searchParams.get("sort") as BuySellSortType) || "CreatedAt"
+  );
+  const [buySellSortOrder, setBuySellSortOrder] = useState<"asc" | "desc">(
+    (searchParams.get("order") as "asc" | "desc") || "desc"
+  );
+  const [buySellCurrentPage, setBuySellCurrentPage] = useState(
+    parseInt(searchParams.get("page") || "1", 10)
+  );
+
   // Update URL when filters change
   useEffect(() => {
     if (!exploreType) return; // Don't update URL if no type selected
     
     const params = new URLSearchParams();
     params.set("exploreType", exploreType);
-    if (searchTerm) params.set("search", searchTerm);
-    if (filterType !== "Todos") params.set("type", filterType);
-    if (sort !== "CreatedAt") params.set("sort", sort);
-    if (sortOrder !== "desc") params.set("order", sortOrder);
-    if (currentPage > 1) params.set("page", currentPage.toString());
+    
+    if (exploreType === "offers") {
+      if (searchTerm) params.set("search", searchTerm);
+      if (filterType !== "Todos") params.set("type", filterType);
+      if (sort !== "CreatedAt") params.set("sort", sort);
+      if (sortOrder !== "desc") params.set("order", sortOrder);
+      if (currentPage > 1) params.set("page", currentPage.toString());
+    } else {
+      if (buySellSearchTerm) params.set("search", buySellSearchTerm);
+      if (buySellFilterType !== "Todos") params.set("type", buySellFilterType);
+      if (buySellSort !== "CreatedAt") params.set("sort", buySellSort);
+      if (buySellSortOrder !== "desc") params.set("order", buySellSortOrder);
+      if (buySellCurrentPage > 1) params.set("page", buySellCurrentPage.toString());
+    }
 
     const newUrl = `?${params.toString()}`;
     router.replace(`/offers${newUrl}`, { scroll: false });
-  }, [exploreType, searchTerm, filterType, sort, sortOrder, currentPage, router]);
+  }, [exploreType, searchTerm, filterType, sort, sortOrder, currentPage, 
+      buySellSearchTerm, buySellFilterType, buySellSort, buySellSortOrder, buySellCurrentPage, router]);
 
+  // Offers query
   const {
-    data,
-    isFetching,
-    error: apiError,
-    refetch,
+    data: offersData,
+    isFetching: offersFetching,
+    error: offersError,
+    refetch: refetchOffers,
   } = useGetExploreOffers({
     searchTerm: searchTerm || undefined,
     filterBy: filterType !== "Todos" ? filterType : undefined,
@@ -322,8 +565,31 @@ function ExploreOffersContent() {
     pageSize,
   });
 
+  // BuySells query
+  const {
+    data: buySellsData,
+    isFetching: buySellsFetching,
+    error: buySellsError,
+    refetch: refetchBuySells,
+  } = useGetExploreBuySells({
+    searchTerm: buySellSearchTerm || undefined,
+    filterBy: buySellFilterType !== "Todos" ? buySellFilterType : undefined,
+    sortBy: buySellSort,
+    sortOrder: buySellSortOrder,
+    pageNumber: buySellCurrentPage,
+    pageSize,
+  });
+
+  // Determine active data based on exploreType
+  const isOffers = exploreType === "offers";
+  const data = isOffers ? offersData : buySellsData;
+  const isFetching = isOffers ? offersFetching : buySellsFetching;
+  const apiError = isOffers ? offersError : buySellsError;
+  const refetch = isOffers ? refetchOffers : refetchBuySells;
+
   const isViewLoading = isFetching && !data;
-  const offers = data?.offers || [];
+  const offers = offersData?.offers || [];
+  const buySells = buySellsData?.buySells || [];
   const totalCount = data?.totalCount || 0;
   const totalPages = data?.totalPages || 1;
 
@@ -337,22 +603,43 @@ function ExploreOffersContent() {
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
+      if (isOffers) {
+        setCurrentPage(newPage);
+      } else {
+        setBuySellCurrentPage(newPage);
+      }
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   const toggleSortOrder = () => {
-    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
-    setCurrentPage(1);
+    if (isOffers) {
+      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+      setCurrentPage(1);
+    } else {
+      setBuySellSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+      setBuySellCurrentPage(1);
+    }
   };
 
   const clearFilters = () => {
-    setSearchTerm("");
-    setFilterType("Todos");
-    setSort("CreatedAt");
-    setSortOrder("desc");
-    setCurrentPage(1);
+    if (isOffers) {
+      setSearchTerm("");
+      setFilterType("Todos");
+      setSort("CreatedAt");
+      setSortOrder("desc");
+      setCurrentPage(1);
+    } else {
+      setBuySellSearchTerm("");
+      setBuySellFilterType("Todos");
+      setBuySellSort("CreatedAt");
+      setBuySellSortOrder("desc");
+      setBuySellCurrentPage(1);
+    }
+  };
+
+  const handleViewBuySellDetail = (buySell: BuySellForApplicant) => {
+    router.push(`/buysells/${buySell.id}`);
   };
 
   const handleExploreTypeChange = (type: ExploreType) => {
@@ -366,13 +653,15 @@ function ExploreOffersContent() {
   const renderPagination = () => {
     if (totalPages <= 1) return null;
 
+    const activePage = isOffers ? currentPage : buySellCurrentPage;
+
     return (
       <div className="flex justify-center items-center gap-2 flex-wrap">
         <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
+          onClick={() => handlePageChange(activePage - 1)}
+          disabled={activePage === 1}
           className={`px-4 py-2 rounded-full font-bold transition-all ${
-            currentPage === 1
+            activePage === 1
               ? "bg-white/5 text-white/30 cursor-not-allowed"
               : "bg-white/10 text-white hover:bg-white/20"
           }`}
@@ -381,7 +670,7 @@ function ExploreOffersContent() {
         </button>
 
         {/* First Page + Left Ellipsis */}
-        {currentPage > 3 && totalPages > 5 && (
+        {activePage > 3 && totalPages > 5 && (
           <>
             <button
               onClick={() => handlePageChange(1)}
@@ -389,7 +678,7 @@ function ExploreOffersContent() {
             >
               1
             </button>
-            {currentPage > 4 && <span className="px-2 text-white/50">...</span>}
+            {activePage > 4 && <span className="px-2 text-white/50">...</span>}
           </>
         )}
 
@@ -397,7 +686,7 @@ function ExploreOffersContent() {
         {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
           const pageOffset = Math.max(
             1,
-            Math.min(currentPage - 2, totalPages - 4)
+            Math.min(activePage - 2, totalPages - 4)
           );
           const page = pageOffset + i;
 
@@ -408,7 +697,7 @@ function ExploreOffersContent() {
               key={page}
               onClick={() => handlePageChange(page)}
               className={`px-4 py-2 rounded-full font-bold transition-all ${
-                page === currentPage
+                page === activePage
                   ? "bg-white text-purple-900"
                   : "bg-white/10 text-white hover:bg-white/20"
               }`}
@@ -419,9 +708,9 @@ function ExploreOffersContent() {
         })}
 
         {/* Right Ellipsis + Last Page */}
-        {currentPage < totalPages - 2 && totalPages > 5 && (
+        {activePage < totalPages - 2 && totalPages > 5 && (
           <>
-            {currentPage < totalPages - 3 && (
+            {activePage < totalPages - 3 && (
               <span className="px-2 text-white/50">...</span>
             )}
             <button
@@ -434,10 +723,10 @@ function ExploreOffersContent() {
         )}
 
         <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
+          onClick={() => handlePageChange(activePage + 1)}
+          disabled={activePage === totalPages}
           className={`px-4 py-2 rounded-full font-bold transition-all ${
-            currentPage === totalPages
+            activePage === totalPages
               ? "bg-white/5 text-white/30 cursor-not-allowed"
               : "bg-white/10 text-white hover:bg-white/20"
           }`}
@@ -479,7 +768,10 @@ function ExploreOffersContent() {
       );
     }
 
-    if (offers.length === 0) {
+    const items = isOffers ? offers : buySells;
+    const itemType = isOffers ? "ofertas" : "artículos";
+
+    if (items.length === 0) {
       return (
         <div className="mt-12 p-12 text-center bg-white/10 backdrop-blur-md rounded-[2.5rem] border border-white/20 text-white shadow-xl w-full">
           <div className="bg-white/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -490,12 +782,12 @@ function ExploreOffersContent() {
             )}
           </div>
           <h3 className="text-2xl font-black mb-2">
-            {totalCount === 0 ? "Sin ofertas disponibles" : "Sin resultados"}
+            {totalCount === 0 ? `Sin ${itemType} disponibles` : "Sin resultados"}
           </h3>
           <p className="text-lg text-purple-200">
             {totalCount === 0
-              ? "Aún no hay ofertas publicadas."
-              : "No hay ofertas que coincidan con los filtros seleccionados."}
+              ? `Aún no hay ${itemType} publicadas.`
+              : `No hay ${itemType} que coincidan con los filtros seleccionados.`}
           </p>
           {totalCount > 0 && (
             <Button
@@ -512,13 +804,21 @@ function ExploreOffersContent() {
     return (
       <>
         <section className="mt-8 flex flex-col gap-6 pb-12 w-full">
-          {offers.map((offer) => (
-            <OfferCard
-              key={offer.id}
-              offer={offer}
-              onClick={() => handleViewDetail(offer)}
-            />
-          ))}
+          {isOffers
+            ? offers.map((offer) => (
+                <OfferCard
+                  key={offer.id}
+                  offer={offer}
+                  onClick={() => handleViewDetail(offer)}
+                />
+              ))
+            : buySells.map((buySell) => (
+                <BuySellCard
+                  key={buySell.id}
+                  buySell={buySell}
+                  onClick={() => handleViewBuySellDetail(buySell)}
+                />
+              ))}
         </section>
 
         {totalPages > 1 && (
@@ -706,18 +1006,20 @@ function ExploreOffersContent() {
             {renderContent()}
           </>
         ) : (
-          // Placeholder for BuySells - implement when backend is ready
-          <div className="mt-12 p-12 text-center bg-white/10 backdrop-blur-md rounded-[2.5rem] border border-white/20 text-white shadow-xl w-full">
-            <div className="bg-white/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <ShoppingBag className="w-10 h-10 text-white" />
-            </div>
-            <h3 className="text-2xl font-black mb-2">
-              Funcionalidad en desarrollo
-            </h3>
-            <p className="text-lg text-purple-200">
-              La exploración de Compra/Venta estará disponible próximamente.
-            </p>
-          </div>
+          <>
+            <BuySellFilterBar
+              searchTerm={buySellSearchTerm}
+              setSearchTerm={setBuySellSearchTerm}
+              filterType={buySellFilterType}
+              setFilterType={setBuySellFilterType}
+              sort={buySellSort}
+              setSort={setBuySellSort}
+              sortOrder={buySellSortOrder}
+              toggleSortOrder={toggleSortOrder}
+              clearFilters={clearFilters}
+            />
+            {renderContent()}
+          </>
         )}
       </main>
     </div>

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { 
   AlertCircle, ArrowLeft, Settings2, ClockIcon, 
   Briefcase, ShoppingBag, Search, ListFilter, 
-  ArrowUpDown, ArrowRight, CheckCircle2 
+  ArrowUpDown, ArrowRight, CheckCircle2, Eye, EyeOff 
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { NotificationBanner } from "@/components/ui/notification";
@@ -74,6 +74,22 @@ const PublicationCard = ({ pub, onClick }: PublicationCardProps) => {
             </span>
           </div>
           <div className={statusInfo.classes}>{statusInfo.text}</div>
+          
+          {/* Visibility Badge for BuySell */}
+          {pub.publicationType === "CompraVenta" && pub.approvalStatus === "Aceptada" && pub.availability && (
+            <div className={cn(
+              "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border flex items-center gap-1",
+              pub.availability === "Disponible" 
+                ? "bg-green-100 text-green-700 border-green-200" 
+                : "bg-gray-100 text-gray-700 border-gray-200"
+            )}>
+              {pub.availability === "Disponible" ? (
+                <><Eye className="w-3 h-3" /> Visible</>
+              ) : (
+                <><EyeOff className="w-3 h-3" /> Oculta</>
+              )}
+            </div>
+          )}
         </div>
         
         <h3 className="font-black text-2xl md:text-3xl text-slate-900 truncate group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-600 group-hover:to-pink-600 transition-all mb-1">

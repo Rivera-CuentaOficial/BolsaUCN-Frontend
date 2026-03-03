@@ -26,8 +26,12 @@ export interface PublicationFormData {
   requiredApplicants: string;
   offerType: string; // Full Time, Part Time, etc.
   // Campos Venta
+  images: File[]; // Para almacenar las imágenes seleccionadas
   category: string;
   price: string;
+  quantity: string;
+  availability: string; // Disponible, Vendido
+  condition: string; // Nuevo, ComoNuevo, Usado, NoAplica
   // Contacto
   additionalContactEmail: string;
   additionalContactPhoneNumber: string;
@@ -66,8 +70,12 @@ export const usePublicationForm = () => {
     offerType: "",
     category: "",
     price: "",
+    quantity: "1",
+    availability: "Disponible",
+    condition: "",
     showProfileEmail: false,
     showProfilePhone: false,
+    images: [],
   });
 
   // 1. Verificación de Autenticación: Redirige al login si no hay token.
@@ -112,6 +120,79 @@ export const usePublicationForm = () => {
         ...(name === "offerType" ? { remuneration: "" } : {}),
       }));
     }
+  };
+
+  /**
+   * Formatea el número de teléfono para mostrar (9 1234 5678)
+   */
+  const formatPhoneDisplay = (phone: string): string => {
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length <= 1) return digits;
+    if (digits.length <= 5) return `${digits.slice(0, 1)} ${digits.slice(1)}`;
+    return `${digits.slice(0, 1)} ${digits.slice(1, 5)} ${digits.slice(5, 9)}`;
+  };
+
+  /**
+   * Maneja cambios en el campo de teléfono (solo acepta 9 dígitos)
+   */
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 9);
+    setFormData((prev) => ({
+      ...prev,
+      additionalContactPhoneNumber: digits,
+    }));
+    // Limpiar error al escribir
+    if (errors.additionalContactPhoneNumber) {
+      setErrors((prev) => ({ ...prev, additionalContactPhoneNumber: "" }));
+    }
+  };
+
+  /**
+   * Maneja la selección de imágenes para publicaciones de compra/venta
+   */
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newImages = Array.from(files);
+    
+    // Validar que no se excedan las 3 imágenes
+    if (formData.images.length + newImages.length > 3) {
+      setErrors((prev) => ({
+        ...prev,
+        images: "No puedes subir más de 3 imágenes",
+      }));
+      return;
+    }
+
+    // Agregar nuevas imágenes
+    setFormData((prev) => ({
+      ...prev,
+      images: [...prev.images, ...newImages],
+    }));
+
+    // Limpiar error si había
+    setErrors((prev) => ({ ...prev, images: "" }));
+  };
+
+  /**
+   * Elimina una imagen seleccionada
+   */
+  const handleRemoveImage = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+    }));
+  };
+
+  /**
+   * Elimina todas las imágenes seleccionadas
+   */
+  const handleClearImages = () => {
+    setFormData((prev) => ({
+      ...prev,
+      images: [],
+    }));
   };
 
   /**
@@ -206,6 +287,29 @@ export const usePublicationForm = () => {
         newErrors.price = "El precio es requerido";
       } else if (parseFloat(formData.price) < 0) {
         newErrors.price = "El precio no puede ser negativo";
+      } else if (parseFloat(formData.price) > 100000000) {
+        newErrors.price = "El precio no puede exceder $100.000.000";
+      }
+
+      if (!formData.location.trim()) {
+        newErrors.location = "La ubicación es requerida";
+      }
+
+      if (!formData.quantity) {
+        newErrors.quantity = "La cantidad es requerida";
+      } else {
+        const qty = parseInt(formData.quantity, 10);
+        if (isNaN(qty) || qty < 1) {
+          newErrors.quantity = "La cantidad debe ser al menos 1";
+        }
+      }
+
+      if (!formData.availability) {
+        newErrors.availability = "Selecciona la disponibilidad";
+      }
+
+      if (!formData.condition) {
+        newErrors.condition = "Selecciona la condición del artículo";
       }
     
       const hasContactInfo = 
@@ -249,26 +353,39 @@ export const usePublicationForm = () => {
             : (formData.remuneration ? parseFloat(formData.remuneration) : 0),
           Location: formData.location,
           AdditionalContactEmail: formData.additionalContactEmail,
-          AdditionalContactPhoneNumber: formData.additionalContactPhoneNumber,
+          AdditionalContactPhoneNumber: formData.additionalContactPhoneNumber 
+            ? (formData.additionalContactPhoneNumber.startsWith('+56') 
+                ? formData.additionalContactPhoneNumber 
+                : `+56${formData.additionalContactPhoneNumber}`)
+            : undefined,
           IsCvRequired: formData.isCvRequired,
           RequiredApplicants: parseInt(formData.requiredApplicants || "1"),
-          //ImagesURL: [],
+
         });
       } else {
         // --- LÓGICA PARA VENTA (TIPO 2) ---
-        // 1. Preparamos el objeto JSON
-        const buySellData: CreateBuySellData = {
+        // Preparar FormData para enviar archivos y datos
+        const formDataToSend : CreateBuySellData = {
           Title: formData.title,
           Description: formData.description,
           Category: formData.category,
-          Price: parseFloat(formData.price || "0"),
+          Price: parseFloat(formData.price),
           Location: formData.location,
-          AdditionalContactEmail: formData.additionalContactEmail,
-          AdditionalContactPhoneNumber: formData.additionalContactPhoneNumber,
-          ImagesURL: [],
-        };
+          Quantity: parseInt(formData.quantity, 10),
+          Availability: formData.availability,
+          Condition: formData.condition,
+          ShowEmail: formData.showProfileEmail,
+          ShowPhoneNumber: formData.showProfilePhone,
+          AdditionalContactEmail: formData.additionalContactEmail ? formData.additionalContactEmail : undefined,
+          AdditionalContactPhoneNumber: formData.additionalContactPhoneNumber 
+            ? (formData.additionalContactPhoneNumber.startsWith('+56') 
+                ? formData.additionalContactPhoneNumber 
+                : `+56${formData.additionalContactPhoneNumber}`)
+            : undefined,
+          Images: formData.images
+        }
 
-        await offererPublicationService.createBuySell(buySellData);
+        await offererPublicationService.createBuySell(formDataToSend);
       }
 
       // Obtener el rol del token para construir la ruta de redirección
@@ -316,6 +433,11 @@ export const usePublicationForm = () => {
     isLoading,
     isSubmitting,
     handleInputChange,
+    handlePhoneChange,
+    formatPhoneDisplay,
+    handleImageChange,
+    handleRemoveImage,
+    handleClearImages,
     handleSubmit,
     notification,
     isVisible,

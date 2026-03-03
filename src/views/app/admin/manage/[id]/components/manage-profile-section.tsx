@@ -92,7 +92,7 @@ export function ManageProfileSection({ detail }: ManageProfileSectionProps) {
         </div>
       </section>
 
-      {/* Imágenes (placeholder for now - right beneath user info) */}
+      {/* Imágenes */}
       {detail.images && detail.images.length > 0 && (
         <section className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
           <div className="flex items-start gap-3 mb-4">
@@ -131,7 +131,7 @@ export function ManageProfileSection({ detail }: ManageProfileSectionProps) {
         </section>
       )}
 
-      {/* Placeholder if no images */}
+      {/* Sin Imagenes */}
       {(!detail.images || detail.images.length === 0) && (
         <section className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
           <div className="flex items-start gap-3 mb-4">

@@ -68,7 +68,7 @@ export const useAppealForm = ({ publication }: UseAppealFormProps) => {
       description: publication.description || "",
       location: publication.location || "",
       additionalContactEmail: publication.additionalContactEmail || "",
-      additionalContactPhoneNumber: publication.additionalContactPhoneNumber || "",
+      additionalContactPhoneNumber: (publication.additionalContactPhoneNumber || "").replace(/^\+56/, ""),
       // Offer fields
       endDate: publication.endDate?.split("T")[0] || "",
       applicationDeadline: publication.applicationDeadline?.split("T")[0] || "",
@@ -117,6 +117,35 @@ export const useAppealForm = ({ publication }: UseAppealFormProps) => {
         if (name === "offerType") {
           delete newErrors["remuneration"];
         }
+        return newErrors;
+      });
+    }
+  };
+
+  /**
+   * Format phone number for display (9 1234 5678)
+   */
+  const formatPhoneDisplay = (phone: string): string => {
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length <= 1) return digits;
+    if (digits.length <= 5) return `${digits.slice(0, 1)} ${digits.slice(1)}`;
+    return `${digits.slice(0, 1)} ${digits.slice(1, 5)} ${digits.slice(5, 9)}`;
+  };
+
+  /**
+   * Handle phone number changes (only accepts 9 digits)
+   */
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 9);
+    setFormData((prev) => ({
+      ...prev,
+      additionalContactPhoneNumber: digits,
+    }));
+    // Clear error on change
+    if (errors.additionalContactPhoneNumber) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.additionalContactPhoneNumber;
         return newErrors;
       });
     }
@@ -271,7 +300,7 @@ export const useAppealForm = ({ publication }: UseAppealFormProps) => {
         description: publication.description || "",
         location: publication.location || "",
         additionalContactEmail: publication.additionalContactEmail || "",
-        additionalContactPhoneNumber: publication.additionalContactPhoneNumber || "",
+        additionalContactPhoneNumber: (publication.additionalContactPhoneNumber || "").replace(/^\+56/, ""),
         endDate: publication.endDate?.split("T")[0] || "",
         applicationDeadline: publication.applicationDeadline?.split("T")[0] || "",
         remuneration: publication.remuneration?.toString() || "0",
@@ -291,6 +320,8 @@ export const useAppealForm = ({ publication }: UseAppealFormProps) => {
     formData,
     errors,
     handleInputChange,
+    handlePhoneChange,
+    formatPhoneDisplay,
     validateForm,
     reset,
   };

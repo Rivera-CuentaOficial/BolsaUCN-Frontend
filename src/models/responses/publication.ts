@@ -8,14 +8,14 @@ export interface PendingOffersForAdmin {
 // Interfaz de entrada para todas las interfaces de salida que usen ofertas
 export interface OfferDetailForAdmin {
     id: number;
-    title: string; 
+    title: string;
     description: string;
     images: string[];
     companyName: string;
     publicationDate: string;
     offerType: number;
-    statusValidation: "Pending" | "Published" | "Rejected"; 
-    remuneration: number; 
+    statusValidation: "Pending" | "Published" | "Rejected";
+    remuneration: number;
     activa: boolean;
     location: string;
     requirements: string;
@@ -30,18 +30,18 @@ export interface BuySellDetailForAdmin {
     publicationDate: string;
     price: number;
     type: number;
-    statusValidation: "Pending" | "Published" | "Rejected"; 
+    statusValidation: "Pending" | "Published" | "Rejected";
     activa: boolean;
 }
 
 export type BuySellBasic = {
-  id: number;
-  title: string;
-  category: string;
-  price: number;
-  location: string;
-  publicationDate: string;
-  userName: string;        
+    id: number;
+    title: string;
+    category: string;
+    price: number;
+    location: string;
+    publicationDate: string;
+    userName: string;
 };
 
 export type AdminItemType = OfferSubType | "Compra/Venta";
@@ -62,7 +62,7 @@ export interface OfferForAdmin {
 export interface AdminItemBase {
     id: string;
     title: string;
-    type: "Oferta de Trabajo" | "Voluntariado" | "Compra/Venta"; 
+    type: "Oferta de Trabajo" | "Voluntariado" | "Compra/Venta";
 }
 export type AdminItem = OfferForAdmin | BuySellForAdmin;
 
@@ -71,11 +71,11 @@ export type OfferSubType = "Oferta de Trabajo" | "Voluntariado";
 export interface OfferTypeForAdmin {
     id: string;
     title: string;
-    offerType: OfferSubType; 
+    offerType: OfferSubType;
 }
 
 export interface ValidationItemFull {
-    id: string; 
+    id: string;
     item: AdminItem;
 }
 
@@ -88,24 +88,24 @@ export interface PublishedItem {
     id: number;
 }
 
-export type PublicationType = "Trabajo" | "Voluntariado" | "Compra/Venta"; 
+export type PublicationType = "Trabajo" | "Voluntariado" | "Compra/Venta";
 export type ValidationStatus = "Pending" | "Published" | "Rejected";
 
 export interface AdminDetail {
-    id: string; 
+    id: string;
     userId: number;
     title: string;
     description: string;
     images: string[];
-    companyName: string; 
+    companyName: string;
     publicationDate: string;
-    type: PublicationType; 
-    active: boolean; 
-    statusValidation: ValidationStatus; 
+    type: PublicationType;
+    active: boolean;
+    statusValidation: ValidationStatus;
     price?: number;
     remuneration?: number;
     deadlineDate?: string;
-    isCVRequired?: boolean; 
+    isCVRequired?: boolean;
     endDate?: string;
     location?: string;
     requirements?: string;
@@ -121,7 +121,7 @@ export interface UseAdminDetailValidateResult {
     detail: AdminDetail | null;
     loading: boolean;
     error: string | null;
-    isMutating: boolean; 
+    isMutating: boolean;
     handleAction: (action: 'publish' | 'reject', rejectionReason?: string) => void;
     handleRetry: () => void;
 }
@@ -130,42 +130,62 @@ export interface UseAdminDetailManageResult {
     detail: AdminDetail | null;
     loading: boolean;
     error: string | null;
-    isMutating: boolean; 
+    isMutating: boolean;
     handleAction: (action: 'close_publication') => void;
     handleRetry: () => void;
 }
 
 export interface PublicationResponse {
-  message: string;
-  data: string; // e.g., "Oferta ID: 14
-  }
+    message: string;
+    data: string; // e.g., "Oferta ID: 14
+}
 
 export interface CreatePublicationData {
-  Title: string;
-  Description: string;
-  EndDate?: string; // Fecha de término de la oferta/pasantía
-  ApplicationDeadline?: string; // Fecha límite para postular
-  Remuneration?: number | null; // Remuneración ofrecida (null para voluntariados)
-  OfferType: string; 
-  Location?: string;
-  RequiredApplicants?: number;
-  AdditionalContactEmail?: string;
-  AdditionalContactPhoneNumber?: string;
-  IsCvRequired: boolean;
+    Title: string;
+    Description: string;
+    EndDate?: string; // Fecha de término de la oferta/pasantía
+    ApplicationDeadline?: string; // Fecha límite para postular
+    Remuneration?: number | null; // Remuneración ofrecida (null para voluntariados)
+    OfferType: string;
+    Location?: string;
+    RequiredApplicants?: number;
+    AdditionalContactEmail?: string;
+    AdditionalContactPhoneNumber?: string;
+    IsCvRequired: boolean;
 }
-export interface CreateBuySellData 
-{
-  Title: string;
-  Description: string;
-  Category: string;
-  Price: number;
-  ImagesURL: string[],
-  Location: string;
-  AdditionalContactEmail?: string;
-  AdditionalContactPhoneNumber?: string;
+export interface CreateBuySellData {
+    Title: string;
+    Description: string;
+    Category: string;
+    Price: number;
+    Location: string;
+    Quantity: number;
+    Availability: string; // Disponible, Vendido
+    Condition: string; // Nuevo, ComoNuevo, Usado, NoAplica
+    ShowEmail: boolean;
+    ShowPhoneNumber: boolean;
+    AdditionalContactEmail?: string;
+    AdditionalContactPhoneNumber?: string;
+    Images: File[];
 }
 
-    //  mypublished PublicationsDTO
+export interface EditBuySellData {
+    Title?: string;
+    Description?: string;
+    Location?: string;
+    Price?: number;
+    Category?: string;
+    Quantity?: number;
+    Condition?: string;
+    ShowEmail?: boolean;
+    ShowPhoneNumber?: boolean;
+    AdditionalContactEmail?: string;
+    AdditionalContactPhoneNumber?: string;
+    ImagesToDelete?: string[];
+    ImagesToUpload?: File[];
+}
+
+//  mypublished PublicationsDTO
 export interface MyPublishedPublication {
     idPublication: number;  // Antes tenías IdPublication o Id
     userId: number;
@@ -183,7 +203,7 @@ export interface MyPublishedPublication {
 
 
 
-    //  mypublished PublicationsDTO
+//  mypublished PublicationsDTO
 export interface MyPublishedPublication {
     idPublication: number;  // Antes tenías IdPublication o Id
     userId: number;
@@ -198,23 +218,23 @@ export interface MyPublishedPublication {
 
 // interfaz para ver los postulantes de una publicación
 export interface ViewAppplicantsForAdmin {
-  id: number;
-  applicant: string;
-  status: "Pendiente" | "Aceptada" | "Rechazada" | string;
-  rating: number;
+    id: number;
+    applicant: string;
+    status: "Pendiente" | "Aceptada" | "Rechazada" | string;
+    rating: number;
 }
 
 export interface PostulantDetailForAdmin {
-  id: number;
-  studentName: string;
-  email: string;
-  phoneNumber: string;
-  status: "Pending" | "Published" | "Rejected" | string;
-  curriculumVitae?: string;
-  rating?: string;
-  motivationLetter?: string;
-  disability?: string;
-  profilePicture?: string;
+    id: number;
+    studentName: string;
+    email: string;
+    phoneNumber: string;
+    status: "Pending" | "Published" | "Rejected" | string;
+    curriculumVitae?: string;
+    rating?: string;
+    motivationLetter?: string;
+    disability?: string;
+    profilePicture?: string;
 }
 
 
@@ -223,7 +243,7 @@ export interface PostulantDetailForAdmin {
 
 
 // types/postulants.ts (o donde tengas tus tipos)
- // La interfaz que creamos antes
+// La interfaz que creamos antes
 
 // Esta es la estructura que tu componente visual (la Tabla o Lista) espera recibir
 export interface PostulantView {
@@ -237,7 +257,7 @@ export interface PostulantView {
 }
 
 
-export interface ApplicantResponse{
+export interface ApplicantResponse {
     applicationId: number;
     studentId: number;
     applicantName: string;
@@ -249,48 +269,48 @@ export interface ApplicantResponse{
 
 }
 export interface OfferDetail {
-  id: number;
-  title: string;
-  description: string;
-  category?: string;
-  
-  // Propiedades específicas de Trabajo
-  remuneration?: number;    // Para trabajos
-  companyName?: string;     // Para trabajos
-  offerType?: string;
-  
-  // Propiedades comunes que a veces cambian de nombre
-  location: string;
-  postDate?: string;        // A veces viene como postDate
-  publicationDate?: string; // A veces viene como publicationDate
-  endDate?: string;         // Fecha término
+    id: number;
+    title: string;
+    description: string;
+    category?: string;
 
-  userId: number;
-  userName: string;
-  userEmail: string;
-  aboutMe?: string;
-  statusValidation: number;
+    // Propiedades específicas de Trabajo
+    remuneration?: number;    // Para trabajos
+    companyName?: string;     // Para trabajos
+    offerType?: string;
+
+    // Propiedades comunes que a veces cambian de nombre
+    location: string;
+    postDate?: string;        // A veces viene como postDate
+    publicationDate?: string; // A veces viene como publicationDate
+    endDate?: string;         // Fecha término
+
+    userId: number;
+    userName: string;
+    userEmail: string;
+    aboutMe?: string;
+    statusValidation: number;
 }
 
 export interface MyBuySell {
-  id: number;
-  title: string;
-  description: string;
-  category: string;
-  
-  // Propiedades específicas de Compra/Venta
-  price: number;            // Para ventas
-  contactInfo: string;
-  
-  location: string;
-  publicationDate: string;
-  isActive: boolean;
-  imageUrls: string[];
-  
-  userId: number;
-  userName: string;
-  userEmail: string;
-  statusValidation: number;
+    id: number;
+    title: string;
+    description: string;
+    category: string;
+
+    // Propiedades específicas de Compra/Venta
+    price: number;            // Para ventas
+    contactInfo: string;
+
+    location: string;
+    publicationDate: string;
+    isActive: boolean;
+    imageUrls: string[];
+
+    userId: number;
+    userName: string;
+    userEmail: string;
+    statusValidation: number;
 }
 
 export interface ValidationResponse {
@@ -365,6 +385,7 @@ export interface PublicationForOfferor {
     publicationType: 'Oferta' | 'CompraVenta';
     publicationDate: string;
     approvalStatus: 'Aceptada' | 'Pendiente' | 'Rechazada' | 'Cerrada';
+    availability?: string;
 }
 export interface MyPublicationsResponse {
     publications: PublicationForOfferor[];
@@ -387,8 +408,8 @@ export interface MyPublicationDetails {
     id: number;
     title: string;
     description: string;
-    location:string;
-    
+    location: string;
+
     // Informacion de contacto
     contactEmail: string;
     contactPhone: string;
@@ -421,6 +442,8 @@ export interface MyPublicationDetails {
     quantity?: number;
     availability?: string;
     condition?: string;
+    showEmail?: boolean;
+    showPhoneNumber?: boolean;
 }
 
 // Explorar ofertas
@@ -448,6 +471,15 @@ export interface ExploreOffersSearchParams {
     searchTerm?: string;
     filterBy?: 'Trabajo' | 'Voluntariado' | 'Todos';
     sortBy?: 'Title' | 'CreatedAt' | 'Remuneration';
+    sortOrder?: 'asc' | 'desc';
+    pageNumber: number;
+    pageSize?: number;
+}
+
+export interface ExploreBuySellsSearchParams {
+    searchTerm?: string;
+    filterBy?: string;
+    sortBy?: 'Title' | 'CreatedAt' | 'Price';
     sortOrder?: 'asc' | 'desc';
     pageNumber: number;
     pageSize?: number;
@@ -494,8 +526,10 @@ export interface BuySellForApplicant {
     authorName: string;
     price: number;
     category: string;
+    condition: string;
     location: string;
     createdAt: string;
+    imageUrls: string[];
 }
 
 export interface BuySellsForApplicant {
@@ -506,22 +540,50 @@ export interface BuySellsForApplicant {
     currentPage: number;
 }
 
+export interface BuySellDetailsForApplicant {
+    id: number;
+    title: string;
+    description: string;
+    authorName: string;
+    isAvailable: boolean;
+    location: string;
+    createdAt: string;
+    price: number;
+    category: string;
+    quantity: number;
+    condition: string;
+    chosenContactEmail: string;
+    chosenContactPhoneNumber: string;
+    imageUrls: string[];
+}
+
+export interface BuySellDetailsForPublic {
+    id: number;
+    title: string;
+    description: string;
+    authorName: string;
+    createdAt: string;
+    price: number;
+    category: string;
+    imageUrls: string[];
+}
+
 // Administracion de publicaciones
 export interface PublicationForAdmin {
-  id: number;
-  publicationType: string;
-  title: string;
-  description: string;
-  location: string;
-  approvalStatus: string;
-  appealsCount: number;
-  createdAt: string;
-  // Informacion del usuario
-  authorId: number;
-  authorName: string;
-  userType: string;
-  profilePhotoUrl: string;
-  authorEmail: string;
+    id: number;
+    publicationType: string;
+    title: string;
+    description: string;
+    location: string;
+    approvalStatus: string;
+    appealsCount: number;
+    createdAt: string;
+    // Informacion del usuario
+    authorId: number;
+    authorName: string;
+    userType: string;
+    profilePhotoUrl: string;
+    authorEmail: string;
 }
 
 export interface PublicationsForAdmin {
@@ -570,40 +632,46 @@ export interface PublicationDetailsForAdmin {
     offerType?: string;
     isCVRequired?: boolean;
     applicantsCount?: number;
+    currentStatus?: string;
 
     // Atributos de compra/venta
     images: string[];
     price?: number;
     category?: string;
+    availability?: string;
+    quantity?: number;
+    condition?: string;
+    showEmail?: boolean;
+    showPhoneNumber?: boolean;
 }
 
 // Admin - Ver publicaciones de un usuario
 export interface UserPublicationForAdmin {
-  publicationId: number;
-  title: string;
-  publicationStatus: string;
-  publicationType: string;
-  createdAt: string;
-  hasBeenAppealed: boolean;
+    publicationId: number;
+    title: string;
+    publicationStatus: string;
+    publicationType: string;
+    createdAt: string;
+    hasBeenAppealed: boolean;
 }
 
 export interface UserPublicationsForAdmin {
-  publications: UserPublicationForAdmin[];
-  totalCount: number;
-  totalPages: number;
-  pageNumber: number;
-  pageSize: number;
+    publications: UserPublicationForAdmin[];
+    totalCount: number;
+    totalPages: number;
+    pageNumber: number;
+    pageSize: number;
 }
 
 export interface UserPublicationsSearchParams {
-  searchByTitle?: string;
-  filterByPublicationStatus?: string;
-  filterByOfferType?: string;
-  filterByPublicationType?: string;
-  sortBy?: string;
-  sortOrder?: string;
-  pageNumber?: number;
-  pageSize?: number;
+    searchByTitle?: string;
+    filterByPublicationStatus?: string;
+    filterByOfferType?: string;
+    filterByPublicationType?: string;
+    sortBy?: string;
+    sortOrder?: string;
+    pageNumber?: number;
+    pageSize?: number;
 }
 
 
