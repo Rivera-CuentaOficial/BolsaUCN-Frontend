@@ -86,53 +86,54 @@ export default function Page() {
             </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-center gap-6 w-full max-w-4xl px-4">
-            <a
-                href='/admin/publications/validate'
-                className="group flex-1 flex items-center justify-center px-8 py-6 rounded-[2rem] text-lg font-bold transition-all duration-300 shadow-xl
-                            bg-white/10 backdrop-blur-md border border-white/20 text-white 
-                            hover:bg-white hover:text-purple-900 hover:scale-[1.02] hover:shadow-2xl hover:border-white"
-            >
-                <div className="mr-4 p-2 bg-white/10 rounded-full group-hover:bg-purple-100 transition-colors">
-                    <CheckCircle className="size-6 text-white group-hover:text-purple-700" />
-                </div>
-                Validar Publicaciones
-            </a>
+        <div className="flex flex-col lg:flex-row justify-center gap-6 w-full max-w-4xl px-4">
+          <a
+            href='/admin/publications/validate'
+            className="group flex items-center justify-center px-6 py-6 rounded-[2rem] text-base sm:text-lg font-bold transition-all duration-300 shadow-xl
+                        bg-white/10 backdrop-blur-md border border-white/20 text-white 
+                        hover:bg-white hover:text-purple-900 hover:scale-[1.02] hover:shadow-2xl hover:border-white min-w-0"
+          >
+            <div className="mr-3 sm:mr-4 p-2 bg-white/10 rounded-full group-hover:bg-purple-100 transition-colors flex-shrink-0">
+                <CheckCircle className="size-5 sm:size-6 text-white group-hover:text-purple-700" />
+            </div>
+            <span className="text-center leading-tight break-words">Validar Publicaciones</span>
+          </a>
 
-            <a
-                href='/admin/publications/manage'
-                className="group flex-1 flex items-center justify-center px-8 py-6 rounded-[2rem] text-lg font-bold transition-all duration-300 shadow-xl
-                            bg-white/10 backdrop-blur-md border border-white/20 text-white 
-                            hover:bg-white hover:text-purple-900 hover:scale-[1.02] hover:shadow-2xl hover:border-white"
-            >
-                <div className="mr-4 p-2 bg-white/10 rounded-full group-hover:bg-purple-100 transition-colors">
-                    <Settings className="size-6 text-white group-hover:text-purple-700" />
-                </div>
-                Administrar Publicaciones
-            </a>
+          <a
+            href='/admin/publications/manage'
+            className="group flex items-center justify-center px-6 py-6 rounded-[2rem] text-base sm:text-lg font-bold transition-all duration-300 shadow-xl
+                        bg-white/10 backdrop-blur-md border border-white/20 text-white 
+                        hover:bg-white hover:text-purple-900 hover:scale-[1.02] hover:shadow-2xl hover:border-white min-w-0"
+          >
+            <div className="mr-3 sm:mr-4 p-2 bg-white/10 rounded-full group-hover:bg-purple-100 transition-colors flex-shrink-0">
+                <Settings className="size-5 sm:size-6 text-white group-hover:text-purple-700" />
+            </div>
+            <span className="text-center leading-tight break-words">Administrar Publicaciones</span>
+          </a>
 
-            <a
-                href='/admin/users'
-                className="group flex-1 flex items-center justify-center px-8 py-6 rounded-[2rem] text-lg font-bold transition-all duration-300 shadow-xl
-                            bg-white/10 backdrop-blur-md border border-white/20 text-white 
-                            hover:bg-white hover:text-purple-900 hover:scale-[1.02] hover:shadow-2xl hover:border-white"
-            >
-                <div className="mr-4 p-2 bg-white/10 rounded-full group-hover:bg-purple-100 transition-colors">
-                    <UserCog className="size-6 text-white group-hover:text-purple-700" />
-                </div>
-                Ver Usuarios
-            </a>
-            <a
-                href='/jobs/reports'
-                className="group flex-1 flex items-center justify-center px-8 py-6 rounded-[2rem] text-lg font-bold transition-all duration-300 shadow-xl
-                            bg-white/10 backdrop-blur-md border border-white/20 text-white 
-                            hover:bg-white hover:text-purple-900 hover:scale-[1.02] hover:shadow-2xl hover:border-white"
-            >
-                <div className="mr-4 p-2 bg-white/10 rounded-full group-hover:bg-purple-100 transition-colors">
-                    <BarChart className="size-6 text-white group-hover:text-purple-700" />
-                </div>
-                Ver Reseñas
-            </a>
+          <a
+            href='/admin/users'
+            className="group flex items-center justify-center px-6 py-6 rounded-[2rem] text-base sm:text-lg font-bold transition-all duration-300 shadow-xl
+                        bg-white/10 backdrop-blur-md border border-white/20 text-white 
+                        hover:bg-white hover:text-purple-900 hover:scale-[1.02] hover:shadow-2xl hover:border-white min-w-0"
+          >
+            <div className="mr-3 sm:mr-4 p-2 bg-white/10 rounded-full group-hover:bg-purple-100 transition-colors flex-shrink-0">
+                <UserCog className="size-5 sm:size-6 text-white group-hover:text-purple-700" />
+            </div>
+            <span className="text-center leading-tight break-words">Ver Usuarios</span>
+          </a>
+          
+          <a
+            href='/jobs/reports'
+            className="group flex items-center justify-center px-6 py-6 rounded-[2rem] text-base sm:text-lg font-bold transition-all duration-300 shadow-xl
+                        bg-white/10 backdrop-blur-md border border-white/20 text-white 
+                        hover:bg-white hover:text-purple-900 hover:scale-[1.02] hover:shadow-2xl hover:border-white min-w-0"
+          >
+            <div className="mr-3 sm:mr-4 p-2 bg-white/10 rounded-full group-hover:bg-purple-100 transition-colors flex-shrink-0">
+                <BarChart className="size-5 sm:size-6 text-white group-hover:text-purple-700" />
+            </div>
+            <span className="text-center leading-tight break-words">Ver Reseñas</span>
+          </a>
         </div>
 
       </main>
