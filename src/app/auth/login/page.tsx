@@ -117,7 +117,8 @@ export default function LoginPage() {
       // Si se proporcionó un returnTo válido lo usamos, si no elegimos según role
       let finalRedirect =
         safeReturnTo ||
-        (hasRole(ROLES.ADMIN) ? "/admin/publications" : "/offers");
+        (hasRole(ROLES.ADMIN) ? "/landing/admin" : 
+        hasRole(ROLES.APPLICANT) ? "/landing/applicant" : "/landing/offeror");
 
       console.log(response.message || "Inicio de sesión exitoso.");
       setSuccess(true);

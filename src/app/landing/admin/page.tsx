@@ -120,7 +120,7 @@ export default function Page() {
             <div className="mr-3 sm:mr-4 p-2 bg-white/10 rounded-full group-hover:bg-purple-100 transition-colors flex-shrink-0">
                 <UserCog className="size-5 sm:size-6 text-white group-hover:text-purple-700" />
             </div>
-            <span className="text-center leading-tight break-words">Ver Usuarios</span>
+            <span className="text-center leading-tight break-words">Ver a todos los Usuarios</span>
           </a>
           
           <a
@@ -132,7 +132,7 @@ export default function Page() {
             <div className="mr-3 sm:mr-4 p-2 bg-white/10 rounded-full group-hover:bg-purple-100 transition-colors flex-shrink-0">
                 <BarChart className="size-5 sm:size-6 text-white group-hover:text-purple-700" />
             </div>
-            <span className="text-center leading-tight break-words">Ver Reseñas</span>
+            <span className="text-center leading-tight break-words">Ver todas las Reseñas</span>
           </a>
         </div>
 

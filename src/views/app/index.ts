@@ -7,7 +7,7 @@ export { default as YourPublicationsView } from "@/views/app/offerer/your-public
 export { default as YourPublicationDetailView } from "@/views/app/offerer/your-publications/[id]";
 // export {default as ApplicantsOffererView} from "@/views/app/offerer/your-publications/[id]/applicants";
 
-export {default as OffererView} from "@/views/app/offerer";
+export {default as OffererView} from "@/views/app/landing/offeror";
 export {default as defaultYourPublicationDetailViewAdmin } from "@/views/app/admin/your-publications/[id]";
 export {default as YourPublicationDetailViewAdmin } from "@/views/app/admin/your-publications/[id]";
 export {default as YourPublicationsViewAdmin } from "@/views/app/admin/your-publications";

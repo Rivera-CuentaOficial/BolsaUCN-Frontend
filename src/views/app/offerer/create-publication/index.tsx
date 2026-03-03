@@ -1,8 +1,8 @@
 "use client";
 import { useEffect } from "react";
-import LoadingSpinner from "../components/loading-spinner";
+import LoadingSpinner from "./components/loading-spinner";
 import { useRouter } from "next/navigation";
-import { usePublicationForm } from "../hooks/use-publication-form";
+import { usePublicationForm } from "./hooks/use-publication-form";
 import {
   ArrowLeft,
   Sparkles,

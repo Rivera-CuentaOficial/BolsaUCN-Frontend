@@ -13,7 +13,7 @@
   * Vista de Menú Principal (Dashboard) para el Oferente.
   * Permite navegar a las distintas funcionalidades: Crear publicación, Ver mis publicaciones, Perfil.
   */
- export default function OffererView() {
+ export function OfferorView() {
    const router = useRouter();
  
    const menuItems = [
@@ -39,7 +39,7 @@
        title: "Mi Perfil",
        description: "Actualiza tu información personal y de contacto.",
        icon: <User className="w-8 h-8" />,
-       onClick: () => router.push('/offerer/profile/company'),
+       onClick: () => router.push('/profile'),
        color: "from-purple-400 to-pink-500",
        bgHover: "hover:bg-purple-500/10",
        border: "border-purple-500/20"
