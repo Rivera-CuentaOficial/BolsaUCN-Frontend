@@ -51,7 +51,6 @@ export const useAdminPublicationDetailView = (id: number) => {
     setIsMutating(true);
     try {
       await manageService.closePublicationById(detail.publicationId, reason);
-      router.push("/admin/publications/manage");
     } catch (err: any) {
       if (err.response && err.response.status === 409) {
         throw new Error("El estado actual de la publicación no permite el cierre.");
@@ -68,7 +67,6 @@ export const useAdminPublicationDetailView = (id: number) => {
     setIsMutating(true);
     try {
       await adminPublicationService.cancelPublication(detail.publicationId);
-      router.push("/admin/publications/manage");
     } catch (err: any) {
       throw err;
     } finally {

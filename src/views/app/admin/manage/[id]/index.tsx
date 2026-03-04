@@ -62,6 +62,7 @@ export default function ManageDetailView({ id }: ManageDetailViewProps) {
   const isJobOffer = detail?.publicationType === "Oferta";
   const applicantsCount = (detail as any)?.applicantsCount || 0;
   const canCancelOffer = isJobOffer && detail?.currentStatus === "RecibiendoPostulaciones";
+  const canCloseBuySell = !isJobOffer && detail?.availability === "Disponible";
 
   // 1. ESTADO DE CARGA
   if (loading || !detail) {
@@ -159,6 +160,7 @@ export default function ManageDetailView({ id }: ManageDetailViewProps) {
                     {isMutating ? "Procesando..." : "Cancelar Oferta"}
                   </button>
                 )}
+                {canCloseBuySell && (
                 <button
                   onClick={() => setIsCloseDialogOpen(true)}
                   disabled={isMutating}
@@ -167,6 +169,7 @@ export default function ManageDetailView({ id }: ManageDetailViewProps) {
                   <Trash2 className="w-5 h-5" />
                   {isMutating ? "Procesando..." : "Cerrar Publicación"}
                 </button>
+                )}
               </div>
             </div>
           </div>
