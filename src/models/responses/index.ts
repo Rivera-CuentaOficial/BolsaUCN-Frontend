@@ -1,4 +1,3 @@
-import { AdminItem } from '@/models/responses/publication';
 export {
   type PendingOffersForAdmin,
   type OfferDetailForAdmin,
@@ -10,7 +9,6 @@ export {
   type OfferForAdmin,
   type PublicationType,
   type ValidationStatus,
-  type AdminDetail,
   type UseAdminDetailValidateResult,
   type UseAdminDetailManageResult,
   type PublicationResponse,

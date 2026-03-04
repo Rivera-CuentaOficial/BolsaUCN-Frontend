@@ -1,7 +1,7 @@
 // frontend/src/views/app/offerer/your-publications/[id]/hooks/use-appeal-form.ts
 import { useState, useEffect } from "react";
 import { validators } from "@/utils/AuthValidatorsUtil";
-import type { MyPublicationDetails } from "src/models/responses";
+import type { MyPublicationDetails } from "@/models/responses";
 
 export interface AppealFormData {
   // Common fields

@@ -1,4 +1,3 @@
-// src/components/profile/RegisterAdminButton.tsx
 "use client";
 
 import React from "react";

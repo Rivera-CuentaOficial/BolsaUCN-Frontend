@@ -1,6 +1,6 @@
 import { BaseApiService } from "@/services/base-api-service";
 import { ApiResponse } from "@/models/generics";
-import type { BuySellBasic, PendingOffersForAdmin, ValidationResponse } from "src/models/responses";
+import type { ValidationResponse } from "@/models/responses";
 import { PublicationDetailsForApprovalDTO, PublicationsForValidationDTO } from "@/models/responses/publication";
 
 export interface ValidationActionRequest {

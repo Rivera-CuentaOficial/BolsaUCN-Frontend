@@ -41,7 +41,7 @@ export function ValidationActionSection({
           className="group relative"
         >
           <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 text-3xl font-bold flex-shrink-0 group-hover:bg-purple-200 transition-colors">
-            {detail.companyName ? detail.companyName[0].toUpperCase() : "U"}
+            {detail.userName ? detail.userName[0].toUpperCase() : "U"}
           </div>
           <div className="absolute -top-1 -right-1 w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
             <ExternalLink className="w-3 h-3 text-white" />
@@ -53,7 +53,7 @@ export function ValidationActionSection({
           href={`/admin/users/${userId}`}
           className="font-bold text-lg text-gray-900 break-words w-full px-2 leading-tight hover:text-purple-600 transition-colors"
         >
-          {detail.companyName || "Usuario UCN"}
+          {detail.userName || "Usuario UCN"}
         </Link>
 
         {/* RATING */}

@@ -10,7 +10,7 @@ import type {
   GetReviewsDTO,
   GetReviewDetailsDTO,
   HideReviewInfoDTO
-} from "src/models/responses";
+} from "@/models/responses";
 
 export class ReviewService extends BaseApiService {
   constructor() {

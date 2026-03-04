@@ -9,7 +9,7 @@ import type {
   ApplicantResponse,
   MyBuySell,
   OfferDetail,
-} from "src/models/responses";
+} from "@/models/responses";
 
 export class AdminPublicationService extends BaseApiService {
   constructor() {

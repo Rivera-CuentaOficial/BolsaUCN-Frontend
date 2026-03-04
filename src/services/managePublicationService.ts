@@ -4,7 +4,7 @@ import type {
   PublicationsForAdmin,
   PublicationsForAdminSearchParams,
   PublicationDetailsForAdmin
-} from "src/models/responses";
+} from "@/models/responses";
 import { PublicationDetailsForApprovalDTO } from "@/models/responses/publication";
 
 export class ManagePublicationService extends BaseApiService {

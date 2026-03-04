@@ -1,5 +1,3 @@
-import { toOfferTypeForAdmin } from "@/lib";
-
 export interface PendingOffersForAdmin {
     title: string;
     offerType: number;
@@ -90,32 +88,6 @@ export interface PublishedItem {
 
 export type PublicationType = "Trabajo" | "Voluntariado" | "Compra/Venta";
 export type ValidationStatus = "Pending" | "Published" | "Rejected";
-
-export interface AdminDetail {
-    id: string;
-    userId: number;
-    title: string;
-    description: string;
-    images: string[];
-    companyName: string;
-    publicationDate: string;
-    type: PublicationType;
-    active: boolean;
-    statusValidation: ValidationStatus;
-    price?: number;
-    remuneration?: number;
-    deadlineDate?: string;
-    isCVRequired?: boolean;
-    endDate?: string;
-    location?: string;
-    requirements?: string;
-    contactInfo: string;
-    aboutMe?: string;
-    rating: number;
-    category?: string;
-    additionalContactEmail?: string;
-    additionalContactPhoneNumber?: string;
-}
 
 export interface UseAdminDetailValidateResult {
     detail: PublicationDetailsForApprovalDTO | null;
@@ -337,7 +309,7 @@ export interface PublicationsForValidationDTO {
     totalCount: number;
 }
 export interface PaginatedValidationItems {
-    publications: ValidationItemFull[];
+    publications: PublicationForValidationDTO[];
     totalPages: number;
     currentPage: number;
     pageSize: number;

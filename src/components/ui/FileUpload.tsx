@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/Button";
-import { cn } from "src/lib";
+import { cn } from "@/lib";
 
 interface FileUploadProps {
   accept?: string;

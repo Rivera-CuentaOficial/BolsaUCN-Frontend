@@ -296,7 +296,7 @@ function ApplicationCard({
 
           {/* Expand Icon */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            {application.cvUrl && (
+            {application.hasCV && (
               <div className="bg-purple-100 text-purple-700 px-2 py-1 rounded-lg text-xs font-bold">
                 CV
               </div>
@@ -356,20 +356,6 @@ function ApplicationCard({
                   })}
                 </p>
               </div>
-
-              {/* CV View Button */}
-              {application.cvUrl && (
-                <a
-                  href={application.cvUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition w-full"
-                >
-                  <Eye className="w-5 h-5" />
-                  Ver CV
-                </a>
-              )}
             </div>
 
             {/* Right Column: Cover Letter */}

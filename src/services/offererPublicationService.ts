@@ -11,8 +11,8 @@ import type {
   OfferDetail,
   MyPublicationsResponse,
   MyPublicationsSearchParams
-} from "src/models/responses";
-import type { OffererPublication } from "src/models/generics";
+} from "@/models/responses";
+import type { OffererPublication } from "@/models/generics";
 import { MyPublicationDetails } from "@/models/responses/publication";
 
 export class OffererPublicationService extends BaseApiService {

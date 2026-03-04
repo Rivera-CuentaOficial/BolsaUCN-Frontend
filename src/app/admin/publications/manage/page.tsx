@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { ManageView } from "@/views/app"; 
 export const metadata = {
   title: "Administrar Publicaciones",
@@ -5,5 +6,9 @@ export const metadata = {
 };
 
 export default function ValidationPage() {
-  return <ManageView />;
+  return (
+  <Suspense fallback={<div className="p-4">Cargando publicaciones...</div>}>
+    <ManageView />
+  </Suspense>
+  );
 }

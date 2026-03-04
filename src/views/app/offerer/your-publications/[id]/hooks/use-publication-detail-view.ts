@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { offererPublicationService } from "src/services/offererPublicationService";
-import type { MyPublicationDetails } from "src/models/responses";
+import { offererPublicationService } from "@/services/offererPublicationService";
+import type { MyPublicationDetails } from "@/models/responses";
 
 export type PublicationAction = "postulantes" | "close_publication" | "advance_offer";
 

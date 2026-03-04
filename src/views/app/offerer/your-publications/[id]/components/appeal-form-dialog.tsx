@@ -4,7 +4,7 @@
 import React, { useEffect } from "react";
 import { X, AlertCircle, Mail, Phone, Calendar, DollarSign, Briefcase, MapPin, ClipboardList, FileText } from "lucide-react";
 import { useAppealForm } from "../hooks/use-appeal-form";
-import type { MyPublicationDetails } from "src/models/responses";
+import type { MyPublicationDetails } from "@/models/responses";
 
 interface AppealFormDialogProps {
   isOpen: boolean;

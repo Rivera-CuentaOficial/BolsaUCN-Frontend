@@ -3,8 +3,8 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { AxiosError } from "axios";
 import { validators } from "@/utils/AuthValidatorsUtil"
-import { offererPublicationService } from "src/services/offererPublicationService"; // Asegúrate de importar la interfaz
-import { buildLoginUrl, extractUserFromJwt } from "src/lib/auth";
+import { offererPublicationService } from "@/services/offererPublicationService"; // Asegúrate de importar la interfaz
+import { buildLoginUrl, extractUserFromJwt } from "@/lib/auth";
 import { CreateBuySellData } from "@/models/responses";
 import { useNotification } from "@/hooks/common/use-notification";
 

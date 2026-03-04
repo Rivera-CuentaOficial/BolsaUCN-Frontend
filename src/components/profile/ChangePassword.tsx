@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Lock, AlertCircle } from "lucide-react";
 import { profileService } from "@/services/profileService";
-import { validators } from "src/utils/AuthValidatorsUtil";
+import { validators } from "@/utils/AuthValidatorsUtil";
 
 interface ChangePasswordDialogProps {
   open: boolean;

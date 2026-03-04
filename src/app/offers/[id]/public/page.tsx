@@ -1,5 +1,3 @@
-// frontend/src/app/offers/[id]/public/page.tsx (REPLACE ENTIRE FILE)
-
 "use client";
 
 import { useEffect } from "react";
