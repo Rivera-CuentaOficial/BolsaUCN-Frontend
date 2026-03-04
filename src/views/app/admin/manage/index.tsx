@@ -555,7 +555,7 @@ export default function ManageView() {
 
         <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 max-w-7xl">
           <header className="mb-10">
-            <Link href="/admin/publications">
+            <Link href="/landing/admin">
               <button className="mb-8 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all font-bold text-sm backdrop-blur-sm border border-white/10">
                 <ArrowLeft className="h-4 w-4" />
                 Volver al Panel

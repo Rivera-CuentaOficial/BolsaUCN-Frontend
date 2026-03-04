@@ -308,13 +308,6 @@ export interface PublicationsForValidationDTO {
     pageSize: number;
     totalCount: number;
 }
-export interface PaginatedValidationItems {
-    publications: PublicationForValidationDTO[];
-    totalPages: number;
-    currentPage: number;
-    pageSize: number;
-    totalCount: number;
-}
 export interface PublicationDetailsForApprovalDTO {
     // Informacion basica
     publicationId: number;

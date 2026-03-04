@@ -1,1 +1,1 @@
-export { useValidationView } from "./use-validation-view";
+export { useGetPendingPublicationsForAdmin } from "./use-validation-view";

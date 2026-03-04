@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ValidationActionVariables } from "@/models/requests";
 import { handleApiError } from "@/lib";
 import { validationService } from "@/services/validationService";
-import { PaginatedValidationItems } from "@/models/responses/publication";
+import { PublicationsForValidationDTO } from "@/models/responses/publication";
 
 export const useGetPendingPublications = (params?: {
     searchTerm?: string;
@@ -12,21 +12,13 @@ export const useGetPendingPublications = (params?: {
     pageNumber?: number;
     pageSize?: number;
 }) => {
-    return useQuery<PaginatedValidationItems, Error>({
+    return useQuery<PublicationsForValidationDTO, Error>({
         queryKey: ["admin", "validation", "pending", params],
         queryFn: async () => {
             try {
                 const response = await validationService.getPendingPublications(params);
                 const data = response.data.data;
-
-                //? NUEVA IMPLEMENTACION
-                return {
-                    publications: data.publications,
-                    totalCount: data.totalCount,
-                    currentPage: data.currentPage,
-                    pageSize: data.pageSize,
-                    totalPages: data.totalPages
-                };
+                return data;
             } catch (error) {
                 const apiError = handleApiError(error);
                 throw new Error(apiError.details || apiError.message);
