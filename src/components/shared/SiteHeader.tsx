@@ -23,7 +23,7 @@ const userLinks = [
 ];
 
 const adminNavLinks = [
-  { href: "/admin/publications", label: "Inicio" },
+  { href: "/landing/admin", label: "Inicio" },
   { href: "/admin/publications/validate", label: "Validar" },
   { href: "/admin/publications/manage", label: "Administrar" },
   { href: "/offerer/create-publication", label: "Publicar" },
@@ -31,13 +31,13 @@ const adminNavLinks = [
 ];
 
 const offererNavLinks = [
-  { href: "/offers", label: "Explorar" },
+  { href: "/landing/offeror", label: "Inicio" },
   { href: "/offerer/create-publication", label: "Publicar" },
   { href: "/offerer/your-publications", label: "Mis Publicaciones" },
 ];
 
 const studentNavLinks = [
-  { href: "/", label: "Explorar" },
+  { href: "/landing/applicant", label: "Inicio" },
   { href: "/offerer/create-publication", label: "Publicar" },
   { href: "/offerer/your-publications", label: "Mis Publicaciones" },
 ];
@@ -183,7 +183,7 @@ export default function SiteHeader() {
   const isStudent = auth.roles.includes(ROLES.APPLICANT);
 
   const mainLinks = isAdmin ? adminNavLinks : isOfferer ? offererNavLinks : isStudent ? studentNavLinks : userLinks;
-  const logoHref = isAdmin ? "/admin/publications" : "/";
+  const logoHref = isAdmin ? "/landing/admin" : "/";
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-(--border) bg-white/80 backdrop-blur-xl">
