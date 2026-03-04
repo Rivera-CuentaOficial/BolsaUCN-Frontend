@@ -60,11 +60,11 @@ export interface OfferForAdmin {
 export interface AdminItemBase {
     id: string;
     title: string;
-    type: "Oferta de Trabajo" | "Voluntariado" | "Compra/Venta";
+    type: "Oferta"| "CompraVenta";
 }
 export type AdminItem = OfferForAdmin | BuySellForAdmin;
 
-export type OfferSubType = "Oferta de Trabajo" | "Voluntariado";
+export type OfferSubType = "Oferta" | "Voluntariado";
 
 export interface OfferTypeForAdmin {
     id: string;

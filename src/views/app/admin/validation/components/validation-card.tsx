@@ -10,18 +10,20 @@ interface ValidationCardProps {
 }
 
 const getIcon = (type: string) => {
-    if (type === "Voluntariado") return Heart;
-    if (type === "Compra/Venta") return ShoppingBag;
+    if (type === "Oferta") return Briefcase;
+    if (type === "CompraVenta") return ShoppingBag;
     return Briefcase;
 };
 
 const getTypeColor = (type: string) => {
-    if (type === "Voluntariado") return "bg-pink-100 text-pink-700";
-    if (type === "Compra/Venta") return "bg-purple-100 text-purple-700";
+    if (type === "Oferta") return "bg-pink-100 text-pink-700";
+    if (type === "CompraVenta") return "bg-purple-100 text-purple-700";
     return "bg-indigo-100 text-indigo-700";
 };
 
 export function ValidationCard({ itemId, item }: ValidationCardProps) {
+    if (!item) return null;
+
     const { text } = getOfferTypeDisplay(item.type);
     const detailUrl = `/admin/publications/validate/${itemId}`;
     const Icon = getIcon(item.type);

@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
-import { getOfferTypeDisplay } from '@/lib'; 
-import { AdminItemBase } from '@/models/responses'; 
+import { getOfferTypeDisplay } from '@/lib';
+import { AdminItemBase } from '@/models/responses';
 import { ArrowRight, Briefcase, Heart, ShoppingBag } from 'lucide-react';
 
 interface ValidationRowLinkProps {
@@ -10,18 +10,20 @@ interface ValidationRowLinkProps {
 }
 
 const getIcon = (type: string) => {
-    if (type === "Voluntariado") return Heart;
-    if (type === "Compra/Venta") return ShoppingBag;
-    return Briefcase;
+    if (type === "Oferta") return Briefcase;
+    if (type === "CompraVenta") return ShoppingBag;
+    return Heart;
 }
 
 const getTypeColor = (type: string) => {
-    if (type === "Voluntariado") return "bg-pink-100 text-pink-700";
-    if (type === "Compra/Venta") return "bg-purple-100 text-purple-700";
+    if (type === "Oferta") return "bg-blue-100 text-blue-700";
+    if (type === "CompraVenta") return "bg-purple-100 text-purple-700";
     return "bg-indigo-100 text-indigo-700";
 }
 
 export function ValidationRowLink({ itemId, item }: ValidationRowLinkProps) {
+    if (!item) return null;
+
     const { text } = getOfferTypeDisplay(item.type);
     const detailUrl = `/admin/publications/validate/${itemId}`;
     const Icon = getIcon(item.type);
@@ -37,7 +39,7 @@ export function ValidationRowLink({ itemId, item }: ValidationRowLinkProps) {
                         <Icon className="w-6 h-6" />
                     </div>
                 </div>
-                
+
                 {/* Publication Info */}
                 <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-white text-lg truncate mb-1">{item.title}</h3>
