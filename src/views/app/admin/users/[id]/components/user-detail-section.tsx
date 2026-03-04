@@ -1,7 +1,7 @@
 "use client";
 
 import { UserProfileForAdminDto } from "@/services/dtos/adminDto";
-import { Calendar, Mail, Phone, FileText, Accessibility, Shield } from "lucide-react";
+import { Calendar, Mail, Phone, FileText, Accessibility, Shield, User, GraduationCap } from "lucide-react";
 import { formatDate} from "@/utils/Util";
 
 interface UserDetailSectionProps {
@@ -11,7 +11,7 @@ interface UserDetailSectionProps {
 export function UserDetailSection({ user }: UserDetailSectionProps) {
     return (
         <section className="w-full space-y-6">
-            {/* Status Badge */}
+            {/* Status Badges */}
             {user.banned && (
                 <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
                     <Shield className="w-5 h-5 text-red-600" />
@@ -34,145 +34,195 @@ export function UserDetailSection({ user }: UserDetailSectionProps) {
 
             {/* About Me */}
             {user.aboutMe && (
-                <div className="space-y-2">
-                    <h3 className="text-xl font-bold text-black">Sobre mí</h3>
-                    <p className="text-slate-700 leading-relaxed whitespace-pre-line">
-                        {user.aboutMe}
-                    </p>
-                </div>
+                <section className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4">
+                    <div className="flex items-start gap-3">
+                        <div className="p-2.5 rounded-xl bg-purple-100">
+                            <FileText className="w-5 h-5 text-purple-600" />
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-1">
+                                Sobre mí
+                            </h3>
+                            <p className="text-xs text-gray-600">
+                                Información personal del usuario
+                            </p>
+                        </div>
+                    </div>
+                    <div className="bg-white p-4 rounded-xl border border-slate-200">
+                        <p className="text-slate-700 leading-relaxed whitespace-pre-line">
+                            {user.aboutMe}
+                        </p>
+                    </div>
+                </section>
             )}
 
             {/* Información de Contacto */}
-            <div className="pt-4 border-t border-slate-200">
-                <h3 className="text-xl font-bold text-black mb-4">
-                    Información de Contacto
-                </h3>
+            <section className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4">
+                <div className="flex items-start gap-3">
+                    <div className="p-2.5 rounded-xl bg-purple-100">
+                        <User className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div className="flex-1">
+                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-1">
+                            Información de Contacto
+                        </h3>
+                        <p className="text-xs text-gray-600">
+                            Datos de contacto y perfil
+                        </p>
+                    </div>
+                </div>
 
-                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Email */}
-                    <div>
-                        <dt className="font-semibold text-slate-700 flex items-center gap-2">
-                            <Mail className="w-4 h-4" />
-                            Correo Electrónico:
+                    <div className="bg-white p-4 rounded-xl border border-slate-200">
+                        <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+                            <Mail className="w-3 h-3" />
+                            Correo Electrónico
                         </dt>
-                        <dd className="mt-1 text-slate-600 break-all">
+                        <dd className="text-sm font-medium text-slate-900 break-all">
                             {user.email}
                         </dd>
                     </div>
 
                     {/* Phone */}
-                    <div>
-                        <dt className="font-semibold text-slate-700 flex items-center gap-2">
-                            <Phone className="w-4 h-4" />
-                            Teléfono:
+                    <div className="bg-white p-4 rounded-xl border border-slate-200">
+                        <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+                            <Phone className="w-3 h-3" />
+                            Teléfono
                         </dt>
-                        <dd className="mt-1 text-slate-600">
+                        <dd className="text-sm font-medium text-slate-900">
                             {user.phoneNumber}
                         </dd>
                     </div>
 
                     {/* RUT */}
-                    <div>
-                        <dt className="font-semibold text-slate-700">RUT:</dt>
-                        <dd className="mt-1 text-slate-600">
+                    <div className="bg-white p-4 rounded-xl border border-slate-200">
+                        <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                            RUT
+                        </dt>
+                        <dd className="text-sm font-medium text-slate-900">
                             {user.rut}
                         </dd>
                     </div>
 
                     {/* Rating */}
                     {user.rating !== null && (
-                        <div>
-                            <dt className="font-semibold text-slate-700">Calificación:</dt>
-                            <dd className="mt-1 font-semibold text-green-700">
+                        <div className="bg-white p-4 rounded-xl border border-slate-200">
+                            <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                                Calificación
+                            </dt>
+                            <dd className="text-sm font-medium text-green-700">
                                 ⭐ {user.rating.toFixed(1)} / 6.0
                             </dd>
                         </div>
                     )}
-                </dl>
-            </div>
+                </div>
+            </section>
 
             {/* Student Specific Info */}
             {user.userType === "Estudiante" && (user.cvUrl || user.disability) && (
-                <div className="pt-4 border-t border-slate-200">
-                    <h3 className="text-xl font-bold text-black mb-4">
-                        Información Académica
-                    </h3>
+                <section className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4">
+                    <div className="flex items-start gap-3">
+                        <div className="p-2.5 rounded-xl bg-purple-100">
+                            <GraduationCap className="w-5 h-5 text-purple-600" />
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-1">
+                                Información Académica
+                            </h3>
+                            <p className="text-xs text-gray-600">
+                                Documentos y datos del estudiante
+                            </p>
+                        </div>
+                    </div>
 
-                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm">
+                    <div className="grid grid-cols-1 gap-4">
+                        {/* CV URL */}
                         {user.cvUrl && (
-                            <div>
-                                <dt className="font-semibold text-slate-700 flex items-center gap-2">
-                                    <FileText className="w-4 h-4" />
-                                    Currículum Vitae:
+                            <div className="bg-white p-4 rounded-xl border border-slate-200">
+                                <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                                    Currículum Vitae
                                 </dt>
-                                <dd className="mt-1">
-                                    <a 
-                                        href={user.cvUrl} 
-                                        target="_blank" 
+                                <dd>
+                                    <a
+                                        href={user.cvUrl}
+                                        target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-indigo-600 hover:text-indigo-800 underline font-medium"
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 rounded-lg font-semibold text-sm hover:bg-purple-100 transition"
                                     >
+                                        <FileText className="w-4 h-4" />
                                         Ver CV
                                     </a>
                                 </dd>
                             </div>
                         )}
 
+                        {/* Disability */}
                         {user.disability && (
-                            <div>
-                                <dt className="font-semibold text-slate-700 flex items-center gap-2">
-                                    <Accessibility className="w-4 h-4" />
-                                    Discapacidad:
+                            <div className="bg-white p-4 rounded-xl border border-slate-200">
+                                <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+                                    <Accessibility className="w-3 h-3" />
+                                    Discapacidad
                                 </dt>
-                                <dd className="mt-1 text-slate-600">
+                                <dd className="text-sm font-medium text-slate-900">
                                     {user.disability}
                                 </dd>
                             </div>
                         )}
-                    </dl>
-                </div>
+                    </div>
+                </section>
             )}
 
-            {/* Activity Info */}
-            <div className="pt-4 border-t border-slate-200">
-                <h3 className="text-xl font-bold text-black mb-4">
-                    Actividad en la Plataforma
-                </h3>
+            {/* Account Information */}
+            <section className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4">
+                <div className="flex items-start gap-3">
+                    <div className="p-2.5 rounded-xl bg-purple-100">
+                        <Calendar className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div className="flex-1">
+                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-1">
+                            Información de la Cuenta
+                        </h3>
+                        <p className="text-xs text-gray-600">
+                            Fechas de registro y actividad
+                        </p>
+                    </div>
+                </div>
 
-                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Created At */}
-                    <div>
-                        <dt className="font-semibold text-slate-700 flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            Fecha de Registro:
+                    <div className="bg-white p-4 rounded-xl border border-slate-200">
+                        <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                            Fecha de Registro
                         </dt>
-                        <dd className="mt-1 text-slate-600">
+                        <dd className="text-sm font-medium text-slate-900">
                             {formatDate(user.createdAt)}
                         </dd>
                     </div>
 
                     {/* Updated At */}
-                    <div>
-                        <dt className="font-semibold text-slate-700 flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            Última Actualización:
+                    <div className="bg-white p-4 rounded-xl border border-slate-200">
+                        <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                            Última Actualización
                         </dt>
-                        <dd className="mt-1 text-slate-600">
+                        <dd className="text-sm font-medium text-slate-900">
                             {formatDate(user.updatedAt)}
                         </dd>
                     </div>
 
                     {/* Last Login */}
                     {user.lastLoginAt && (
-                        <div>
-                            <dt className="font-semibold text-slate-700">Último Acceso:</dt>
-                            <dd className="mt-1 text-slate-600">
+                        <div className="bg-white p-4 rounded-xl border border-slate-200 sm:col-span-2">
+                            <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                                Último Inicio de Sesión
+                            </dt>
+                            <dd className="text-sm font-medium text-slate-900">
                                 {formatDate(user.lastLoginAt)}
                             </dd>
                         </div>
                     )}
-                </dl>
-            </div>
+                </div>
+            </section>
         </section>
     );
 }

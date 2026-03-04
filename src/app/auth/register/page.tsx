@@ -76,7 +76,7 @@ export default function RegisterPage() {
       />
 
       <div className="min-h-screen flex flex-col justify-center items-center 
-      bg-blue-500 text-center px-4">
+      bg-ucn-blue text-center px-4">
         {/* Logo */}
         <div className="relative w-24 h-24 mb-4">
           <Image

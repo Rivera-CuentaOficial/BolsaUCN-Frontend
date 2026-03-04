@@ -42,3 +42,44 @@ export function getRoleFromToken() {
     return null;
   }
 }
+
+export function getRolesFromToken(): string[] {
+  const token = Cookies.get("token");
+  if (!token) return [];
+  
+  try {
+    const decodedToken: any = jwtDecode(token);
+    const userRole = decodedToken[ROLE_CLAIM];
+    
+    if (!userRole) return [];
+    
+    if (Array.isArray(userRole)) {
+      return userRole.map(role => role.trim()).filter(Boolean);
+    }
+    
+    if (typeof userRole === 'string') {
+      const trimmed = userRole.trim();
+      return trimmed ? [trimmed] : [];
+    }
+    
+    return [];
+  } catch (e) {
+    console.error("Error al obtener roles del token:", e);
+    return [];
+  }
+}
+// Nuevas funciones para obtener los roles de los usuarios
+export function hasRole(role: string): boolean {
+  const roles = getRolesFromToken();
+  return roles.includes(role);
+}
+
+export function hasAnyRole(rolesToCheck: string[]): boolean {
+  const roles = getRolesFromToken();
+  return rolesToCheck.some(role => roles.includes(role));
+}
+
+export function hasAllRoles(rolesToCheck: string[]): boolean {
+  const roles = getRolesFromToken();
+  return rolesToCheck.every(role => roles.includes(role));
+}

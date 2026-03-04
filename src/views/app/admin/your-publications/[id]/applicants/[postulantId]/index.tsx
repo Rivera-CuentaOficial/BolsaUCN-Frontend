@@ -73,11 +73,7 @@ export default function ApplicantDetailViewOfferer({
   if (error) return <div className="text-white text-center p-10">Error al cargar datos.</div>;
 
   return (
-    <div className="flex flex-col min-h-screen relative text-white bg-slate-900 overflow-hidden">
-      <div className="fixed inset-0 z-0 pointer-events-none">
-          <img src="/fondo.png" alt="Fondo" className="w-full h-full object-cover opacity-60"/>
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
-      </div>
+    <div className="flex flex-col min-h-screen relative text-white bg-ucn-purple overflow-hidden">
 
       <NotificationBanner 
         data={notification} 

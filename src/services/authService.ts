@@ -14,7 +14,7 @@ import type {
   AdminRequestDto,
   AdminResponseDto,
   CompanyRequestDto,
-  CompanyResponsetDto,
+  CompanyResponseDto,
   IndividualRequestDto,
   IndividualResponseDto,
   StudentRequestDto,
@@ -42,7 +42,7 @@ export async function registerAdmin(payload: AdminRequestDto | any) {
 }
 
 export async function registerCompany(payload: CompanyRequestDto | any) {
-  const response = await api.post<CompanyResponsetDto>("/auth/register/company", payload);
+  const response = await api.post<CompanyResponseDto>("/auth/register/company", payload);
   return CompanyAdapter.fromResponse(response.data);
 }
 

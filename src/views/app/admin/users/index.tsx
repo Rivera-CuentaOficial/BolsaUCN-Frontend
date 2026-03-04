@@ -107,16 +107,7 @@ export function AdminUsersView() {
     };
 
     return (
-        <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-slate-900">
-            
-            <div className="fixed inset-0 z-0">
-                <img 
-                    src="/fondo.png" 
-                    alt="Fondo UCN" 
-                    className="w-full h-full object-cover opacity-20"
-                />
-                <div className="absolute inset-0 bg-gradient-to-br from-[#6D5EF7] via-[#8B5CF6] to-[#A855F7]" />
-            </div>
+        <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-ucn-purple">
 
             <NotificationBanner
                 data={{ title: notification?.title || "", message: notification?.message || "", type: notification?.type || "success" }}
@@ -193,23 +184,87 @@ export function AdminUsersView() {
 
                 {totalPages > 1 && (
                     <div className="py-8 px-5">
-                        <div className="max-w-7xl mx-auto flex justify-center gap-2">
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                                <button
-                                    key={page}
-                                    onClick={() => setCurrentPage(page)}
-                                    className={`px-4 py-2 rounded-full font-bold transition-all ${
-                                        page === currentPage
-                                            ? "bg-white text-purple-900"
-                                            : "bg-white/10 text-white hover:bg-white/20"
-                                    }`}
-                                >
-                                    {page}
-                                </button>
-                            ))}
+                        <div className="max-w-7xl mx-auto flex justify-center items-center gap-2 flex-wrap">
+                        {/* Previous Button */}
+                        <button
+                            onClick={() => setCurrentPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className={`px-4 py-2 rounded-full font-bold transition-all ${
+                            currentPage === 1
+                                ? "bg-white/5 text-white/30 cursor-not-allowed"
+                                : "bg-white/10 text-white hover:bg-white/20"
+                            }`}
+                        >
+                            ←
+                        </button>
+
+                        {/* First Page + Left Ellipsis */}
+                        {currentPage > 3 && totalPages > 5 && (
+                            <>
+                            <button
+                                onClick={() => setCurrentPage(1)}
+                                className="px-4 py-2 rounded-full font-bold transition-all bg-white/10 text-white hover:bg-white/20"
+                            >
+                                1
+                            </button>
+                            {currentPage > 4 && (
+                                <span className="px-2 text-white/50">...</span>
+                            )}
+                            </>
+                        )}
+
+                        {/* Page Numbers (current ± 2) */}
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                            const pageOffset = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
+                            const page = pageOffset + i;
+                            
+                            if (page < 1 || page > totalPages) return null;
+                            
+                            return (
+                            <button
+                                key={page}
+                                onClick={() => setCurrentPage(page)}
+                                className={`px-4 py-2 rounded-full font-bold transition-all ${
+                                page === currentPage
+                                    ? "bg-white text-purple-900"
+                                    : "bg-white/10 text-white hover:bg-white/20"
+                                }`}
+                            >
+                                {page}
+                            </button>
+                            );
+                        })}
+
+                        {/* Right Ellipsis + Last Page */}
+                        {currentPage < totalPages - 2 && totalPages > 5 && (
+                            <>
+                            {currentPage < totalPages - 3 && (
+                                <span className="px-2 text-white/50">...</span>
+                            )}
+                            <button
+                                onClick={() => setCurrentPage(totalPages)}
+                                className="px-4 py-2 rounded-full font-bold transition-all bg-white/10 text-white hover:bg-white/20"
+                            >
+                                {totalPages}
+                            </button>
+                            </>
+                        )}
+
+                        {/* Next Button */}
+                        <button
+                            onClick={() => setCurrentPage(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className={`px-4 py-2 rounded-full font-bold transition-all ${
+                            currentPage === totalPages
+                                ? "bg-white/5 text-white/30 cursor-not-allowed"
+                                : "bg-white/10 text-white hover:bg-white/20"
+                            }`}
+                        >
+                            →
+                        </button>
                         </div>
                     </div>
-                )}
+                    )}
             </div>
         </div>
     );

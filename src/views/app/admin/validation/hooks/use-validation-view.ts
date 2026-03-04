@@ -1,57 +1,60 @@
 "use client";
-import { useMemo, useState } from "react";
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useGetPendingPublications } from "@/hooks/api/use-validation-service"; 
 import { ValidationType } from "@/models/responses"; 
 
 type SortType = "recientes" | "titulo";
+type ViewMode = "grid" | "list";
 
 export const useValidationView = () => {
     const router = useRouter();
-    const [text, setText] = useState("");
-    const [type, setType] = useState<ValidationType>("Todos");
-    const [sort, setSort] = useState<SortType>("recientes");
-    
-    const { 
-        data: allPublications,
-        isFetching, // Usamos isFetching para detectar la carga inicial real
+    const searchParams = useSearchParams();
+
+    // Initialize from URL params
+    const [text, setText] = useState(searchParams.get("search") || "");
+    const [type, setType] = useState<ValidationType>((searchParams.get("type") as ValidationType) || "Todos");
+    const [sort, setSort] = useState<SortType>((searchParams.get("sort") as SortType) || "recientes");
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">((searchParams.get("order") as "asc" | "desc") || "desc");
+    const [viewMode, setViewMode] = useState<ViewMode>((searchParams.get("view") as ViewMode) || "list");
+    const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get("page") || "1", 10));
+    const [pageSize] = useState(10);
+
+    // Update URL when filters change
+    useEffect(() => {
+        const params = new URLSearchParams();
+        if (text) params.set("search", text);
+        if (type !== "Todos") params.set("type", type);
+        if (sort !== "recientes") params.set("sort", sort);
+        if (sortOrder !== "desc") params.set("order", sortOrder);
+        if (viewMode !== "list") params.set("view", viewMode);
+        if (currentPage > 1) params.set("page", currentPage.toString());
+
+        const newUrl = params.toString() ? `?${params.toString()}` : "";
+        router.replace(`/admin/publications/validate${newUrl}`, { scroll: false });
+    }, [text, type, sort, sortOrder, viewMode, currentPage, router]);
+
+    const filterBy = type !== "Todos"
+        ? (type === "Compra/Venta" ? "CompraVenta" : "Oferta")
+        : undefined;
+
+    const sortBy = sort === "titulo" ? "Title" : "CreatedAt";
+
+    const {
+        data,
+        isFetching,
         error: apiError,
-        refetch, 
-    } = useGetPendingPublications(); 
-    
-    // LÓGICA ANTI-PARPADEO (Igual que en Gestión):
-    // Si estamos buscando datos y el array está vacío o indefinido, consideramos que está "Cargando Vista".
-    const isViewLoading = isFetching && (!allPublications || allPublications.length === 0);
+        refetch,
+    } = useGetPendingPublications({
+        searchTerm: text || undefined,
+        filterBy,
+        sortBy,
+        sortOrder,
+        pageNumber: currentPage,
+        pageSize 
+    });
 
-    const filteredAndSorted = useMemo(() => {
-        if (!allPublications) return [];
-
-        let list = [...allPublications]; 
-        
-        // Filtro por Tipo (SOLUCIÓN DEL ERROR TYPE)
-        if (type !== "Todos") {
-            list = list.filter((o) => {
-                // TypeScript no sabe si es Oferta o CompraVenta, así que verificamos:
-                // Si existe 'offerType', usamos ese. Si no, usamos 'type'.
-                const itemType = "offerType" in o.item ? o.item.offerType : o.item.type;
-                return itemType === type;
-            });
-        }
-        
-        // Filtro por Texto
-        if (text.trim()) {
-            const q = text.toLowerCase();
-            list = list.filter((o) => o.item.title.toLowerCase().includes(q));
-        }
-        
-        // Ordenamiento
-        if (sort === "titulo") {
-            list.sort((a, b) => a.item.title.localeCompare(b.item.title)); 
-        }
-        // Para 'recientes' asumimos el orden por defecto del backend
-
-        return list;
-    }, [text, type, sort, allPublications]);
+    const isViewLoading = isFetching && !data;
 
     const handleViewDetail = (publicationId: string) => {
         router.push(`/admin/publications/validate/${publicationId}`);
@@ -59,20 +62,46 @@ export const useValidationView = () => {
 
     const errorMessage = apiError ? (apiError as Error).message : null;
 
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage);
+        window.scrollTo({top: 0, behavior: 'smooth'}); 
+    }
+
+    const toggleSortOrder = () => {
+        setSortOrder(prev => prev === "asc" ? "desc" : "asc");
+        setCurrentPage(1);
+    }
+
     return {
-        // CLAVE: Devolvemos NULL si está cargando para activar los Skeletons en la vista
-        pendingPublications: isViewLoading ? null : filteredAndSorted,
+        pendingPublications: isViewLoading ? null : data?.publications || [],
         
-        totalCount: allPublications?.length || 0,
-        hasOffers: (allPublications?.length || 0) > 0,
+        totalCount: data?.totalCount || 0,
+        currentPage: data?.currentPage || 1,
+        totalPages: data?.totalPages || 1,
+        pageSize: data?.pageSize || pageSize,
+
+        hasOffers: (data?.totalCount || 0) > 0,
         
         isLoading: isViewLoading,
         error: errorMessage,
-        filters: { text, type, sort },
+        viewMode,
+        filters: { text, type, sort, sortOrder },
         actions: {
-            setText,
-            setType,
-            setSort,
+            setText: (newText: string) => {
+                setText(newText);
+                setCurrentPage(1);
+            },
+            setType: (newType: ValidationType) => {
+                setType(newType);
+                setCurrentPage(1);
+            },
+            setSort: (newSort: SortType) => {
+                setSort(newSort);
+                setCurrentPage(1);
+            },
+            toggleSortOrder,
+            setViewMode,
+            handlePageChange,
             handleRetry: refetch,
             handleViewDetail
         }

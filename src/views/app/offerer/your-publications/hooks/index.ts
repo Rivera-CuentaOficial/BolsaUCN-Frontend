@@ -1,0 +1,1 @@
+export { useGetMyPublications } from './use-my-publications';

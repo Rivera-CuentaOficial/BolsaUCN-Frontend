@@ -7,12 +7,10 @@ import Cookies from "js-cookie";
 import { login } from "@/services/authService";
 import type { LoginRequestDto } from "@/services/dtos/authDto";
 
-//implementado para ver que rol y redigir segun 
-import { getRoleFromToken } from "@/lib/auth";
 //implementado para ver que rol y redigir segun
-import { extractUserFromJwt } from "@/lib";
+import { getRolesFromToken, hasRole, ROLES } from "@/lib";
 
-function LoginForm() {
+export default function LoginPage() {
   const router = useRouter();
   const sp = useSearchParams();
   const rawReturnTo = sp?.get("returnTo") || "";
@@ -36,11 +34,9 @@ function LoginForm() {
 
   // Redirección automática si ya hay token
   useEffect(() => {
-    const token = Cookies.get("token");
-    if (token) {
+    const hasToken = Cookies.get("token") ? true : false;
+    if (hasToken) {
       try {
-        const role = getRoleFromToken(token);
-        console.log("[Role] response:", role);
         const decodedReturn = rawReturnTo
           ? decodeURIComponent(rawReturnTo)
           : "";
@@ -48,11 +44,10 @@ function LoginForm() {
           decodedReturn && decodedReturn.startsWith("/") ? decodedReturn : "";
         const finalRedirect =
           safeReturnTo ||
-          (role === "Offerent" || role === "Offerer"
-            ? "/offerer"
-            : role === "Admin"
+          (hasRole(ROLES.ADMIN)
             ? "/admin/publications"
             : "/offers");
+          
         router.replace(finalRedirect);
       } catch (e) {
         router.replace("/offers");
@@ -103,10 +98,10 @@ function LoginForm() {
       });
 
       // Decodificar role desde el JWT para redirección por rol
-      let role: string | null = null;
+      let roles: string[] | null = null;
       try {
         if (response.token) {
-          role = getRoleFromToken(response.token)
+          roles = getRolesFromToken()
         }
       } catch (e) {
         // no bloquear si falla el decode
@@ -122,11 +117,8 @@ function LoginForm() {
       // Si se proporcionó un returnTo válido lo usamos, si no elegimos según role
       let finalRedirect =
         safeReturnTo ||
-        (role === "Offerent" || role === "Offerer"
-          ? "/offerer"
-          : role === "Admin"
-          ? "/admin/publications"
-          : "/offers");
+        (hasRole(ROLES.ADMIN) ? "/landing/admin" : 
+        hasRole(ROLES.APPLICANT) ? "/landing/applicant" : "/landing/offeror");
 
       console.log(response.message || "Inicio de sesión exitoso.");
       setSuccess(true);
@@ -135,9 +127,10 @@ function LoginForm() {
       console.error("Error en el login:", error);
 
       if (error.response.status === 403) {
+        const email = form.correo;
         router.push(
           `/auth/verify-email?email=${encodeURIComponent(
-            error.response.data.details
+            email
           )}`
         );
         return;
@@ -146,7 +139,6 @@ function LoginForm() {
       const backendError = error?.response?.data;
 
       const errorMessage =
-        backendError?.message ||
         backendError?.details ||
         "Credenciales inválidas. Por favor, revisa tu correo y contraseña.";
 
@@ -156,7 +148,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen h-full flex items-center justify-center bg-[#0d8ef2] px-4">
+    <div className="min-h-screen h-full flex items-center justify-center bg-ucn-blue px-4">
       <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-xl w-[360px] flex flex-col items-center relative">
         {/* Logo */}
         <div className="absolute -top-10 flex flex-col items-center">
@@ -253,93 +245,5 @@ function LoginForm() {
         </button>
       </div>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  const router = useRouter();
-  const sp = useSearchParams();
-  const returnTo = sp?.get("returnTo") || "/offers";
-  const msg = sp?.get("msg");
-
-  const [form, setForm] = useState({
-    correo: "",
-    password: "",
-    rememberMe: false,
-  });
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  // Redirección automática si ya hay token
-  useEffect(() => {
-    const token = Cookies.get("token");
-    if (token) if (token) router.replace(returnTo); //  vuelve a la ruta original si ya hay token
-  }, [router, returnTo]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    const payload: LoginRequestDto = {
-      Email: form.correo,
-      Password: form.password,
-      RememberMe: form.rememberMe,
-    };
-
-    try {
-      const response = await login(payload);
-
-      if (!response.token) {
-        setError("Usuario no registrado o contraseña incorrecta.");
-        return;
-      }
-
-      // Guardar JWT en cookies
-      Cookies.set("token", response.token, {
-        expires: form.rememberMe ? 7 : undefined,
-      });
-
-      console.log(response.message || "Inicio de sesión exitoso.");
-      router.replace(returnTo); // regresar a la página que quiso ver
-    } catch (error: any) {
-      console.error("Error en el login:", error);
-
-      const backendError = error?.response?.data;
-
-      const errorMessage =
-        backendError?.details ||
-        backendError?.message ||
-        "Credenciales inválidas. Por favor, revisa tu correo y contraseña.";
-
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#0d8ef2] px-4">
-                       {" "}
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-xl w-[360px] flex flex-col items-center">
-                            <div className="text-white">Cargando...</div>       
-                 {" "}
-          </div>
-                     {" "}
-        </div>
-      }
-    >
-                <LoginForm />       {" "}
-    </Suspense>
   );
 }

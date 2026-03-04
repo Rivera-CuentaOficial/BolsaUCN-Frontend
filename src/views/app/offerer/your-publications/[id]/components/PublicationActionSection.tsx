@@ -111,4 +111,4 @@ const PublicationActionSection: React.FC<PublicationActionSectionProps> = ({
     );
 }
 
-export default PublicationActionSection;
+export { PublicationActionSection };

@@ -8,7 +8,7 @@ import {
   mapApplicantToView,
   getUserFromToken,
 } from "@/lib";
-import { manageService } from "@/services/manageService";
+import { manageService } from "@/services/managePublicationService";
 import {
   PublishedItem,
   OfferDetailForAdmin,
@@ -18,9 +18,9 @@ import {
 } from "@/models/responses";
 import { ClosePublicationVariables } from "@/models/requests";
 import { AxiosError } from "axios";
-import { studentPublicationService } from "@/services/studentsPublicationService";
 import { toast } from "sonner";
 import { offererPublicationService } from "@/services/offererPublicationService";
+import { mapPublicationDetailsToAdminDetail } from "@/lib/publication";
 
 // centraliza la lógica para obtener publicaciones publicadas (ofertas y compras/ventas)
 
@@ -60,47 +60,19 @@ export const useGetAdminPublicationManagementDetailQuery = (
     queryFn: async () => {
       if (!id || id === "undefined")
         throw new Error("ID de publicación no válido.");
+
       const isBuySellPrefixed = id.startsWith("bs-");
       const entityId = isBuySellPrefixed ? id.split("-")[1] : id;
-      if (isBuySellPrefixed) {
-        const response = await manageService.getPublicationManagementDetail(
-          "buysells",
-          entityId
-        );
-        const detailDto = response.data?.data ?? response.data;
-        if (!detailDto) throw new Error("Respuesta de API vacía o malformada.");
-        return { ...mapBuySellToDetail(detailDto), id };
-      }
-      try {
-        const response = await manageService.getPublicationManagementDetail(
-          "offers",
-          entityId
-        );
-        const detailDto = response.data?.data ?? response.data;
-        if (!detailDto) throw new Error("Respuesta de API vacía o malformada.");
-        return { ...mapOfferToDetail(detailDto), id };
-      } catch (error) {
-        if (error instanceof AxiosError && error.response?.status === 404) {
-          try {
-            const response = await manageService.getPublicationManagementDetail(
-              "buysells",
-              entityId
-            );
-            const detailDto = response.data?.data ?? response.data;
-            if (!detailDto)
-              throw new Error("Respuesta de API vacía o malformada.");
-            return { ...mapBuySellToDetail(detailDto), id };
-          } catch (innerError) {
-            const apiError = handleApiError(innerError);
-            throw new Error(
-              apiError.details ||
-                `Publicación con ID ${entityId} no encontrada.`
-            );
-          }
-        }
-        const apiError = handleApiError(error);
-        throw new Error(apiError.details || apiError.message);
-      }
+
+      const response = await manageService.getPublicationDetailForManagement(
+        entityId
+      );
+      const detailDto = response.data?.data ?? response.data;
+
+      if (!detailDto)
+        throw new Error("Respuesta de API vacía o malformada.");
+
+      return mapPublicationDetailsToAdminDetail(detailDto);
     },
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
@@ -157,7 +129,7 @@ export const useStudentsGetPostulantDetailQuery = (
     queryFn: async () => {
       if (!offerId || !applicantId)
         throw new Error("Faltan identificadores requeridos.");
-      const response = await studentPublicationService.getApplicantDetail(
+      const response = await offererPublicationService.getApplicantDetail(
         offerId,
         applicantId
       );
@@ -228,9 +200,7 @@ export const useAcceptApplicationMutation = () => {
     mutationFn: (applicationId: number | string) => {
       const user = getUserFromToken();
       console.log("🔍 [DEBUG ACCEPT] User Data:", user, "UserType:", user?.userType);
-      if (user?.userType === "Applicant" || user?.userType === "applicant" || user?.userType === "Estudiante") {
-        return studentPublicationService.acceptApplication(applicationId);
-      }
+
       return offererPublicationService.acceptApplication(applicationId);
     },
     onSuccess: () => {
@@ -259,9 +229,7 @@ export const useRejectApplicationMutation = () => {
     mutationFn: (applicationId: number | string) => {
       const user = getUserFromToken();
       console.log("🔍 [DEBUG REJECT] User Data:", user, "UserType:", user?.userType);
-      if (user?.userType === "Estudiante") {
-        return studentPublicationService.rejectApplication(applicationId);
-      }
+
       return offererPublicationService.rejectApplication(applicationId);
     },
     onSuccess: () => {

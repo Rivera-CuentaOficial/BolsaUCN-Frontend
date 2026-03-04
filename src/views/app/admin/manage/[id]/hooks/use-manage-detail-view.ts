@@ -1,68 +1,100 @@
+// frontend/src/views/app/admin/manage/[id]/hooks/use-manage-detail-view.ts
+
 "use client";
 
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { handleApiError } from "@/lib";
-import { UseAdminDetailManageResult } from "@/models/responses";
-import {
-  useGetAdminPublicationManagementDetailQuery,
-  useClosePublicationMutation,
-} from "@/hooks/api/use-manage-service";
+import { manageService } from "@/services/managePublicationService";
+import { adminPublicationService } from "@/services/adminPublicationService";
+import type { PublicationDetailsForAdmin } from "@/models/responses";
 
-type ActionType = "close_publication";
+type ActionType = "close_publication" | "cancel_publication";
 
-export function useAdminPublicationDetailView(id: string): UseAdminDetailManageResult {
+export const useAdminPublicationDetailView = (id: number) => {
   const router = useRouter();
-  const detailQuery = useGetAdminPublicationManagementDetailQuery(id);
-  const closePublicationMutation = useClosePublicationMutation();
+  const [detail, setDetail] = useState<PublicationDetailsForAdmin | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isMutating, setIsMutating] = useState(false);
 
-  const isMutating = closePublicationMutation.isPending;
+  const fetchDetail = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await manageService.getPublicationDetailsByIdForAdmin(id);
+      setDetail(response.data.data);
+    } catch (err: any) {
+      const status = err.response?.status;
+      const message =
+        status === 404
+          ? "No se encontró la publicación que buscas."
+          : status === 403
+          ? "No tienes permiso para ver esta publicación."
+          : "Hubo un error al cargar los datos. Por favor, intenta de nuevo.";
+      setError(message);
+      console.error("Error fetching publication detail:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
 
-  const handleAction = (action: ActionType) => {
-    const publicationDetail = detailQuery.data;
-    if (!publicationDetail || isMutating) return;
+  useEffect(() => {
+    if (id) {
+      fetchDetail();
+    }
+  }, [id, fetchDetail]);
 
-    const publicationId = publicationDetail.id;
-    const isBuySell = publicationId.startsWith("bs-");
-    const typePath = isBuySell ? "buysells" : "offers";
+  const handleClosePublication = useCallback(async (reason: string) => {
+    if (!detail) throw new Error("Publicación no cargada.");
 
-    const onSuccess = (action: string) => {
-      toast.success(`Publicación fue ${action} con éxito.`);
+    setIsMutating(true);
+    try {
+      await manageService.closePublicationById(detail.publicationId, reason);
       router.push("/admin/publications/manage");
-    };
+    } catch (err: any) {
+      if (err.response && err.response.status === 409) {
+        throw new Error("El estado actual de la publicación no permite el cierre.");
+      }
+      throw err;
+    } finally {
+      setIsMutating(false);
+    }
+  }, [detail, router]);
 
-    const onError = (error: Error, actionVerb: string) => {
-      const apiError = handleApiError(error);
-      toast.error(
-        apiError.details || `Fallo al ${actionVerb} la publicación.`
-      );
-    };
+  const handleCancelPublication = useCallback(async () => {
+    if (!detail) throw new Error("Publicación no cargada.");
 
+    setIsMutating(true);
+    try {
+      await adminPublicationService.cancelPublication(detail.publicationId);
+      router.push("/admin/publications/manage");
+    } catch (err: any) {
+      throw err;
+    } finally {
+      setIsMutating(false);
+    }
+  }, [detail, router]);
+
+  const handleAction = (action: ActionType, data?: { reason?: string }) => {
     if (action === "close_publication") {
-      closePublicationMutation.mutate(
-        { id: publicationId, typePath },
-        {
-          onSuccess: () => onSuccess("cerrada"),
-          onError: (error) => onError(error, "cerrar la publicación"),
-        }
-      );
+      handleClosePublication(data?.reason!);
+    } else if (action === "cancel_publication") {
+      handleCancelPublication();
     }
   };
 
   const handleRetry = () => {
-    detailQuery.refetch();
+    fetchDetail();
   };
 
-  const errorDetails = detailQuery.error
-    ? handleApiError(detailQuery.error).details || null
-    : null;
-
   return {
-    detail: detailQuery.data || null,
-    loading: detailQuery.isLoading,
-    error: errorDetails,
+    detail,
+    loading,
+    error,
     isMutating,
     handleAction,
     handleRetry,
+    handleClosePublication
   };
 }

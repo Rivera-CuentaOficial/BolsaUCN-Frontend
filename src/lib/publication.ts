@@ -13,7 +13,8 @@ import {
   BuySellForAdmin,
   PostulantDetailForAdmin,
 } from "@/models/responses";
-import { OfferSubType } from '@/models/responses/publication';
+import { OfferSubType, PublicationDetailsForApprovalDTO } from '@/models/responses/publication';
+import { ValidationStatus } from "@/types/admin-publications";
 
 export function toOfferTypeForAdmin(offerTypeNumber: number): OfferSubType {
     const typeValue = offerTypeNumber ?? 0;
@@ -101,6 +102,49 @@ function getAdminDetailType(typeValue: any): PublicationType {
   return "Trabajo";
 }
 
+export function mapPublicationDetailsToAdminDetail(dto: PublicationDetailsForApprovalDTO): AdminDetail {
+  const isOffer = dto.publicationType === "Oferta";
+  const isBuySell = dto.publicationType === "CompraVenta";
+
+  const id = isBuySell ? `bs-${dto.publicationId}` : String(dto.publicationId);
+  let type: PublicationType;
+  if (dto.offerType === "Voluntariado") {
+    type = "Voluntariado";
+  } else if (isBuySell) {
+    type = "Compra/Venta";
+  } else {
+    type = "Trabajo";
+  }
+
+  return {
+    id: id,
+    userId: dto.userId,
+    title: dto.title,
+    description: dto.description,
+    companyName: dto.companyName || dto.userName || "Usuario UCN",
+    publicationDate: dto.publicationDate,
+    remuneration: isOffer ? dto.remuneration : undefined,
+    price: isBuySell ? dto.price : undefined,
+    type,
+    statusValidation: dto.approvalStatus as ValidationStatus,
+    active: dto.active,
+    images: dto.images || dto.imageUrls || [],
+    deadlineDate: dto.deadlineDate,
+    endDate: dto.endDate,
+    location: dto.location,
+    requirements: dto.requirements,
+    contactInfo: dto.userEmail,
+    additionalContactEmail: dto.additionalContactEmail,
+    additionalContactPhoneNumber: dto.additionalContactPhoneNumber,
+    aboutMe: dto.aboutMe,
+    rating: dto.rating || 0,
+    category: isBuySell ? dto.category : undefined
+  }
+}
+
+/**
+ * @deprecated Usa mapPublicationDetailsToAdminDetail en su lugar
+ */
 export function mapOfferToDetail(dto: any): AdminDetail {
   const idValue = (dto as OfferDetailForAdmin).id ?? dto.id;
   const titleValue =
@@ -134,6 +178,7 @@ export function mapOfferToDetail(dto: any): AdminDetail {
   const endDateValue = (dto as any).EndDate ?? dto.endDate;
   return {
     id: String(idValue),
+    userId: dto.userId,
     title: titleValue,
     description: descriptionValue,
     companyName: companyNameValue,
@@ -154,6 +199,9 @@ export function mapOfferToDetail(dto: any): AdminDetail {
   };
 }
 
+/**
+ * @deprecated Usa mapPublicationDetailsToAdminDetail en su lugar
+ */
 export function mapBuySellToDetail(dto: any): AdminDetail {
   const idValue = (dto as BuySellDetailForAdmin).id ?? dto.id;
   const titleValue =
@@ -176,6 +224,7 @@ export function mapBuySellToDetail(dto: any): AdminDetail {
 
   return {
     id: `bs-${String(idValue)}`,
+    userId: dto.userId,
     title: titleValue,
     description: descriptionValue,
     companyName: userNameValue,

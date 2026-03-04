@@ -110,12 +110,14 @@ export const validators = {
         return null;
     },
 
-    //Valida el telefono con codigo de area chilena
+    //Valida el telefono con codigo de area chilena (solo los 9 dígitos locales, sin +56)
     phone: (value: string) => {
         if (!value.trim()) return "El teléfono es requerido";
-        const cleanPhone = value.replace(/[\s-]/g, '');
-        if (!/^\+?[0-9]{8,15}$/.test(cleanPhone)) 
-            return "Formato de teléfono inválido (ej: +56912345678)";
+
+        const digitsOnly = value.replace(/\D/g, '');
+
+        if (!/^[0-9]{9}$/.test(digitsOnly)) 
+            return "Debe tener 9 dígitos (ej: 9 1234 5678)";
         return null;
   },
 }

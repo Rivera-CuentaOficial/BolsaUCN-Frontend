@@ -3,55 +3,70 @@
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { handleApiError } from '@/lib'; 
-import { UseAdminDetailValidateResult } from '@/models/responses';
-import { 
-    useGetAdminPublicationDetailQuery,
-    useValidationActionMutation
-} from '@/hooks/api/use-validation-service';
+import { PublicationDetailsForApprovalDTO } from '@/models/responses';
+import { useEffect, useState } from 'react';
+import { validationService } from '@/services/validationService';
 
-export function useAdminPublicationDetailView(id: string): UseAdminDetailValidateResult {
+export function usePublicationDetailsForApproval(id: string){
+    const [details, setDetails] = useState<PublicationDetailsForApprovalDTO | null>(null);
+    const [isMutating, setIsMutating] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const router = useRouter();
-    
-    const detailQuery = useGetAdminPublicationDetailQuery(id);
-    const validationMutation = useValidationActionMutation();
-    
-    
-    const isViewLoading = detailQuery.isLoading || (detailQuery.isFetching && !detailQuery.data);
 
-    const handleAction = (action: 'publish' | 'reject') => {
-        const publicationId = detailQuery.data?.id;
-       
-        if (!publicationId || validationMutation.isPending) return;
-        
-        validationMutation.mutate({ id: publicationId, action }, {
-            onSuccess: () => {
-                const actionText = action === 'publish' ? 'publicada' : 'rechazada';
-                toast.success(`Publicación ${actionText} con éxito.`);
-                router.push('/admin/publications/validate'); 
-            },
-            onError: (error) => {
-                const actionText = action === 'publish' ? 'publicar' : 'rechazar';
-                const apiError = handleApiError(error);
-                toast.error(apiError.details || `Fallo al ${actionText} la publicación.`);
-            },
-        });
-    };
-    
+    const fetchDetails = async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+            const response = await validationService.getPublicationDetailsForApproval(id);
+            if (response.data) {
+                setDetails(response.data.data);
+            }
+        } catch (error: any) {
+            setError(error.response?.data?.details || "Error al obtener los detalles de la publicación");
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        if (id) {
+            fetchDetails();
+        }
+    }, [id]);
+
     const handleRetry = () => {
-        detailQuery.refetch();
+        fetchDetails();
     };
-    
-    const errorDetails = detailQuery.error
-        ? (handleApiError(detailQuery.error).details || null) 
-        : null;
+
+    const handleAction = async (action: 'publish' | 'reject', rejectionReason?: string) => {
+        const publicationId = details?.publicationId;
+        if (!publicationId) {
+            toast.error("ID de publicación no válido.");
+            return;
+        }
+        try {
+            setIsMutating(true);
+            await validationService.validatePublication(publicationId, action, rejectionReason);
+            toast.success(`Publicación ${action === 'publish' ? 'publicada' : 'rechazada'} con éxito.`);
+            router.push("/admin/publications/validate?notification=published");
+        } catch (error: any) {
+            const apiError = handleApiError(error);
+            toast.error(`Error al ${action === 'publish' ? 'publicar' : 'rechazar'} la publicación.`, {
+                description: apiError.details || "No se pudo completar la acción.",
+            });
+            throw error;
+        } finally {
+            setIsMutating(false);
+        }
+    }
 
     return {
-    
-        detail: isViewLoading ? null : (detailQuery.data || null),
-        loading: isViewLoading,
-        error: errorDetails,
-        isMutating: validationMutation.isPending, 
-        handleAction,
+        details,
+        isLoading,
+        error,
         handleRetry,
+        handleAction,
+        isMutating
     };
 }

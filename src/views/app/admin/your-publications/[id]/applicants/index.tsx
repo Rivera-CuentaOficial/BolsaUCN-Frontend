@@ -96,13 +96,7 @@ export default function ApplicantsPageView({ offerId }: Props) {
   };
 
   return (
-    <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-slate-900">
-      
-      <div className="fixed inset-0 z-0 pointer-events-none">
-          <img src="/fondo.png" alt="Fondo" className="w-full h-full object-cover opacity-60"/>
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/50 to-purple-950/90" />
-      </div>
+    <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-ucn-purple">
 
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
         <header className="mb-8">

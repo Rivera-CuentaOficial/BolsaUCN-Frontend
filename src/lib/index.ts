@@ -28,9 +28,14 @@ export {
   getPresentationType,
   getApplicantDetailForAdmin
 } from "./publication";
+export * from "./roles";
 export {
   formatDate,
   thousandSeparatorPipe,
   isValidId,
   getRoleFromToken,
+  getRolesFromToken,
+  hasRole,
+  hasAnyRole,
+  hasAllRoles,
 } from "./utils";

@@ -3,7 +3,7 @@
 import { 
   AdminResponseDto,
   AdminRequestDto, 
-  CompanyResponsetDto, 
+  CompanyResponseDto, 
   CompanyRequestDto,
   IndividualResponseDto, 
   IndividualRequestDto,
@@ -73,7 +73,6 @@ export function mapLoginResponse(dto: any) {
 
   const message = 
     dto?.message ??         // camelCase
-    dto?.Message ??         // PascalCase (¡IMPORTANTE!)
     (token ? "Login exitoso" : "Credenciales inválidas");
 
   return { message, token };
@@ -83,11 +82,11 @@ export function mapLoginResponse(dto: any) {
 export const AdminAdapter = {
   toDTO(formData: AdminForm): AdminRequestDto {
     return {
-      Name: formData.nombre,
+      FirstName: formData.nombre,
       LastName: formData.apellido,
       Email: formData.email,
       Rut: formData.rut,
-      PhoneNumber: formData.telefono,
+      PhoneNumber: formData.telefono.startsWith('+56') ? formData.telefono : `+56${formData.telefono}`,
       Password: formData.password,
       ConfirmPassword: formData.confirmPassword,
       SuperAdmin: formData.superAdmin,
@@ -102,16 +101,16 @@ export const AdminAdapter = {
 export const CompanyAdapter = {
   toDTO(formData: CompanyForm): CompanyRequestDto {
     return {
-      CompanyName: formData.nombreEmpresa,
+      FirstName: formData.nombreEmpresa,
       LegalName: formData.razonSocial,
       Rut: formData.rut,
       Email: formData.email,
-      PhoneNumber: formData.telefono,
+      PhoneNumber: formData.telefono.startsWith('+56') ? formData.telefono : `+56${formData.telefono}`,
       Password: formData.password,
       ConfirmPassword: formData.confirmPassword,
     };
   },
-  fromResponse(dto: CompanyResponsetDto): { message: string } {
+  fromResponse(dto: CompanyResponseDto): { message: string } {
     return { message: dto.message ?? "Registro de empresa exitoso" };
   },
 }
@@ -120,11 +119,11 @@ export const CompanyAdapter = {
 export const IndividualAdapter = {
   toDTO(formData: IndividualForm): IndividualRequestDto {
     return {
-      Name: formData.nombre,
+      FirstName: formData.nombre,
       LastName: formData.apellido,
       Email: formData.email,
       Rut: formData.rut,
-      PhoneNumber: formData.telefono,
+      PhoneNumber: formData.telefono.startsWith('+56') ? formData.telefono : `+56${formData.telefono}`,
       Password: formData.password,
       ConfirmPassword: formData.confirmPassword,
     };
@@ -140,11 +139,11 @@ export const StudentAdapter = {
     const finalEmail = `${emailLocalPart}@alumnos.ucn.cl`;
 
     return {
-      Name: formData.nombre,
+      FirstName: formData.nombre,
       LastName: formData.apellido,
       Email: finalEmail,
       Rut: formData.rut,
-      PhoneNumber: formData.telefono,
+      PhoneNumber: formData.telefono.startsWith('+56') ? formData.telefono : `+56${formData.telefono}`,
       Password: formData.password,
       ConfirmPassword: formData.confirmPassword,
       Disability: formData.discapacidad,

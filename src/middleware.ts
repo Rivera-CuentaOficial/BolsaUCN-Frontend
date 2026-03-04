@@ -14,9 +14,7 @@ export function middleware(req: NextRequest) {
   const requiresAuth =
     pathname.startsWith("/profile") ||
     pathname.startsWith("/dashboard") ||
-    // proteger dinámicos de detalle:
-    (pathname.startsWith("/offers/") && pathname !== "/offers") ||
-    pathname.startsWith("/buysells/") ||
+    pathname.startsWith("/offerer") ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/students"); // Nuevo: Proteger rutas de estudiante
 
@@ -71,5 +69,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/auth/login", "/auth/register/:path*", "/profile/:path*", "/dashboard/:path*", "/offers/:path*","/offerer/:path*", "/buysells/:path*"],
+  matcher: ["/auth/login", "/auth/register/:path*", "/profile/:path*", "/dashboard/:path*", "/offers/:path*","/offerer/:path*"],
 };

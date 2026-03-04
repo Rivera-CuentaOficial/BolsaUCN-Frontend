@@ -11,6 +11,17 @@ module.exports = {
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        primary: "var(--primary)",
+        secondary: "var(--secondary)",
+        accent: "var(--accent)",
+        pop: "var(--pop)",
+        ink: "var(--ink)",
+        "muted-ink": "var(--muted-ink)",
+        bg: "var(--bg)",
+        card: "var(--card)",
+        chip: "var(--chip)",
+        ring: "var(--ring)",
+        border: "var(--border)",
       },
       borderRadius: {
         lg: "var(--radius)",
