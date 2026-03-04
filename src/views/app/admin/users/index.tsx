@@ -119,7 +119,7 @@ export function AdminUsersView() {
                 <header className="pt-12 pb-6 px-5">
                     <div className="max-w-7xl mx-auto">
                         <Link 
-                            href="/admin/publications" 
+                            href="/landing/admin" 
                             className="inline-flex items-center gap-2 text-white/80 hover:text-white font-bold transition-colors mb-6 group"
                         >
                             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />

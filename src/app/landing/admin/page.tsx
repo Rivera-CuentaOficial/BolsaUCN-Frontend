@@ -23,7 +23,7 @@ const Footer = () => (
         <h5 className="font-semibold text-slate-900 mb-1">Navegación</h5>
         <ul className="space-y-0.5 text-sm">
           {/* CORRECCIÓN 3: Aseguramos que los links tengan color y hover oscuro */}
-          <li><a href="/admin/publications" className="hover:text-slate-900 hover:underline">Inicio</a></li>
+          <li><a href="/landing/admin" className="hover:text-slate-900 hover:underline">Inicio</a></li>
           <li><a href="/admin/publications/validate" className="hover:text-slate-900 hover:underline">Validar</a></li>
           <li><a href="/admin/publications/manage" className="hover:text-slate-900 hover:underline">Administrar</a></li>
           <li><a href="/offerer/create-publication" className="hover:text-slate-900 hover:underline">Publicar</a></li>
