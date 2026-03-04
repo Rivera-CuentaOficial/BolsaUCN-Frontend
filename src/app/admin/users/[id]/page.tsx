@@ -1,9 +1,7 @@
 import { UserDetailView } from "@/views/app/admin/users/[id]";
 
 interface PageProps {
-    params: {
-        id: string;
-    };
+    params: Promise<{ id: string }>;
 }
 
 export default async function UserDetailPage({ params }: PageProps) {
