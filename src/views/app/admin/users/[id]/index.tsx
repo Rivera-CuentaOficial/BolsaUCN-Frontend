@@ -68,7 +68,7 @@ export function UserDetailView({ id }: UserDetailViewProps) {
 
     // 3. VISTA PRINCIPAL
     return (
-        <div className="flex flex-col min-h-screen relative z-0 text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-ucn-purple">
+        <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-ucn-purple">
 
             <NotificationBanner
                 data={{
