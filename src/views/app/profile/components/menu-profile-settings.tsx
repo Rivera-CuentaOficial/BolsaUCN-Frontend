@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui";
-import { Edit2, Lock, Mail, ChevronRight } from "lucide-react";
+import { Edit2, Lock, Mail, ChevronRight, Bell, BellOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   EditProfileDialog,
@@ -16,7 +16,8 @@ import {
   UpdateEmailDialog,
   VerifyNewEmailDialog,
 } from "."
-import { GetUserProfileDTO } from "@/services/profileService";
+import { GetUserProfileDTO, profileService } from "@/services/profileService";
+import { toast } from "sonner";
 
 interface ProfileSettingsMenuProps {
   isOpen: boolean;
@@ -54,6 +55,7 @@ export function ProfileSettingsMenu({
   const [activeDialog, setActiveDialog] = useState<"edit" | "password" | "email" | "verifyEmail" | null>(null);
   const [emailChangeInitiated, setEmailChangeInitiated] = useState(false);
   const [pendingEmailForVerification, setPendingEmailForVerification] = useState<string | undefined>(profile.pendingEmail);
+  const [isTogglingNotifications, setIsTogglingNotifications] = useState(false);
 
   const hasPendingEmailChange = profile.pendingEmail !== undefined && profile.pendingEmail !== null;
 
@@ -108,6 +110,19 @@ export function ProfileSettingsMenu({
     onRefetch();
   }
 
+  const handleToggleNotifications = async () => {
+    setIsTogglingNotifications(true);
+    try {
+      const response = await profileService.toggleAllowNotifications();
+      toast.success(response.message || "Configuración de notificaciones actualizada");
+      onRefetch();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Error al actualizar las notificaciones");
+    } finally {
+      setIsTogglingNotifications(false);
+    }
+  };
+
   const menuItems = [
     {
       id: "edit" as const,
@@ -115,6 +130,7 @@ export function ProfileSettingsMenu({
       title: "Editar Perfil",
       description: "Actualiza tu nombre, usuario y biografía",
       color: "from-blue-500 to-cyan-500",
+      action: "dialog" as const,
     },
     {
       id: "email" as const,
@@ -125,6 +141,7 @@ export function ProfileSettingsMenu({
         : "Actualiza tu dirección de correo electrónico",
       color: (hasPendingEmailChange || emailChangeInitiated) ? "from-amber-500 to-orange-500" : "from-purple-500 to-pink-500",
       badge: hasPendingEmailChange || emailChangeInitiated,
+      action: "dialog" as const,
     },
     {
       id: "password" as const,
@@ -132,6 +149,15 @@ export function ProfileSettingsMenu({
       title: "Cambiar Contraseña",
       description: "Actualiza tu contraseña de acceso",
       color: "from-green-500 to-emerald-500",
+      action: "dialog" as const,
+    },
+    {
+      id: "notifications" as const,
+      icon: Bell,
+      title: "Notificaciones",
+      description: "Activa o desactiva las notificaciones por correo",
+      color: "from-indigo-500 to-violet-500",
+      action: "toggle" as const,
     },
   ];
 
@@ -156,11 +182,16 @@ export function ProfileSettingsMenu({
           <div className="space-y-3 py-4">
             {menuItems.map((item) => {
               const Icon = item.icon;
+              const isNotificationItem = item.id === "notifications";
+              const handleClick = isNotificationItem ? handleToggleNotifications : () => handleOpenDialog(item.id as "edit" | "password" | "email");
+              const isDisabled = isNotificationItem && isTogglingNotifications;
+
               return (
                 <button
                   key={item.id}
-                  onClick={() => handleOpenDialog(item.id)}
-                  className="w-full group"
+                  onClick={handleClick}
+                  disabled={isDisabled}
+                  className="w-full group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="flex items-center gap-4 p-4 bg-white border-2 border-slate-200 hover:border-slate-300 rounded-2xl transition-all hover:shadow-md">
                     <div className={`p-3 bg-gradient-to-br ${item.color} rounded-xl`}>
@@ -174,7 +205,11 @@ export function ProfileSettingsMenu({
                         {item.description}
                       </p>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                    {isNotificationItem && isTogglingNotifications ? (
+                      <div className="w-5 h-5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                    )}
                   </div>
                 </button>
               );
