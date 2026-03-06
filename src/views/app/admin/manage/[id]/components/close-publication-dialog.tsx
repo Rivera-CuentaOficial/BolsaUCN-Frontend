@@ -12,6 +12,7 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { validators } from "@/utils/AuthValidatorsUtil";
 import { Label } from "@/components/ui/label";
 
 interface ClosePublicationDialogProps {
@@ -41,6 +42,17 @@ export function ClosePublicationDialog({
     
     if (trimmedReason.length < 10) {
       setError("La razón debe tener al menos 10 caracteres");
+      return;
+    }
+
+    if (trimmedReason.length > 500) {
+      setError("La razón no puede exceder los 500 caracteres");
+      return;
+    }
+
+    const formatError = validators.comment(trimmedReason, "Razón de cierre");
+    if (formatError) {
+      setError(formatError);
       return;
     }
 

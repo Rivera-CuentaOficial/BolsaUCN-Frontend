@@ -4,7 +4,6 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Briefcase, ShoppingBag, Heart, Users, Trash2, ArrowRight, XCircle, Edit2, Eye, EyeOff, Settings } from 'lucide-react';
 import { useYourPublicationDetailView } from './hooks/use-publication-detail-view'; 
-import { useNotification } from '@/hooks/common/use-notification'; 
 import { 
     PublicationDetailSection, 
     ApplicantsDialog, 
@@ -13,7 +12,6 @@ import {
     EditBuySellDialog,
     PublicationActionsMenu
 } from './components'; 
-import { NotificationBanner } from "@/components/ui/notification";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from 'sonner';
 import { cn } from '@/lib';
@@ -59,7 +57,6 @@ export default function OffererPublicationDetailView() {
         refetch
     } = useYourPublicationDetailView(publicationId);
 
-    const { notification, isVisible, close, show } = useNotification();
     const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
     const [isAdvanceDialogOpen, setIsAdvanceDialogOpen] = useState(false);
     const [isApplicantsDialogOpen, setIsApplicantsDialogOpen] = useState(false);
@@ -86,7 +83,7 @@ export default function OffererPublicationDetailView() {
         } catch (e: any) {
             toast.dismiss(toastId);
             const errorMessage = e?.response?.data?.details || e?.details || "Hubo un error al cancelar la oferta.";
-            show("Error al Cancelar Oferta", errorMessage, "error");
+            toast.error("Error al Cancelar Oferta", { description: errorMessage });
         }
     };
 
@@ -102,13 +99,11 @@ export default function OffererPublicationDetailView() {
             const errorMessage = e?.response?.data?.details || e?.details || "Hubo un error al avanzar el estado.";
             
             if (errorMessage.includes('postulantes aceptados') || errorMessage.includes('No puedes avanzar sin haber aceptado')) {
-                show(
-                    "No se puede avanzar", 
-                    "Debes aceptar al menos un postulante antes de avanzar al siguiente estado. Revisa la lista de postulantes y acepta al menos uno, o cancela la oferta si ya no es necesaria.",
-                    "error"
-                );
+                toast.error("No se puede avanzar", {
+                    description: "Debes aceptar al menos un postulante antes de avanzar al siguiente estado. Revisa la lista de postulantes y acepta al menos uno, o cancela la oferta si ya no es necesaria."
+                });
             } else {
-                show("Error al Avanzar Estado", errorMessage, "error");
+                toast.error("Error al Avanzar Estado", { description: errorMessage });
             }
         }
     };
@@ -151,7 +146,7 @@ export default function OffererPublicationDetailView() {
         } catch (e: any) {
             toast.dismiss(toastId);
             const errorMessage = e?.response?.data?.message || e?.message || "Error al enviar la apelación.";
-            show("Error al Apelar", errorMessage, "error");
+            toast.error("Error al Apelar", { description: errorMessage });
             throw e; // Re-lanzar para que el componente de apelación también pueda manejarlo si lo necesita
         }
     };
@@ -165,12 +160,12 @@ export default function OffererPublicationDetailView() {
         try {
             await offererPublicationService.editBuySell(publication.id, editData);
             toast.success("Publicación actualizada exitosamente", { id: toastId });
-            await refetch(); // Refresh publication data
+            refetch(); // Refresh publication data
             return true;
         } catch (e: any) {
             toast.dismiss(toastId);
             const errorMessage = e?.response?.data?.message || e?.message || "Error al actualizar la publicación.";
-            show("Error al Actualizar", errorMessage, "error");
+            toast.error("Error al Actualizar", { description: errorMessage });
             return false;
         } finally {
             setIsSavingEdit(false);
@@ -190,7 +185,7 @@ export default function OffererPublicationDetailView() {
         } catch (e: any) {
             toast.dismiss(toastId);
             const errorMessage = e?.response?.data?.message || e?.message || "Error al cancelar la publicación.";
-            show("Error al Cancelar", errorMessage, "error");
+            toast.error("Error al Cancelar", { description: errorMessage });
         }
     };
 
@@ -203,11 +198,11 @@ export default function OffererPublicationDetailView() {
         try {
             await offererPublicationService.toggleBuySellVisibility(publication.id);
             toast.success("Visibilidad actualizada exitosamente", { id: toastId });
-            await refetch(); // Refresh publication data
+            refetch(); // Refresh publication data
         } catch (e: any) {
             toast.dismiss(toastId);
             const errorMessage = e?.response?.data?.message || e?.message || "Error al cambiar la visibilidad.";
-            show("Error al Cambiar Visibilidad", errorMessage, "error");
+            toast.error("Error al Cambiar Visibilidad", { description: errorMessage });
         } finally {
             setIsTogglingVisibility(false);
         }
@@ -283,8 +278,6 @@ export default function OffererPublicationDetailView() {
 
     return (
         <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-ucn-purple">
-
-            <NotificationBanner data={notification} isVisible={isVisible} onClose={close} />
             
             <ConfirmDialog
                 open={isAdvanceDialogOpen}

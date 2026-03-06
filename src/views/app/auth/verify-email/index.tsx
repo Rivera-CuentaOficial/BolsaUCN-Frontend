@@ -4,19 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { verifyEmail, resendVerification } from "@/services/authService";
 import type { VerifyEmailDto, ResendVerificationDto } from "@/services/dtos/authDto";
-import { useNotification } from "@/hooks/common/use-notification";
-import { NotificationBanner } from "@/components/ui";
+import { toast } from "sonner";
 
 export function VerifyEmailView() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const emailFromQuery = searchParams.get("email") || "";
-  const {
-    notification,
-    isVisible,
-    show,
-    close,
-  } = useNotification();
 
   const [form, setForm] = useState({
     email: emailFromQuery,
@@ -47,10 +40,9 @@ export function VerifyEmailView() {
 
     try {
       const result = await verifyEmail(payload);
-      show(
-        "Exito", 
-        result.message || 
-        "Correo verificado correctamente.", "success"
+      toast.success(
+        result.message ||
+        "Correo verificado correctamente."
       );
       setTimeout(() => {
         router.push(`/auth/login?email=${encodeURIComponent(form.email)}`);
@@ -58,10 +50,8 @@ export function VerifyEmailView() {
       
     } catch (err) {
       console.error("Error verificando el correo:", err);
-      show(
-        "Error", 
-        "Error verificando el correo. Intenta nuevamente.", 
-        "error"
+      toast.error(
+        "Error verificando el correo. Intenta nuevamente."
       );
     } finally {
       setLoading(false);
@@ -77,17 +67,13 @@ export function VerifyEmailView() {
 
     try {
       const result = await resendVerification(payload);
-      show(
-        "Exito", 
-        result.message || "Codigo reenviado correctamente.", 
-        "success"
+      toast.success(
+        result.message || "Codigo reenviado correctamente."
       );
     } catch (err) {
       console.error("Error reenviando el codigo:", err);
-      show(
-        "Error", 
-        "No se pudo reenviar el codigo. Intenta mas tarde.", 
-        "error"
+      toast.error(
+        "No se pudo reenviar el codigo. Intenta mas tarde."
       );
     } finally {
       setLoading(false);
@@ -96,7 +82,6 @@ export function VerifyEmailView() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-ucn-blue px-4">
-      <NotificationBanner data={notification} isVisible={isVisible} onClose={close} />
       <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-8">
         <div className="flex justify-center mb-6">
           <img

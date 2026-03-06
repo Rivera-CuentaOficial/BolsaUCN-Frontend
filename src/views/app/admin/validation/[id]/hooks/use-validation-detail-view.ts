@@ -49,12 +49,7 @@ export function usePublicationDetailsForApproval(id: string){
             setIsMutating(true);
             await validationService.validatePublication(publicationId, action, rejectionReason);
             toast.success(`Publicación ${action === 'publish' ? 'publicada' : 'rechazada'} con éxito.`);
-            router.push("/admin/publications/validate?notification=published");
         } catch (error: any) {
-            const apiError = handleApiError(error);
-            toast.error(`Error al ${action === 'publish' ? 'publicar' : 'rechazar'} la publicación.`, {
-                description: apiError.details || "No se pudo completar la acción.",
-            });
             throw error;
         } finally {
             setIsMutating(false);

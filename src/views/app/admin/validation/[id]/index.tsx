@@ -44,7 +44,7 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
     try {
       await handleAction("publish");
       toast.dismiss(toastId);
-      router.push(`${backRoute}?notification=published`);
+      router.push(`${backRoute}`);
     } catch (e) {
       const apiError = handleApiError(e);
       toast.error("Error al publicar", {
@@ -61,8 +61,7 @@ export default function ValidationDetailView({ id }: ValidationDetailViewProps) 
     try {
       await handleAction("reject", reason);
       toast.dismiss(toastId);
-      // Redirección explícita con el parámetro de notificación
-      router.push(`${backRoute}?notification=rejected`);
+      router.push(`${backRoute}`)
     } catch (e) {
       toast.error("Error al rechazar", {
         id: toastId,

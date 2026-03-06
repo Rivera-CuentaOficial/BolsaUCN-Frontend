@@ -9,12 +9,11 @@ import {
   ArrowUpDown, ArrowRight, ClockIcon, User
 } from "lucide-react";
 import { Button } from "@/components/ui";
-import { NotificationBanner } from "@/components/ui";
 import { handleApiError, cn } from "@/lib";
-import { useNotification } from "@/hooks/common/use-notification";
 import { useGetPendingPublicationsForAdmin } from "./hooks/use-validation-view";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PublicationForValidationDTO } from "@/models/responses/publication";
+import { toast } from "sonner";
 
 type ValidationType = "Oferta" | "CompraVenta" | "Todos";
 type SortType = "Title" | "CreatedAt";
@@ -202,7 +201,6 @@ const FilterBar = ({
 export default function ValidationView() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { notification, isVisible, show, close } = useNotification();
 
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [filterType, setFilterType] = useState<ValidationType>((searchParams.get("type") as ValidationType) || "Todos");
@@ -223,26 +221,6 @@ export default function ValidationView() {
     const newUrl = params.toString() ? `?${params.toString()}` : "";
     router.replace(`/admin/publications/validate${newUrl}`, { scroll: false });
   }, [searchTerm, filterType, sort, sortOrder, currentPage, router]);
-
-  // Handle notification from query params
-  useEffect(() => {
-    const notificationParam = searchParams.get("notification");
-    if (notificationParam === "published") {
-      show(
-        "Publicación Aceptada con éxito",
-        "La oferta ha sido validada y ahora es visible para todos los usuarios.",
-        "success"
-      );
-      router.replace("/admin/publications/validate", { scroll: false });
-    } else if (notificationParam === "rejected") {
-      show(
-        "Publicación Descartada con éxito",
-        "La publicación ha sido rechazada y eliminada de la lista de pendientes.",
-        "error"
-      );
-      router.replace("/admin/publications/validate", { scroll: false });
-    }
-  }, [searchParams, show, router]);
 
   const filterByType = filterType !== "Todos" ? filterType : undefined;
   const sortBy = sort;
@@ -456,12 +434,6 @@ export default function ValidationView() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-slate-900" />}>
       <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-ucn-purple">
-
-        <NotificationBanner
-          data={notification}
-          isVisible={isVisible}
-          onClose={close}
-        />
 
         <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 max-w-7xl">
           <header className="mb-10">

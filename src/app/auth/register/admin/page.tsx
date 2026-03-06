@@ -11,7 +11,7 @@ import { useNotification } from "@/hooks/common/use-notification";
 import { validators } from "@/utils/AuthValidatorsUtil";
 import { FormField } from "@/components/forms/FormField";
 import { PasswordField } from "@/components/forms/PasswordField";
-import { NotificationBanner } from "@/components/ui";
+import { toast } from "sonner";
 
 const PRIMARY_COLOR = "#2C3E90";
 const OVERLAY_COLOR = "rgba(44, 114, 175, 0.4)";
@@ -101,11 +101,7 @@ export default function RegisterAdminPage() {
       const payload = AdminAdapter.toDTO(formData);
       const response = await registerAdmin(payload);
 
-      show(
-        "Registro Exitoso",
-        response.message ||"Se ha enviado un correo de verificación a la dirección proporcionada.",
-        "success"
-      );
+      toast.success("Registro exitoso. Se ha enviado un correo de verificación a la direccion proporcionada");
 
       setSuccess(true);
       
@@ -147,7 +143,6 @@ export default function RegisterAdminPage() {
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-gray-100">
-      <NotificationBanner data={notification} isVisible={isVisible} onClose={close} />
       <main
         className="flex-grow flex items-center justify-center bg-cover bg-center"
         style={{ backgroundImage: "url('/ucnferia.png')" }}

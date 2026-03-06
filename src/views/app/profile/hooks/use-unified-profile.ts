@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { GetUserProfileDTO, profileService } from "@/services/profileService";
-import { useNotification } from "@/hooks/common/use-notification";
 import { validators } from "@/utils/AuthValidatorsUtil";
 import { formatRut } from "@/utils/Util";
 import { getUserTypeFromToken } from "@/lib/auth";
+import { toast } from "sonner";
 
 type UserType = "Estudiante" | "Empresa" | "Particular" | "Administrador";
 
@@ -16,7 +16,6 @@ export const useUnifiedProfile = () => {
     const [error, setError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-    const { notification, isVisible, show, close } = useNotification();
 
     const [formData, setFormData] = useState({
         userName: "",
@@ -160,14 +159,14 @@ export const useUnifiedProfile = () => {
             }
 
             if (Object.keys(updateData).length === 0) {
-                show("Sin cambios", "No se han realizado cambios para guardar.", "info");
+                toast.info("Sin cambios", { description: "No se han realizado cambios para guardar." });
                 return true;
             }
 
             const response = await profileService.updateUserProfile(updateData);
 
             if (response) {
-                show("Perfil actualizado", "Los cambios se han guardado correctamente.", "success");
+                toast.success("Perfil actualizado", { description: "Los cambios se han guardado correctamente." });
                 setOriginalData(formData);
                 await fetchProfile();
                 return true;
@@ -176,7 +175,7 @@ export const useUnifiedProfile = () => {
         } catch (err: any) {
             console.error("Error updating profile:", err);
             const errorMessage = err.response?.data?.message || "Error al actualizar el perfil";
-            show("Error", errorMessage, "error");
+            toast.error("Error", { description: errorMessage });
             return false;
         } finally {
             setIsSaving(false);
@@ -191,16 +190,16 @@ export const useUnifiedProfile = () => {
     const handlePhotoUpload = async (file: File) => {
         try {
             await profileService.updateProfilePhoto({ photo: file });
-            show("Foto actualizada", "Tu foto de perfil se ha actualizado correctamente.", "success");
+            toast.success("Foto actualizada", { description: "Tu foto de perfil se ha actualizado correctamente." });
             await fetchProfile();
         } catch (err: any) {
             console.error("Error uploading photo:", err);
-            show("Error", "No se pudo actualizar la foto de perfil.", "error");
+            toast.error("Error", { description: "No se pudo actualizar la foto de perfil." });
         }
     };
 
     const handleCVUploadSuccess = async () => {
-        show("CV actualizado", "Tu curriculum se ha actualizado correctamente.", "success");
+        toast.success("CV actualizado", { description: "Tu curriculum se ha actualizado correctamente." });
         await fetchProfile();
     };
 
@@ -221,10 +220,6 @@ export const useUnifiedProfile = () => {
         handleCancel,
         handlePhotoUpload,
         handleCVUploadSuccess,
-        notification,
-        isVisible,
-        close,
-        show,
         refetch,
     };
 };

@@ -24,7 +24,6 @@ import {
   X,
   Upload,
 } from "lucide-react";
-import { NotificationBanner } from "@/components/ui/notification";
 
 /**
  * Vista principal para crear una nueva publicación.
@@ -45,9 +44,6 @@ export default function PublicationFormView() {
     handleRemoveImage,
     handleClearImages,
     handleSubmit,
-    notification,
-    isVisible,
-    closeNotification,
   } = usePublicationForm();
 
   // Flags para renderizado condicional de secciones del formulario
@@ -82,12 +78,6 @@ export default function PublicationFormView() {
 
   return (
     <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-ucn-purple">
-
-      <NotificationBanner
-        data={notification}
-        isVisible={isVisible}
-        onClose={closeNotification}
-      />
 
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
         {/* Header */}

@@ -2,7 +2,7 @@
 
 import { AlertCircle, ArrowLeft, LayoutGrid, User as UserIcon, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { ConfirmDialog, NotificationBanner } from "@/components/ui";
+import { ConfirmDialog } from "@/components/ui";
 import { useUserDetail } from "./hooks";
 import { useDownloadUserReviewsPdf } from "@/hooks/common/use-reviews";
 import { useState } from "react";
@@ -26,9 +26,6 @@ export function UserDetailView({ id }: UserDetailViewProps) {
         error,
         handleToggleBlock,
         refetch,
-        notification,
-        isVisible,
-        close,
     } = useUserDetail(id);
 
     const handleConfirmToggle = () => {
@@ -69,16 +66,6 @@ export function UserDetailView({ id }: UserDetailViewProps) {
     // 3. VISTA PRINCIPAL
     return (
         <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-ucn-purple">
-
-            <NotificationBanner
-                data={{
-                    title: notification?.title || "",
-                    message: notification?.message || "",
-                    type: notification?.type || "success"
-                }}
-                isVisible={isVisible}
-                onClose={close}
-            />
 
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
 
