@@ -10,7 +10,8 @@ import {
     StatusReasonBanner,
     AppealFormDialog,
     EditBuySellDialog,
-    PublicationActionsMenu
+    BuySellActionsMenu,
+    OfferActionsMenu
 } from './components'; 
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from 'sonner';
@@ -67,6 +68,7 @@ export default function OffererPublicationDetailView() {
     const [isCancelBuySellDialogOpen, setIsCancelBuySellDialogOpen] = useState(false);
     const [isTogglingVisibility, setIsTogglingVisibility] = useState(false);
     const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
+    const [isOfferActionsMenuOpen, setIsOfferActionsMenuOpen] = useState(false);
 
     const handleCloseMenu = () => {
         setIsApplicantsDialogOpen(false);
@@ -377,38 +379,16 @@ export default function OffererPublicationDetailView() {
                             </div>
                         </div>
 
-                        {/* Action Buttons */}
+                        {/* Offer Action Buttons */}
                         {isPublished && isJobOffer && (canCancel || canAdvance) && (
-                            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                            <div className="flex gap-3">
                                 <button
-                                    onClick={() => setIsApplicantsDialogOpen(true)}
-                                    className="w-full sm:w-auto px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white rounded-full font-bold transition shadow-lg flex items-center justify-center gap-2 whitespace-nowrap"
+                                    onClick={() => setIsOfferActionsMenuOpen(true)}
+                                    className="px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white rounded-full font-bold transition shadow-lg flex items-center justify-center gap-2"
                                 >
-                                    <Users className="w-5 h-5 flex-shrink-0" />
-                                    <span>Postulantes ({publication.applicationsCount || 0})</span>
+                                    <Settings className="w-5 h-5 flex-shrink-0" />
+                                    <span>Acciones</span>
                                 </button>
-                                
-                                {canAdvance && (
-                                    <button
-                                        onClick={() => setIsAdvanceDialogOpen(true)}
-                                        disabled={isMutating}
-                                        className="w-full sm:w-auto px-6 py-3 bg-blue-600/80 hover:bg-blue-600 backdrop-blur-md border border-blue-500/50 disabled:bg-blue-900/50 disabled:cursor-not-allowed text-white rounded-full font-bold transition shadow-lg flex items-center justify-center gap-2"
-                                    >
-                                        <ArrowRight className="w-5 h-5 flex-shrink-0" />
-                                        <span>{isMutating ? "Avanzando..." : "Avanzar Estado"}</span>
-                                    </button>
-                                )}
-                                
-                                {canCancel && (
-                                    <button
-                                        onClick={() => setIsCancelDialogOpen(true)}
-                                        disabled={isMutating}
-                                        className="w-full sm:w-auto px-6 py-3 bg-red-600/80 hover:bg-red-600 backdrop-blur-md border border-red-500/50 disabled:bg-red-900/50 disabled:cursor-not-allowed text-white rounded-full font-bold transition shadow-lg flex items-center justify-center gap-2"
-                                    >
-                                        <XCircle className="w-5 h-5 flex-shrink-0" />
-                                        <span>{isMutating ? "Cancelando..." : "Cancelar Oferta"}</span>
-                                    </button>
-                                )}
                             </div>
                         )}
 
@@ -475,7 +455,7 @@ export default function OffererPublicationDetailView() {
                 {/* Edit BuySell Dialog */}
                 {publication?.publicationType === "CompraVenta" && (
                     <>
-                        <PublicationActionsMenu
+                        <BuySellActionsMenu
                             isOpen={isActionsMenuOpen}
                             onClose={() => setIsActionsMenuOpen(false)}
                             publication={publication}
@@ -492,6 +472,21 @@ export default function OffererPublicationDetailView() {
                             isSaving={isSavingEdit}
                         />
                     </>
+                )}
+
+                {isJobOffer && (
+                    <OfferActionsMenu
+                        isOpen={isOfferActionsMenuOpen}
+                        onClose={() => setIsOfferActionsMenuOpen(false)}
+                        publication={publication}
+                        canAdvance={canAdvance}
+                        canCancel={canCancel}
+                        isMutating={isMutating}
+                        setIsApplicantsDialogOpen={setIsApplicantsDialogOpen}
+                        setIsAdvanceDialogOpen={setIsAdvanceDialogOpen}
+                        setIsCancelDialogOpen={setIsCancelDialogOpen}
+                        setIsOfferActionsMenuOpen={setIsOfferActionsMenuOpen}
+                    />  
                 )}
             </main>
         </div>

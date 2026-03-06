@@ -10,7 +10,7 @@ import {
 import { Edit2, Eye, EyeOff, XCircle, ChevronRight } from "lucide-react";
 import type { MyPublicationDetails } from "@/models/responses";
 
-interface PublicationActionsMenuProps {
+interface BuySellActionsMenuProps {
   isOpen: boolean;
   onClose: () => void;
   publication: MyPublicationDetails;
@@ -20,7 +20,7 @@ interface PublicationActionsMenuProps {
   isTogglingVisibility: boolean;
 }
 
-export function PublicationActionsMenu({
+export function BuySellActionsMenu({
   isOpen,
   onClose,
   publication,
@@ -28,7 +28,7 @@ export function PublicationActionsMenu({
   onToggleVisibilityClick,
   onCancelClick,
   isTogglingVisibility,
-}: PublicationActionsMenuProps) {
+}: BuySellActionsMenuProps) {
   const isVisible = publication.availability === "Disponible";
   const isAccepted = publication.approvalStatus === "Aceptada";
 
