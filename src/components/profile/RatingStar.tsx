@@ -1,7 +1,7 @@
 "use client";
 
+import { Star } from "lucide-react";
 import React from "react";
-import { FaStar } from "react-icons/fa";
 
 type Props = {
   value: number;
@@ -10,7 +10,7 @@ type Props = {
   onChange?: (value: number) => void;
 };
 
-export default function StarsRating({
+export function StarsRating({
   value,
   max = 6,
   editable = false,
@@ -24,7 +24,7 @@ export default function StarsRating({
   return (
     <div className="flex gap-1">
       {Array.from({ length: max }).map((_, i) => (
-        <FaStar
+        <Star
           key={i}
           onClick={() => handleClick(i)}
           className={`

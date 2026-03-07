@@ -3,16 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useMemo } from "react";
-import { getProfileRoute, getUserFromToken, getTokenFromCookie } from "@/lib";
-import { ChevronDown } from "lucide-react";
-
 import {
+  getProfileRoute,
+  getUserFromToken,
+  getTokenFromCookie,
+  ROLES,
+  UserRoles,
   isLoggedIn,
-  getRoleFromToken,
+  getRolesFromToken,
   logoutAndRedirect,
   cn,
 } from "@/lib";
-
+import { ChevronDown, Menu, X } from "lucide-react";
 import { profileService } from "@/services/profileService";
 
 const userLinks = [
@@ -21,7 +23,7 @@ const userLinks = [
 ];
 
 const adminNavLinks = [
-  { href: "/admin/publications", label: "Inicio" },
+  { href: "/landing/admin", label: "Inicio" },
   { href: "/admin/publications/validate", label: "Validar" },
   { href: "/admin/publications/manage", label: "Administrar" },
   { href: "/offerer/create-publication", label: "Publicar" },
@@ -29,18 +31,18 @@ const adminNavLinks = [
 ];
 
 const offererNavLinks = [
-  { href: "/offers", label: "Inicio" },
+  { href: "/landing/offeror", label: "Inicio" },
   { href: "/offerer/create-publication", label: "Publicar" },
   { href: "/offerer/your-publications", label: "Mis Publicaciones" },
 ];
 
 const studentNavLinks = [
-  { href: "/", label: "Inicio" },
-   { href: "/offerer/create-publication", label: "Publicar" },
-  { href: "/students/your-publications", label: "Mis Publicaciones" },
+  { href: "/landing/applicant", label: "Inicio" },
+  { href: "/offerer/create-publication", label: "Publicar" },
+  { href: "/offerer/your-publications", label: "Mis Publicaciones" },
 ];
 
-function UserAvatar({ name, photoUrl }: { name?: string; photoUrl?: string }) {
+function UserAvatar({ name, photoUrl, showName = true }: { name?: string; photoUrl?: string; showName?: boolean }) {
   const initials =
     name
       ?.trim()
@@ -66,9 +68,11 @@ function UserAvatar({ name, photoUrl }: { name?: string; photoUrl?: string }) {
           )}
         </div>
       </div>
-      <span className="hidden sm:inline text-[var(--ink)] font-medium">
-        {name ?? "Usuario"}
-      </span>
+      {showName && (
+        <span className="text-[var(--ink)] font-medium">
+          {name ?? "Usuario"}
+        </span>
+      )}
     </div>
   );
 }
@@ -78,16 +82,17 @@ export default function SiteHeader() {
   const [auth, setAuth] = useState({
     logged: false,
     name: "Usuario",
-    role: null as string | null,
+    roles: [] as UserRoles[],
     userType: null as string | null,
     photoUrl: null as string | null,
     superAdmin: false
   });
 
   const [open, setOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
-  // Function to reload the profile photo
   const loadPhoto = async () => {
     const res = await profileService.getProfilePhoto();
     if (res.data?.photoUrl) {
@@ -102,25 +107,17 @@ export default function SiteHeader() {
     const logged = isLoggedIn();
     const token = getTokenFromCookie();
     const info = token ? getUserFromToken() : null;
-    const userRole = getRoleFromToken();
+    const userRoles = getRolesFromToken();
     const tokenData = getUserFromToken();
 
     setAuth({
       logged,
       name: info?.userName || info?.email?.split("@")[0] || "Usuario",
-      role: userRole,
+      roles: userRoles as UserRoles[],
       userType: tokenData?.userType || null,
       photoUrl: null,
-      superAdmin: false
+      superAdmin: userRoles.includes("SuperAdmin")
     });
-
-    if (logged && userRole === "Admin") {
-      profileService.getAdminProfile().then((res) => {
-        setAuth(prev => ({ ...prev, superAdmin: res.data.superAdmin || false }));
-      }).catch(() => {
-        setAuth(prev => ({ ...prev, superAdmin: false }));
-      });
-    }
 
     if (logged) {
       loadPhoto();
@@ -141,33 +138,24 @@ export default function SiteHeader() {
   const dropdownItems = useMemo(() => {
     const baseItems = [
       {
-        href: getProfileRoute(auth.userType ?? undefined),
+        href: "/profile",
         label: "Editar perfil",
       },
-      // MODIFICACIÓN AQUÍ:
-      // Solo agregamos este item si el rol NO es Admin
-      ...(auth.role !== "Admin"
-        ? [{ href: "/jobs/history", label: "Historial de postulaciones" }]
+      ...(!auth.roles.includes(ROLES.ADMIN)
+        ? [{ href: "/jobs/history", label: "Mis Postulaciones" }]
         : []),
-      
-      { href: "/jobs/reports", label: "Historial de trabajos" },
+
+      { href: "/jobs/reviews", label: "Mis Reseñas" },
       { href: "/offerer/create-publication", label: "Publicar" },
-      {
-        href:
-          auth.role === "Admin"
-            ? "/admin/your-publications"
-            : auth.role === "Offerent"
-            ? "/offerer/your-publications":"/students/your-publications",
-        label: "Mis Publicaciones",
-      },
+      { href: "/offerer/your-publications", label: "Mis Publicaciones" },
     ];
 
-    if (auth.role === "Admin") {
+    if (auth.roles.includes(ROLES.ADMIN)) {
       baseItems.push({ 
         href: "/admin/users", 
         label: "Ver usuarios" });
     }
-    if (auth.superAdmin) {
+    if (auth.roles.includes(ROLES.SUPER_ADMIN)) {
       baseItems.push({ 
         href: "/auth/register/admin", 
         label: "Crear administrador"})
@@ -175,54 +163,51 @@ export default function SiteHeader() {
 
     return baseItems.map((item) => {
       if (item.label !== "Historial de trabajos") return item;
-      let newHref = "/jobs/reviews/student";
-      if (auth.role === "Offerent") newHref = "/jobs/reviews/employer";
-      if (auth.role === "Admin") newHref = "/jobs/reports";
+      let newHref = "/jobs/reviews";
+      if (auth.roles.includes(ROLES.ADMIN)) newHref = "/jobs/reports";
       return { ...item, href: newHref };
     });
-  }, [auth.userType, auth.role, auth.superAdmin]);
-  
+  }, [auth.userType, auth.roles, auth.superAdmin]);
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
       if (!menuRef.current?.contains(e.target as Node)) setOpen(false);
+      if (!mobileMenuRef.current?.contains(e.target as Node)) setMobileMenuOpen(false);
     };
-    if (open) document.addEventListener("mousedown", onDocClick);
+    if (open || mobileMenuOpen) document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
-  }, [open]);
+  }, [open, mobileMenuOpen]);
 
-  const isAdmin = auth.role === "Admin";
-  const isOfferer = auth.role === "Offerent";
-  const isStudent = auth.role === "Applicant";
+  const isAdmin = auth.roles.includes(ROLES.ADMIN);
+  const isOfferer = auth.roles.includes(ROLES.OFFEROR);
+  const isStudent = auth.roles.includes(ROLES.APPLICANT);
 
-  const mainLinks = isAdmin ? adminNavLinks : isOfferer ? offererNavLinks :isStudent ? studentNavLinks :userLinks;
-
-  // Lógica para determinar a dónde redirige el Logo
-  const logoHref = isAdmin ? "/admin/publications" : "/";
+  const mainLinks = isAdmin ? adminNavLinks : isOfferer ? offererNavLinks : isStudent ? studentNavLinks : userLinks;
+  const logoHref = isAdmin ? "/landing/admin" : "/";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[var(--border)] bg-white/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 w-full border-b border-(--border) bg-white/80 backdrop-blur-xl">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        {/* Logo con href dinámico */}
         <Link
           href={logoHref}
-          className="flex items-center gap-2 font-extrabold text-xl group"
+          className="flex items-center gap-2 font-extrabold text-xl group z-50"
         >
-          <span className="text-[var(--ink)]">Bolsa</span>
-          <span className="px-3 py-1 rounded-xl bg-white text-[var(--primary)] border border-[var(--primary)] font-bold shadow-sm">
+          <span className="text-(--ink)">Bolsa</span>
+          <span className="px-3 py-1 rounded-xl bg-white text-(--primary) border border-(--primary) font-bold shadow-sm">
             FEUCN
           </span>
         </Link>
 
-        <div className="flex items-center gap-1">
+        {/* Desktop Navigation */}
+        <div className="hidden lg:flex items-center gap-1">
           {mainLinks.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               className={cn(
-                "rounded-xl px-4 py-2.5 text-sm font-medium text-[var(--muted-ink)] hover:text-[var(--ink)] hover:bg-[var(--chip)] transition-all",
+                "rounded-xl px-4 py-2.5 text-sm font-medium text-(--muted-ink) hover:text-(--ink) hover:bg-(--chip) transition-all",
                 pathname === l.href &&
-                  "bg-[var(--chip)] text-[var(--primary)] font-semibold"
+                  "bg-(--chip) text-(--primary) font-semibold"
               )}
             >
               {l.label}
@@ -232,7 +217,7 @@ export default function SiteHeader() {
           {!auth.logged ? (
             <Link
               href="/auth/login"
-              className="ml-2 rounded-xl px-5 py-2.5 font-semibold text-white bg-gradient-to-r from-[var(--primary)] to-[var(--pop)] hover:opacity-90 transition-all shadow-md hover:shadow-lg"
+              className="ml-2 rounded-xl px-5 py-2.5 font-semibold text-white bg-linear-to-r from-(--primary) to-(--pop) hover:opacity-90 transition-all shadow-md hover:shadow-lg"
             >
               Ingresar
             </Link>
@@ -240,40 +225,126 @@ export default function SiteHeader() {
             <div className="relative ml-2" ref={menuRef}>
               <button
                 onClick={() => setOpen(v => !v)}
-                className="cursor-pointer flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-[var(--chip)] transition-all"
+                className="cursor-pointer flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-(--chip) transition-all"
               >
                 <UserAvatar
                   name={auth.name}
                   photoUrl={auth.photoUrl ?? undefined}
+                  showName={true}
                 />
                 <ChevronDown
                   className={cn(
-                    "w-4 h-4 text-[var(--muted-ink)] transition-transform",
+                    "w-4 h-4 text-(--muted-ink) transition-transform",
                     open && "rotate-180"
                   )}
                 />
               </button>
 
               {open && (
-                <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-[var(--border)] bg-white shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2">
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-(--border) bg-white shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2">
                   {dropdownItems.map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="block px-4 py-3 text-sm text-[var(--ink)] hover:bg-[var(--chip)] transition-colors"
+                      className="block px-4 py-3 text-sm text-(--ink) hover:bg-(--chip) transition-colors"
+                      onClick={() => setOpen(false)}
                     >
                       {item.label}
                     </Link>
                   ))}
-                  <div className="border-t border-[var(--border)]" />
+                  <div className="border-t border-(--border)" />
                   <button
                     onClick={() => logoutAndRedirect("/")}
-                    className="cursor-pointer w-full text-left px-4 py-3 text-sm text-[var(--pop)] font-medium hover:bg-red-50 transition-colors"
+                    className="cursor-pointer w-full text-left px-4 py-3 text-sm text-(--pop) font-medium hover:bg-red-50 transition-colors"
                   >
                     Cerrar sesión
                   </button>
                 </div>
               )}
+            </div>
+          )}
+        </div>
+
+        {/* Mobile Menu - User Avatar/Name or Login Button */}
+        <div className="lg:hidden" ref={mobileMenuRef}>
+          {!auth.logged ? (
+            <Link
+              href="/auth/login"
+              className="rounded-xl px-5 py-2.5 font-semibold text-white bg-gradient-to-r from-(--primary) to-(--pop) hover:opacity-90 transition-all shadow-md hover:shadow-lg text-sm"
+            >
+              Ingresar
+            </Link>
+          ) : (
+            <button
+              onClick={() => setMobileMenuOpen(v => !v)}
+              className="cursor-pointer flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-(--chip) transition-all"
+            >
+              <UserAvatar
+                name={auth.name}
+                photoUrl={auth.photoUrl ?? undefined}
+                showName={false}
+              />
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5 text-(--ink)" />
+              ) : (
+                <Menu className="w-5 h-5 text-(--ink)" />
+              )}
+            </button>
+          )}
+
+          {/* Mobile Dropdown Menu */}
+          {mobileMenuOpen && auth.logged && (
+            <div className="absolute right-4 top-16 w-64 rounded-2xl border border-(--border) bg-white shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2">
+              {/* User Info Header */}
+              <div className="px-4 py-3 border-b border-(--border) bg-(--chip)">
+                <UserAvatar
+                  name={auth.name}
+                  photoUrl={auth.photoUrl ?? undefined}
+                  showName={true}
+                />
+              </div>
+
+              {/* Main Navigation Links */}
+              <div className="border-b border-(--border)">
+                {mainLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={cn(
+                      "block px-4 py-3 text-sm text-(--ink) hover:bg-(--chip) transition-colors",
+                      pathname === link.href && "bg-(--chip) text-(--primary) font-semibold"
+                    )}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+
+              {/* User Dropdown Items */}
+              <div className="border-b border-(--border)">
+                {dropdownItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="block px-4 py-3 text-sm text-(--ink) hover:bg-(--chip) transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Logout Button */}
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  logoutAndRedirect("/");
+                }}
+                className="cursor-pointer w-full text-left px-4 py-3 text-sm text-(--pop) font-medium hover:bg-red-50 transition-colors"
+              >
+                Cerrar sesión
+              </button>
             </div>
           )}
         </div>

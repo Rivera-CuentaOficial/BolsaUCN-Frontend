@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Lock, AlertCircle } from "lucide-react";
 import { profileService } from "@/services/profileService";
-import { validators } from "src/utils/AuthValidatorsUtil";
+import { validators } from "@/utils/AuthValidatorsUtil";
 
 interface ChangePasswordDialogProps {
   open: boolean;
@@ -60,7 +60,7 @@ export default function ChangePasswordDialog({
   function validateForm(): boolean {
     const errors: Record<string, string> = {};
 
-    // Contraseña
+    // Contraseña actual
     if (!form.currentPassword) {
       errors.currentPassword = "La contraseña actual es requerida";
     }
@@ -147,46 +147,31 @@ export default function ChangePasswordDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent 
-        className="sm:max-w-[425px]"
-        style={{ 
-          backgroundColor: '#FFFFFF',
-          border: '1px solid #E5E7EB',
-          borderRadius: '12px'
-        }}
-      >
+      <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle style={{ color: '#1F2937', fontSize: '20px', fontWeight: '600' }}>
+            <DialogTitle className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+              <Lock className="w-6 h-6 text-purple-600" />
               Cambiar Contraseña
             </DialogTitle>
-            <DialogDescription style={{ color: '#6B7280', fontSize: '14px' }}>
+            <DialogDescription className="text-slate-600 text-sm">
               Ingresa tu contraseña actual y la nueva contraseña que deseas usar.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
+          <div className="space-y-4 py-6">
             {error && (
-              <div 
-                style={{
-                  backgroundColor: '#FEE2E2',
-                  border: '1px solid #FCA5A5',
-                  color: '#B91C1C',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: '500'
-                }}
-              >
-                {error}
+              <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
+                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-red-800 font-medium">{error}</p>
               </div>
             )}
 
             {/* Current Password */}
-            <div className="grid gap-2">
+            <div>
               <label 
                 htmlFor="currentPassword" 
-                style={{ fontSize: '14px', fontWeight: '500', color: '#1F2937' }}
+                className="block text-sm font-semibold text-slate-700 mb-2"
               >
                 Contraseña Actual
               </label>
@@ -197,40 +182,41 @@ export default function ChangePasswordDialog({
                   type={showPasswords.current ? "text" : "password"}
                   value={form.currentPassword}
                   onChange={handleChange}
-                  style={{
-                    borderColor: fieldErrors.currentPassword ? '#EF4444' : '#E5E7EB',
-                    borderWidth: '1px',
-                    borderRadius: '8px',
-                    padding: '8px 12px',
-                    paddingRight: '40px'
-                  }}
+                  className={`px-4 py-3 pr-12 border rounded-xl bg-white text-slate-700 transition-colors ${
+                    fieldErrors.currentPassword
+                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                      : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                  }`}
                   disabled={submitting}
+                  placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-50"
                   tabIndex={-1}
+                  disabled={submitting}
                 >
                   {showPasswords.current ? (
-                    <EyeOff className="w-4 h-4" />
+                    <EyeOff className="w-5 h-5" />
                   ) : (
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-5 h-5" />
                   )}
                 </button>
               </div>
               {fieldErrors.currentPassword && (
-                <p style={{ color: '#DC2626', fontSize: '12px' }}>
+                <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                  <span className="inline-block w-1 h-1 rounded-full bg-red-600"></span>
                   {fieldErrors.currentPassword}
                 </p>
               )}
             </div>
 
             {/* New Password */}
-            <div className="grid gap-2">
+            <div>
               <label 
                 htmlFor="newPassword" 
-                style={{ fontSize: '14px', fontWeight: '500', color: '#1F2937' }}
+                className="block text-sm font-semibold text-slate-700 mb-2"
               >
                 Nueva Contraseña
               </label>
@@ -241,43 +227,44 @@ export default function ChangePasswordDialog({
                   type={showPasswords.new ? "text" : "password"}
                   value={form.newPassword}
                   onChange={handleChange}
-                  style={{
-                    borderColor: fieldErrors.newPassword ? '#EF4444' : '#E5E7EB',
-                    borderWidth: '1px',
-                    borderRadius: '8px',
-                    padding: '8px 12px',
-                    paddingRight: '40px'
-                  }}
+                  className={`px-4 py-3 pr-12 border rounded-xl bg-white text-slate-700 transition-colors ${
+                    fieldErrors.newPassword
+                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                      : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                  }`}
                   disabled={submitting}
+                  placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-50"
                   tabIndex={-1}
+                  disabled={submitting}
                 >
                   {showPasswords.new ? (
-                    <EyeOff className="w-4 h-4" />
+                    <EyeOff className="w-5 h-5" />
                   ) : (
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-5 h-5" />
                   )}
                 </button>
               </div>
               {fieldErrors.newPassword && (
-                <p style={{ color: '#DC2626', fontSize: '12px' }}>
+                <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                  <span className="inline-block w-1 h-1 rounded-full bg-red-600"></span>
                   {fieldErrors.newPassword}
                 </p>
               )}
-              <p style={{ fontSize: '12px', color: '#6B7280' }}>
+              <p className="text-xs text-slate-500 mt-1.5">
                 Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 carácter especial
               </p>
             </div>
 
             {/* Confirm New Password */}
-            <div className="grid gap-2">
+            <div>
               <label 
                 htmlFor="confirmNewPassword" 
-                style={{ fontSize: '14px', fontWeight: '500', color: '#1F2937' }}
+                className="block text-sm font-semibold text-slate-700 mb-2"
               >
                 Confirmar Nueva Contraseña
               </label>
@@ -288,58 +275,50 @@ export default function ChangePasswordDialog({
                   type={showPasswords.confirm ? "text" : "password"}
                   value={form.confirmNewPassword}
                   onChange={handleChange}
-                  style={{
-                    borderColor: fieldErrors.confirmNewPassword ? '#EF4444' : '#E5E7EB',
-                    borderWidth: '1px',
-                    borderRadius: '8px',
-                    padding: '8px 12px',
-                    paddingRight: '40px'
-                  }}
+                  className={`px-4 py-3 pr-12 border rounded-xl bg-white text-slate-700 transition-colors ${
+                    fieldErrors.confirmNewPassword
+                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                      : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-500"
+                  }`}
                   disabled={submitting}
+                  placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-50"
                   tabIndex={-1}
+                  disabled={submitting}
                 >
                   {showPasswords.confirm ? (
-                    <EyeOff className="w-4 h-4" />
+                    <EyeOff className="w-5 h-5" />
                   ) : (
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-5 h-5" />
                   )}
                 </button>
               </div>
               {fieldErrors.confirmNewPassword && (
-                <p style={{ color: '#DC2626', fontSize: '12px' }}>
+                <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                  <span className="inline-block w-1 h-1 rounded-full bg-red-600"></span>
                   {fieldErrors.confirmNewPassword}
                 </p>
               )}
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2">
             <Button
               type="button"
-              variant="outline"
               onClick={() => handleOpenChange(false)}
               disabled={submitting}
-              style={{
-                borderColor: '#E5E7EB',
-                color: '#1F2937',
-                backgroundColor: '#FFFFFF'
-              }}
+              className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-bold transition disabled:opacity-50"
             >
               Cancelar
             </Button>
             <Button 
               type="submit" 
               disabled={submitting}
-              style={{
-                backgroundColor: '#6D5EF7',
-                color: '#FFFFFF',
-                opacity: submitting ? 0.6 : 1
-              }}
+              className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-xl font-bold transition shadow-lg disabled:opacity-50"
             >
               {submitting ? "Cambiando..." : "Cambiar Contraseña"}
             </Button>

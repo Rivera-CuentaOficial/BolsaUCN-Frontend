@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Edit, Users, Trash2 } from 'lucide-react';
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"; 
 import { toast } from 'sonner'; 
-import type { OfferDetail, MyBuySell } from "src/models/responses";
+import type { OfferDetail, MyBuySell } from "@/models/responses";
 
 
 interface PublicationActionSectionProps {
@@ -111,4 +111,4 @@ const PublicationActionSection: React.FC<PublicationActionSectionProps> = ({
     );
 }
 
-export default PublicationActionSection;
+export { PublicationActionSection };

@@ -110,14 +110,28 @@ export const validators = {
         return null;
     },
 
-    //Valida el telefono con codigo de area chilena
+    //Valida el telefono con codigo de area chilena (solo los 9 dígitos locales, con o sin +56)
     phone: (value: string) => {
         if (!value.trim()) return "El teléfono es requerido";
-        const cleanPhone = value.replace(/[\s-]/g, '');
-        if (!/^\+?[0-9]{8,15}$/.test(cleanPhone)) 
-            return "Formato de teléfono inválido (ej: +56912345678)";
+
+        let normalized = value.trim();
+        if (normalized.startsWith('+56')) normalized = normalized.slice(3);
+
+        const digitsOnly = normalized.replace(/\D/g, '');
+
+        if (!/^[0-9]{9}$/.test(digitsOnly)) 
+            return "Debe tener 9 dígitos (ej: 9 1234 5678)";
         return null;
-  },
+
+    },
+
+    // Valida entrada de texto libre (comentarios, razones de rechazo, etc)
+    comment: (value: string, fieldName: string = "Comentario") => {
+    if (!value.trim()) return `${fieldName} es obligatorio.`;
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s.,;:!?'"()\-]*$/.test(value))
+        return `${fieldName} contiene caracteres no permitidos.`;
+    return null;
+},
 }
 
 /**

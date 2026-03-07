@@ -1,14 +1,14 @@
 export interface FormData {
-  title: string;
-  description: string;
-  offerType: string; // '0' para Trabajo, '1' para Voluntariado
-  endDate: string;
-  deadlineDate: string;
-  remuneration: string;
-  location: string;
-  requirements: string;
-  contactInfo: string;
-  isCvRequired: boolean;
+  Title: string;
+  Description: string;
+  OfferType: string; // '0' para Trabajo, '1' para Voluntariado
+  EndDate: string;
+  ApplicationDeadline: string;
+  Remuneration: string;
+  Location: string;
+  Requirements: string;
+  AdditionalContactInfo: string;
+  IsCvRequired: boolean;
 }
 
 

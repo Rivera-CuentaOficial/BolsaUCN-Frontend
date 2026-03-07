@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AdminUsersService } from "@/services/adminUserService";
 import { UserForAdminDto } from "@/services/dtos/adminDto";
-import { useNotification } from "@/hooks/common/use-notification";
+import { toast } from "sonner";
 
 type UserType = "Todos" | "Estudiante" | "Empresa" | "Particular" | "Administrador";
 type BlockedStatus = "Todos" | "Blocked" | "Unblocked";
@@ -14,7 +14,6 @@ type ViewMode = "grid" | "list";
 export const useAdminUsers = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { notification, isVisible, show, close } = useNotification();
 
     // State management
     const [users, setUsers] = useState<UserForAdminDto[]>([]);
@@ -120,10 +119,8 @@ export const useAdminUsers = () => {
             await AdminUsersService.toggleUserBan(user.id);
             
             // Success notification
-            show(
-                "Éxito",
-                `Usuario ${user.banned ? "desbloqueado" : "bloqueado"} correctamente`,
-                "success"
+            toast.success(
+                `Usuario ${user.banned ? "desbloqueado" : "bloqueado"} correctamente`
             );
         } catch (err) {
             // Revert optimistic update on error
@@ -134,11 +131,7 @@ export const useAdminUsers = () => {
             );
             
             // Error notification
-            show(
-                "Error",
-                "No se pudo cambiar el estado del usuario",
-                "error"
-            );
+            toast.error("No se pudo cambiar el estado del usuario");
             console.error("Error toggling block status:", err);
         }
     };
@@ -171,9 +164,5 @@ export const useAdminUsers = () => {
         handleToggleBlock,
         refetch: fetchUsers,
         
-        // Notifications
-        notification,
-        isVisible,
-        close,
     };
 };

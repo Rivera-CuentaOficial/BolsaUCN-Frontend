@@ -1,129 +1,384 @@
-// src/views/app/offerer/your-publications/[id]/components/PublicationDetailSection.tsx
-"use client";
-import React from 'react';
-import { Info, FileText, MapPin, DollarSign, Calendar, ClockIcon } from 'lucide-react';
-import type { OfferDetail, MyBuySell } from "src/models/responses"; 
-import { cn, thousandSeparatorPipe, formatDate } from 'src/lib'; 
+import { MapPin, Calendar, DollarSign, Mail, Phone, Package, Tag, Clock, FileText } from 'lucide-react';
+import { formatDate, thousandSeparatorPipe } from '@/lib';
+import type { MyPublicationDetails } from '@/models/responses';
 
-interface PublicationDetailSectionProps {
-    detail: OfferDetail | MyBuySell;
-    typeInfo: { text: string; icon: React.ElementType; iconClass: string; };
-    statusInfo: { text: string; classes: string; };
+interface Props {
+  publication: MyPublicationDetails;
 }
 
-function formatMoney(n: number | undefined | null): string {
-    if (typeof n !== 'number' || isNaN(n) || n === 0) {
-        return "A convenir / $0 CLP";
-    }
-    return `$${thousandSeparatorPipe(n)} CLP`;
-}
+export function PublicationDetailSection({ publication }: Props) {
+  const isOffer = publication.publicationType === "Oferta";
+  const isBuySell = publication.publicationType === "CompraVenta";
 
-const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
-  <div>
-    <dt className="text-sm font-semibold text-gray-500">{label}</dt>
-    <dd className="mt-1 text-base text-gray-900">{value || "No especificado"}</dd>
-  </div>
-);
-
-
-const PublicationDetailSection: React.FC<PublicationDetailSectionProps> = ({ detail, typeInfo, statusInfo }) => {
-    
-    const isJobOffer = 'remuneration' in detail || 'companyName' in detail;
-    const rawDate = ('postDate' in detail && detail.postDate) 
-        ? detail.postDate 
-        : detail.publicationDate;
-    
-    const moneyValue = isJobOffer 
-        ? (detail as OfferDetail).remuneration 
-        : (detail as MyBuySell).price;
-
-    const moneyLabel = isJobOffer ? "Remuneración" : "Precio Solicitado";
-    const rawEndDate = 'endDate' in detail ? detail.endDate : undefined;
-    const rawDeadlineDate = 'deadlineDate' in detail ? detail.deadlineDate : undefined;
-    
-    const formattedPubDate = rawDate ? formatDate(rawDate) : "N/A";
-    const formattedEndDate = rawEndDate ? formatDate(rawEndDate) : "Indefinido";
-    const formattedMoney = formatMoney(moneyValue);
-    
-    // Se utiliza 'aboutMe' como requisitos para simplificar, si está presente.
-    const requirements = (detail as OfferDetail).aboutMe || undefined; 
-    
-    return (
-        <section className="w-full bg-white p-6 rounded-xl shadow-lg border border-[var(--border)] space-y-6">
-            
-            {/* Imagen (Manteniendo el diseño simple del administrador) */}
-            <div className="mb-4 overflow-hidden rounded-xl max-h-96 border border-gray-200">
-                <img
-                    src={"/logo_feucn_extendido.png"} 
-                    alt={detail.title}
-                    className="w-full object-cover h-60 md:h-96"
-                />
+  return (
+    <div className="space-y-8">
+      {/* Images */}
+          {publication.imageUrls && publication.imageUrls.length > 0 && (
+            <div className="mt-6">
+              <h3 className="font-bold text-lg text-slate-900 mb-4">Imágenes del Producto</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {publication.imageUrls.map((url, idx) => (
+                  <img
+                    key={idx}
+                    src={url}
+                    alt={`Imagen ${idx + 1}`}
+                    className="w-full h-48 object-cover rounded-xl border-2 border-slate-200 hover:border-purple-400 transition"
+                  />
+                ))}
+              </div>
             </div>
+          )}
 
-            {/* Detalles de la Publicación (Título en el componente padre) */}
-            <div className="space-y-4">
-                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 border-b pb-2">
-                    <FileText className="w-5 h-5 text-indigo-600" />
-                    Descripción
-                </h2>
-                <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                    {detail.description || "No hay descripción detallada proporcionada."}
-                </p>
-            </div>
-            
-            {/* Requisitos (Solo para Ofertas/Voluntariados) */}
-            {isJobOffer && requirements && (
-                <div className="pt-4 border-t border-gray-200 space-y-4">
-                    <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 border-b pb-2">
-                        <Info className="w-5 h-5 text-red-600" />
-                        Requisitos
-                    </h2>
-                    <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                        {requirements}
-                    </p>
+      {/* Description Section */}
+      <section className="pb-6 border-b border-slate-200">
+        <h2 className="text-2xl font-black text-slate-900 mb-4 flex items-center gap-2">
+          <FileText className="w-6 h-6 text-purple-600" />
+          Descripción
+        </h2>
+        <p className="text-slate-700 whitespace-pre-wrap leading-relaxed text-base">
+          {publication.description}
+        </p>
+      </section>
+
+      {/* Basic Information Grid */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-200">
+
+        {/* Location */}
+        <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-2xl">
+          <div className="bg-purple-100 p-2 rounded-xl">
+            <MapPin className="w-5 h-5 text-purple-600" />
+          </div>
+          <div>
+            <h3 className="font-bold text-sm uppercase tracking-wider text-slate-500 mb-1">
+              Ubicación
+            </h3>
+            <p className="text-slate-900 font-medium">{publication.location}</p>
+          </div>
+        </div>
+
+        {/* Publication Date */}
+        <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-2xl">
+          <div className="bg-purple-100 p-2 rounded-xl">
+            <Clock className="w-5 h-5 text-purple-600" />
+          </div>
+          <div>
+            <h3 className="font-bold text-sm uppercase tracking-wider text-slate-500 mb-1">
+              Fecha de Publicación
+            </h3>
+            <p className="text-slate-900 font-medium">{formatDate(publication.createdAt)}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Job Offer Specific Fields */}
+      {isOffer && (
+        <section className="space-y-6 pb-6 border-b border-slate-200">
+          <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+            <Tag className="w-5 h-5 text-indigo-600" />
+            Detalles de la Oferta
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {publication.offerType && (
+              <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-2xl">
+                <div className="bg-indigo-100 p-2 rounded-xl">
+                  <Tag className="w-5 h-5 text-indigo-600" />
                 </div>
+                <div>
+                  <h3 className="font-bold text-sm uppercase tracking-wider text-slate-500 mb-1">
+                    Tipo de Oferta
+                  </h3>
+                  <p className="text-slate-900 font-medium">{publication.offerType}</p>
+                </div>
+              </div>
             )}
 
+            {publication.remuneration !== undefined && publication.remuneration !== null && (
+              <div className="flex items-start gap-3 bg-green-50 p-4 rounded-2xl">
+                <div className="bg-green-100 p-2 rounded-xl">
+                  <DollarSign className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm uppercase tracking-wider text-slate-500 mb-1">
+                    Remuneración
+                  </h3>
+                  <p className="text-slate-900 font-bold text-lg">
+                    ${thousandSeparatorPipe(publication.remuneration)}
+                  </p>
+                </div>
+              </div>
+            )}
 
-            {/* Grid de Información General */}
-            <div className="pt-4 border-t border-gray-200">
-                <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2 border-b pb-2">
-                    <Calendar className="w-5 h-5 text-indigo-600" />
-                    Información General
-                </h3>
-                <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    
-                    <DetailItem label={moneyLabel} value={formattedMoney} />
-                    
-                    <DetailItem label="Ubicación" value={detail.location} />
-                    
-                    
-                    {/* Fecha de Término solo si es oferta de trabajo */}
-                    {isJobOffer && (
-                        <DetailItem label="Fecha de Término" value={formattedEndDate} />
+            {publication.applicationDeadline && (
+              <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-2xl">
+                <div className="bg-purple-100 p-2 rounded-xl">
+                  <Calendar className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm uppercase tracking-wider text-slate-500 mb-1">
+                    Fecha Límite de Postulación
+                  </h3>
+                  <p className="text-slate-900 font-medium">{formatDate(publication.applicationDeadline)}</p>
+                </div>
+              </div>
+            )}
+
+            {publication.endDate && (
+              <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-2xl">
+                <div className="bg-purple-100 p-2 rounded-xl">
+                  <Calendar className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm uppercase tracking-wider text-slate-500 mb-1">
+                    Fecha de Término
+                  </h3>
+                  <p className="text-slate-900 font-medium">{formatDate(publication.endDate)}</p>
+                </div>
+              </div>
+            )}
+
+            {publication.isCvRequired !== undefined && (
+              <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-2xl">
+                <div className="bg-purple-100 p-2 rounded-xl">
+                  <Package className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm uppercase tracking-wider text-slate-500 mb-1">
+                    CV Requerido
+                  </h3>
+                  <p className="text-slate-900 font-medium">
+                    {publication.isCvRequired ? (
+                      <span className="text-green-600 font-bold">Sí</span>
+                    ) : (
+                      <span className="text-slate-600">No</span>
                     )}
-                    
-                    <DetailItem label="Fecha de Publicación" value={formattedPubDate} />
-                    
-                    {/* Categoría solo si es Compra/Venta */}
-                    {!isJobOffer && 'category' in detail && (
-                        <DetailItem label="Categoría" value={(detail as MyBuySell).category} />
-                    )}
+                  </p>
+                </div>
+              </div>
+            )}
 
-                    {/* Estado de Validación (Estilo Admin) */}
-                    <div>
-                        <dt className="text-sm font-semibold text-gray-500">Estado Validación:</dt>
-                        <dd className="mt-1">
-                            <span className={statusInfo.classes}>
-                                {statusInfo.text}
-                            </span>
-                        </dd>
-                    </div>
-
-                </dl>
-            </div>
+            {publication.applicationsCount !== undefined && (
+              <div className="flex items-start gap-3 bg-blue-50 p-4 rounded-2xl">
+                <div className="bg-blue-100 p-2 rounded-xl">
+                  <Package className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm uppercase tracking-wider text-slate-500 mb-1">
+                    Total de Postulaciones
+                  </h3>
+                  <p className="text-slate-900 font-bold text-lg">{publication.applicationsCount}</p>
+                </div>
+              </div>
+            )}
+            {publication.remainingSlots !== undefined && (
+              <div className="flex items-start gap-3 bg-indigo-50 p-4 rounded-2xl">
+                <div className="bg-indigo-100 p-2 rounded-xl">
+                  <Package className="w-5 h-5 text-indigo-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm uppercase tracking-wider text-slate-500 mb-1">
+                    Cupos Restantes
+                  </h3>
+                  <p className="text-slate-900 font-bold text-lg">{publication.remainingSlots}</p>
+                </div>
+              </div>
+            )}
+          </div>
         </section>
-    );
-}
+      )}
 
-export default PublicationDetailSection;
+      {/* BuySell Specific Fields */}
+      {isBuySell && (
+        <section className="space-y-6 pb-6 border-b border-slate-200">
+          <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+            <Tag className="w-5 h-5 text-purple-600" />
+            Detalles del Producto
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {publication.price !== undefined && publication.price !== null && (
+              <div className="flex items-start gap-3 bg-green-50 p-4 rounded-2xl">
+                <div className="bg-green-100 p-2 rounded-xl">
+                  <DollarSign className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm uppercase tracking-wider text-slate-500 mb-1">
+                    Precio
+                  </h3>
+                  <p className="text-slate-900 font-bold text-lg">
+                    ${thousandSeparatorPipe(publication.price)}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {publication.category && (
+              <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-2xl">
+                <div className="bg-purple-100 p-2 rounded-xl">
+                  <Tag className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm uppercase tracking-wider text-slate-500 mb-1">
+                    Categoría
+                  </h3>
+                  <p className="text-slate-900 font-medium">{publication.category}</p>
+                </div>
+              </div>
+            )}
+
+            {publication.condition && (
+              <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-2xl">
+                <div className="bg-purple-100 p-2 rounded-xl">
+                  <Package className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm uppercase tracking-wider text-slate-500 mb-1">
+                    Condición
+                  </h3>
+                  <p className="text-slate-900 font-medium">{publication.condition}</p>
+                </div>
+              </div>
+            )}
+
+            {publication.quantity !== undefined && publication.quantity !== null && (
+              <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-2xl">
+                <div className="bg-blue-100 p-2 rounded-xl">
+                  <Package className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm uppercase tracking-wider text-slate-500 mb-1">
+                    Cantidad Disponible
+                  </h3>
+                  <p className="text-slate-900 font-bold text-lg">{publication.quantity}</p>
+                </div>
+              </div>
+            )}
+
+            {publication.availability && (
+              <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-2xl">
+                <div className="bg-green-100 p-2 rounded-xl">
+                  <Package className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm uppercase tracking-wider text-slate-500 mb-1">
+                    Disponibilidad
+                  </h3>
+                  <p className="text-slate-900 font-medium">{publication.availability}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Contact Information Section */}
+      <section className="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-2xl border border-purple-100">
+        <h2 className="text-xl font-black text-slate-900 mb-4 flex items-center gap-2">
+          <Mail className="w-5 h-5 text-purple-600" />
+          Información de Contacto
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* For Offers: Show all contact info */}
+          {isOffer && (
+            <>
+              {/* Primary Contact Email */}
+              <div className="flex items-center gap-3 bg-white p-4 rounded-xl border border-purple-100">
+                <div className="bg-purple-100 p-2 rounded-lg">
+                  <Mail className="w-4 h-4 text-purple-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-bold text-xs uppercase tracking-wider text-slate-500 mb-1">
+                    Email
+                  </h3>
+                  <a
+                    href={`mailto:${publication.contactEmail}`}
+                    className="text-slate-900 hover:text-purple-600 font-medium truncate block transition"
+                  >
+                    {publication.contactEmail}
+                  </a>
+                </div>
+              </div>
+
+              {/* Primary Contact Phone */}
+              <div className="flex items-center gap-3 bg-white p-4 rounded-xl border border-purple-100">
+                <div className="bg-purple-100 p-2 rounded-lg">
+                  <Phone className="w-4 h-4 text-purple-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-bold text-xs uppercase tracking-wider text-slate-500 mb-1">
+                    Teléfono
+                  </h3>
+                  <a
+                    href={`tel:${publication.contactPhone}`}
+                    className="text-slate-900 hover:text-purple-600 font-medium transition"
+                  >
+                    {publication.contactPhone}
+                  </a>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* For BuySell: Show only selected contact info */}
+          {isBuySell && (
+            <>
+              {/* Email (only if showEmail is true) */}
+              {publication.showEmail && (
+                <div className="flex items-center gap-3 bg-white p-4 rounded-xl border border-purple-100">
+                  <div className="bg-purple-100 p-2 rounded-lg">
+                    <Mail className="w-4 h-4 text-purple-600" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-xs uppercase tracking-wider text-slate-500 mb-1">
+                      Email de Contacto
+                    </h3>
+                    <a
+                      href={`mailto:${publication.additionalContactEmail || publication.contactEmail}`}
+                      className="text-slate-900 hover:text-purple-600 font-medium truncate block transition"
+                    >
+                      {publication.additionalContactEmail || publication.contactEmail}
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Phone (only if showPhoneNumber is true) */}
+              {publication.showPhoneNumber && (
+                <div className="flex items-center gap-3 bg-white p-4 rounded-xl border border-purple-100">
+                  <div className="bg-purple-100 p-2 rounded-lg">
+                    <Phone className="w-4 h-4 text-purple-600" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-xs uppercase tracking-wider text-slate-500 mb-1">
+                      Teléfono de Contacto
+                    </h3>
+                    <a
+                      href={`tel:${publication.additionalContactPhoneNumber || publication.contactPhone}`}
+                      className="text-slate-900 hover:text-purple-600 font-medium transition"
+                    >
+                      {publication.additionalContactPhoneNumber || publication.contactPhone}
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Show message if no contact info is selected */}
+              {!publication.showEmail && !publication.showPhoneNumber && (
+                <div className="col-span-full flex items-center justify-center gap-3 bg-amber-50 p-6 rounded-xl border border-amber-200">
+                  <div className="text-center">
+                    <p className="text-slate-700 font-medium">
+                      El publicante no ha compartido información de contacto para esta publicación.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}

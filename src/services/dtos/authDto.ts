@@ -20,7 +20,7 @@ export interface AdminRequestDto {
     Email: string;
     Password: string;
     ConfirmPassword: string;
-    Name: string;
+    FirstName: string;
     LastName: string;
     Rut: string;
     PhoneNumber: string;
@@ -34,7 +34,7 @@ export interface AdminResponseDto{
 // Company
 // Request
 export interface CompanyRequestDto{
-    CompanyName: string;
+    FirstName: string;
     LegalName: string;
     Email: string;
     Rut: string;
@@ -43,13 +43,13 @@ export interface CompanyRequestDto{
     ConfirmPassword: string;
 }
 // Response
-export interface CompanyResponsetDto{
+export interface CompanyResponseDto{
     message: string;
 }
 // Individual
 // Request
 export interface IndividualRequestDto{
-    Name: string;
+    FirstName: string;
     LastName: string;
     Email: string;
     Rut: string;
@@ -64,7 +64,7 @@ export interface IndividualResponseDto{
 // Student
 // Request
 export interface StudentRequestDto{
-    Name: string;
+    FirstName: string;
     LastName: string;
     Email: string;
     Rut: string;

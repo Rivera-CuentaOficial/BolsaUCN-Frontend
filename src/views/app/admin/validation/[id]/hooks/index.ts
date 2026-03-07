@@ -1,1 +1,1 @@
-export { useAdminPublicationDetailView } from "./use-validation-detail-view";
+export { usePublicationDetailsForApproval } from "./use-validation-detail-view";

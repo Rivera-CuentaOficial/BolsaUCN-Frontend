@@ -1,7 +1,8 @@
 "use client";
 import React from "react";
 import { formatDate, thousandSeparatorPipe } from "@/lib";
-import { AdminDetail } from "@/models/responses";
+import { PublicationDetailsForApprovalDTO } from "@/models/responses";
+import { Mail, Phone, MapPin, Calendar, DollarSign, Briefcase, FileText, Tag } from "lucide-react";
 
 function formatPrice(clp: number | undefined | null): string {
   if (clp === undefined || clp === null) return "No disponible";
@@ -9,132 +10,171 @@ function formatPrice(clp: number | undefined | null): string {
 }
 
 interface ValidationDetailSectionProps {
-  detail: AdminDetail;
+  detail: PublicationDetailsForApprovalDTO;
 }
 
 export function ValidationDetailSection({
   detail,
 }: ValidationDetailSectionProps) {
+  const isJobOffer = detail.publicationType !== "CompraVenta";
+
   return (
-    <section className="w-full bg-white p-6 rounded-xl shadow-lg border border-[var(--border)] space-y-6">
-      
+    <div className="space-y-6">
       {/* Imagen */}
-      <div className="mb-4 overflow-hidden rounded-md max-h-96">
-        <img
-          src={
-            detail.images && detail.images.length > 0
-              ? detail.images[0]
-              : "/logo_feucn_extendido.png"
-          }
-          alt={detail.title}
-          className="w-full object-cover h-64 md:h-96"
-        />
-      </div>
-
-      {/* TÍTULO */}
-      <h2 className="text-2xl font-bold text-black mb-4">
-        Detalles de la Publicación
-      </h2>
-
-      {/* DESCRIPCIÓN */}
-      <div className="space-y-2">
-        <h3 className="text-xl font-bold text-black">
-          Descripción
-        </h3>
-
-        <p className="text-[var(--ink)] leading-relaxed whitespace-pre-line">
-          {detail.description || "No hay descripción detallada proporcionada."}
-        </p>
-      </div>
-
-      {/* REQUISITOS (Ahora como bloque propio) */}
-      {detail.type !== "Compra/Venta" && detail.requirements && (
-        <div className="pt-4 border-t border-[var(--border)] space-y-2">
-          <h3 className="text-xl font-bold text-black">
-            Requisitos
-          </h3>
-          <p className="text-[var(--ink)] whitespace-pre-line">
-            {detail.requirements}
-          </p>
+      {detail.imageUrls && detail.imageUrls.length > 0 && (
+        <div className="mt-6">
+          <h3 className="font-bold text-lg text-slate-900 mb-4">Imágenes del Producto</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {detail.imageUrls.map((url, idx) => (
+              <img
+                key={idx}
+                src={url}
+                alt={`Imagen ${idx + 1}`}
+                className="w-full h-48 object-cover rounded-xl border-2 border-slate-200 hover:border-purple-400 transition"
+              />
+            ))}
+          </div>
         </div>
       )}
 
-      {/* BLOQUE DE INFORMACIÓN GENERAL */}
-      <div className="pt-4 border-t border-[var(--border)]">
-        <h3 className="text-xl font-bold text-black mb-4">
-          Información General
-        </h3>
+      {/* DESCRIPCIÓN Y REQUISITOS */}
+      <section className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2.5 rounded-xl bg-purple-100">
+            <FileText className="w-5 h-5 text-purple-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-1">
+              Descripción {isJobOffer && "y Requisitos"}
+            </h3>
+            <p className="text-xs text-gray-600">
+              {isJobOffer 
+                ? "Detalles del trabajo y requisitos para aplicar"
+                : "Información sobre el artículo en venta"}
+            </p>
+          </div>
+        </div>
 
-        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm">
+        <div className="bg-white p-4 rounded-xl border border-slate-200">
+          <p className="text-gray-900 leading-relaxed whitespace-pre-line">
+            {detail.description || "No hay descripción proporcionada."}
+          </p>
+        </div>
+      </section>
 
-          {/* Fecha de Publicación */}
-          <div>
-            <dt className="font-semibold text-[var(--ink)]">
-              Fecha de Publicación:
+      {/* INFORMACIÓN GENERAL */}
+      <section className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2.5 rounded-xl bg-purple-100">
+            <Briefcase className="w-5 h-5 text-purple-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-1">
+              Información General
+            </h3>
+            <p className="text-xs text-gray-600">
+              Detalles clave de la publicación
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* ID de Publicación */}
+          <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+              ID de Publicación
             </dt>
-            <dd className="mt-1 text-[var(--muted-ink)]">
+            <dd className="text-sm font-medium text-gray-900">
+              #{detail.publicationId}
+            </dd>
+          </div>
+          {/* Fecha de Publicación */}
+          <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+              Fecha de Publicación
+            </dt>
+            <dd className="text-sm font-medium text-gray-900">
               {formatDate(detail.publicationDate || "")}
             </dd>
           </div>
 
-          {/* Estado Validación */}
-          <div>
-            <dt className="font-semibold text-[var(--ink)]">
-              Estado Validación:
+          {/* Estado */}
+          <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+              Estado Validación
             </dt>
-            <dd>Pendiente</dd>
+            <dd className="text-sm font-medium">
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800">
+                Pendiente
+              </span>
+            </dd>
           </div>
 
-          {/* Fecha Límite */}
-          {detail.type !== "Compra/Venta" && (
-            <div>
-              <dt className="font-semibold text-[var(--ink)]">Fecha Límite:</dt>
-              <dd className="mt-1 text-[var(--muted-ink)]">
-                {formatDate(detail.deadlineDate || "")}
+          {/* Tipo de Publicación */}
+          <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+              <Tag className="w-3 h-3" />
+              Tipo de Publicación
+            </dt>
+            <dd className="text-sm font-medium text-gray-900">
+              {detail.publicationType === "CompraVenta" ? "Compra/Venta" : "Oferta de Trabajo"}
+            </dd>
+          </div>
+
+          {/* Fecha Límite (Job Offers) */}
+          {isJobOffer && (
+            <div className="bg-white p-4 rounded-xl border border-slate-200">
+              <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                Cierre de Postulaciones
+              </dt>
+              <dd className="text-sm font-medium text-gray-900">
+                {formatDate(detail.applicationDeadline || "")}
               </dd>
             </div>
           )}
 
-          {/* Fecha de Término */}
-          {detail.type !== "Compra/Venta" && (
-            <div>
-              <dt className="font-semibold text-[var(--ink)]">
-                Fecha de Término:
+          {/* Fecha de Término (Job Offers) */}
+          {isJobOffer && (
+            <div className="bg-white p-4 rounded-xl border border-slate-200">
+              <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                Fecha de Término
               </dt>
-              <dd className="mt-1 text-[var(--muted-ink)]">
+              <dd className="text-sm font-medium text-gray-900">
                 {formatDate(detail.endDate || "")}
               </dd>
             </div>
           )}
 
-          {/* Localidad */}
-          {detail.type !== "Compra/Venta" && (
-            <div>
-              <dt className="font-semibold text-[var(--ink)]">Localidad:</dt>
-              <dd className="mt-1 text-[var(--muted-ink)]">
-                {detail.location || "No especificada"}
-              </dd>
-            </div>
-          )}
+          {/* Ubicación */}
+          <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              Ubicación
+            </dt>
+            <dd className="text-sm font-medium text-gray-900">
+              {detail.location || "No especificada"}
+            </dd>
+          </div>
 
-            {/* Categoria */}
-            {detail.type == "Compra/Venta" && (
-            <div>
-              <dt className="font-semibold text-[var(--ink)]">Categoria:</dt>
-              <dd className="mt-1 text-[var(--muted-ink)]">
+          {/* Categoría (BuySell) */}
+          {!isJobOffer && (
+            <div className="bg-white p-4 rounded-xl border border-slate-200">
+              <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                Categoría
+              </dt>
+              <dd className="text-sm font-medium text-gray-900">
                 {detail.category || "No especificada"}
               </dd>
             </div>
           )}
 
           {/* Remuneración / Precio */}
-          <div>
-            <dt className="font-semibold text-[var(--ink)]">
-              {detail.type === "Compra/Venta"
-                ? "Precio Solicitado:"
-                : "Remuneración:"}
+          <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+              <DollarSign className="w-3 h-3" />
+              {isJobOffer ? "Remuneración" : "Precio"}
             </dt>
-            <dd className="mt-1 font-semibold text-green-700">
+            <dd className="text-lg font-bold text-green-700">
               {formatPrice(
                 detail.price !== undefined && detail.price !== null
                   ? detail.price
@@ -143,8 +183,97 @@ export function ValidationDetailSection({
             </dd>
           </div>
 
-        </dl>
-      </div>
-    </section>
+          {/* CV Requerido */}
+          {isJobOffer && (
+            <div className="bg-white p-4 rounded-xl border border-slate-200">
+              <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                ¿Requiere CV?
+              </dt>
+              <dd className="text-sm font-medium text-gray-900">
+                {detail.isCVRequired ? "Sí" : "No"}
+              </dd>
+            </div>
+          )}
+
+          {/* Veces que ha sido apelada */}
+          {detail.numberOfAppeals > 0 && (
+            <div className="bg-white p-4 rounded-xl border border-slate-200">
+              <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                Número de Apelaciones
+              </dt>
+              <dd className="text-sm font-medium text-gray-900">
+                {detail.numberOfAppeals}
+              </dd>
+            </div>
+          )}
+            {/* Razón de Rechazo Anterior */}
+            {detail.lastRejectionReason && (
+            <div className="bg-white p-4 rounded-xl border border-slate-200 sm:col-span-2">
+              <dt className="text-xs font-semibold text-red-500 uppercase tracking-wide mb-1">
+                Razón de Rechazo Anterior
+              </dt>
+              <dd className="text-sm font-medium text-gray-900">
+                {detail.lastRejectionReason}
+              </dd>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* INFORMACIÓN DE CONTACTO ADICIONAL */}
+      {(detail.additionalContactEmail || detail.additionalContactPhoneNumber) && (
+        <section className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4">
+          <div className="flex items-start gap-3">
+            <div className="p-2.5 rounded-xl bg-purple-100">
+              <Mail className="w-5 h-5 text-purple-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-1">
+                Información de Contacto Adicional
+              </h3>
+              <p className="text-xs text-gray-600">
+                Datos de contacto alternativos proporcionados por el publicador
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {detail.additionalContactEmail && (
+              <div className="bg-white p-4 rounded-xl border border-slate-200">
+                <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1">
+                  <Mail className="w-3 h-3" />
+                  Email Adicional
+                </dt>
+                <dd>
+                  <a 
+                    href={`mailto:${detail.additionalContactEmail}`}
+                    className="text-sm font-medium text-purple-600 hover:text-purple-800 hover:underline break-all"
+                  >
+                    {detail.additionalContactEmail}
+                  </a>
+                </dd>
+              </div>
+            )}
+
+            {detail.additionalContactPhoneNumber && (
+              <div className="bg-white p-4 rounded-xl border border-slate-200">
+                <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1">
+                  <Phone className="w-3 h-3" />
+                  Teléfono Adicional
+                </dt>
+                <dd>
+                  <a 
+                    href={`tel:${detail.additionalContactPhoneNumber}`}
+                    className="text-sm font-medium text-purple-600 hover:text-purple-800 hover:underline"
+                  >
+                    {detail.additionalContactPhoneNumber}
+                  </a>
+                </dd>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+    </div>
   );
 }

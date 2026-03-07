@@ -9,7 +9,7 @@ import type {
   ApplicantResponse,
   MyBuySell,
   OfferDetail,
-} from "src/models/responses";
+} from "@/models/responses";
 
 export class AdminPublicationService extends BaseApiService {
   constructor() {
@@ -142,6 +142,16 @@ export class AdminPublicationService extends BaseApiService {
 
     // Realiza la petición patch al endpoint específico
     return this.httpClient.patch<ApiResponse<any>>(endpoint, {});
+  }
+
+  /**
+   * Cancelar una publicación BuySell (admin)
+   * Endpoint: /api/publications/my-publications/{publicationId}/cancel
+   */
+  cancelPublication(publicationId: number) {
+    return this.httpClient.patch<ApiResponse<string>>(
+      `${this.baseURL}/my-publications/${publicationId}/cancel`
+    );
   }
 }
 export const adminPublicationService = new AdminPublicationService();

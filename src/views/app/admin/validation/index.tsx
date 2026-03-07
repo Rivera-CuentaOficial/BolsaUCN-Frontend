@@ -1,87 +1,376 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
-import { AlertCircle, ArrowLeft, CheckCircle2, Sparkles } from "lucide-react";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import {
+  AlertCircle, ArrowLeft, CheckCircle2,
+  Briefcase, ShoppingBag, Search, ListFilter,
+  ArrowUpDown, ArrowRight, ClockIcon, User
+} from "lucide-react";
 import { Button } from "@/components/ui";
-import { handleApiError } from "@/lib";
-import { NotificationBanner } from "@/components/ui";
-import { useValidationView } from "./hooks/use-validation-view";
-import FilterBar from "./components/filter-bar";
-import ValidationRowLink from "./components/validation-row-link";
-import { useNotification } from "@/hooks/common/use-notification";
+import { handleApiError, cn } from "@/lib";
+import { useGetPendingPublicationsForAdmin } from "./hooks/use-validation-view";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { PublicationForValidationDTO } from "@/models/responses/publication";
+import { toast } from "sonner";
 
-function ListSkeleton() {
-  return (
-    <div className="flex items-center justify-between p-6 rounded-[2rem] bg-white/10 border border-white/20 h-24 w-full animate-pulse">
-      <div className="flex-1 space-y-3">
-        <Skeleton className="h-4 w-32 bg-white/20" />
-        <Skeleton className="h-6 w-3/4 bg-white/30" />
-      </div>
-      <Skeleton className="h-12 w-12 rounded-full bg-white/20" />
-    </div>
-  );
+type ValidationType = "Oferta" | "CompraVenta" | "Todos";
+type SortType = "Title" | "CreatedAt";
+
+const PUBLICATION_TYPES = [
+  { value: "Oferta", text: "Oferta de Trabajo", icon: Briefcase, iconClass: "text-indigo-500", bg: "bg-indigo-100", textCol: "text-indigo-800" },
+  { value: "CompraVenta", text: "Compra/Venta", icon: ShoppingBag, iconClass: "text-purple-500", bg: "bg-purple-100", textCol: "text-purple-800" },
+];
+
+const getPublicationTypeInfo = (type: string) => {
+  return PUBLICATION_TYPES.find(t => type.includes(t.value)) ||
+    { text: "Otro", icon: Briefcase, iconClass: "text-gray-500", bg: "bg-gray-100", textCol: "text-gray-800" };
+};
+
+interface ValidationCardProps {
+  item: PublicationForValidationDTO;
+  onClick: () => void;
 }
 
+const ValidationCard = ({ item, onClick }: ValidationCardProps) => {
+  const typeInfo = getPublicationTypeInfo(item.type);
+  const date = new Date(item.createdAt).toLocaleDateString("es-CL");
+
+  return (
+    <article
+      onClick={onClick}
+      className={cn(
+        "group relative flex items-stretch justify-between rounded-[2rem] transition-all duration-300 cursor-pointer w-full overflow-hidden",
+        "bg-white text-slate-800 shadow-xl",
+        "hover:scale-[1.01] hover:shadow-2xl",
+        "border-4 border-transparent hover:border-purple-300"
+      )}
+    >
+      {/* Left side - Publication Info */}
+      <div className="flex-1 min-w-0 p-6">
+        <div className="flex flex-wrap items-center gap-3 mb-2">
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full ${typeInfo.bg}`}>
+            <typeInfo.icon className={`w-4 h-4 ${typeInfo.iconClass}`} />
+            <span className={`text-xs font-black uppercase tracking-wider ${typeInfo.textCol}`}>
+              {typeInfo.text}
+            </span>
+          </div>
+        </div>
+
+        <h3 className="font-black text-2xl md:text-3xl text-slate-900 truncate group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-600 group-hover:to-pink-600 transition-all mb-4">
+          {item.title || "Sin título"}
+        </h3>
+
+        <div className="flex items-center gap-4 text-slate-400">
+          <div className="flex items-center gap-1.5">
+            <ClockIcon className="w-3.5 h-3.5" />
+            <span className="text-xs font-bold">{date}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <User className="w-3.5 h-3.5" />
+            <span className="text-xs font-bold">{item.CreatedBy}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Right side - Action */}
+      <div className="flex flex-col items-center justify-center p-6 bg-gradient-to-br from-slate-50 to-slate-100 border-l-2 border-slate-200 min-w-[120px] group-hover:from-purple-50 group-hover:to-pink-50 group-hover:border-purple-200 transition-all">
+        <div className="w-14 h-14 rounded-full bg-slate-200 flex items-center justify-center group-hover:bg-purple-600 transition-colors duration-300 shadow-lg">
+          <ArrowRight className="text-slate-500 w-6 h-6 group-hover:text-white transition-colors duration-300" />
+        </div>
+        <span className="mt-3 text-xs font-bold text-slate-600 group-hover:text-purple-600 transition-colors">
+          Validar
+        </span>
+      </div>
+    </article>
+  );
+};
+
+const CardSkeleton = () => (
+  <div className="w-full relative flex items-stretch rounded-[2rem] bg-white shadow-xl border-4 border-transparent overflow-hidden animate-pulse h-[200px]">
+    <div className="flex-1 p-6 space-y-3">
+      <div className="flex gap-2">
+        <Skeleton className="h-6 w-32 rounded-full bg-slate-200" />
+      </div>
+      <Skeleton className="h-9 w-3/4 rounded-lg bg-slate-200" />
+      <Skeleton className="h-4 w-full rounded-lg bg-slate-200" />
+      <Skeleton className="h-4 w-40 rounded-lg bg-slate-200" />
+    </div>
+    <div className="p-6 bg-slate-50 border-l-2 border-slate-200 min-w-[200px] flex flex-col items-center justify-between">
+      <div className="flex flex-col items-center space-y-3">
+        <Skeleton className="h-16 w-16 rounded-full bg-slate-200" />
+        <Skeleton className="h-4 w-24 rounded-lg bg-slate-200" />
+        <Skeleton className="h-3 w-28 rounded-lg bg-slate-200" />
+      </div>
+      <Skeleton className="h-10 w-10 rounded-full bg-slate-200" />
+    </div>
+  </div>
+);
+
+interface FilterBarProps {
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
+  filterType: ValidationType;
+  setFilterType: (type: ValidationType) => void;
+  sort: SortType;
+  setSort: (sort: SortType) => void;
+  sortOrder: "asc" | "desc";
+  toggleSortOrder: () => void;
+  clearFilters: () => void;
+}
+
+const FilterBar = ({
+  searchTerm,
+  setSearchTerm,
+  filterType,
+  setFilterType,
+  sort,
+  setSort,
+  sortOrder,
+  toggleSortOrder,
+  clearFilters,
+}: FilterBarProps) => {
+  const baseClass = "w-full bg-white/10 backdrop-blur-md border border-white/30 text-white placeholder:text-white/60 rounded-full px-5 py-3.5 text-sm font-bold focus:bg-white focus:text-purple-900 focus:placeholder:text-purple-300 focus:ring-4 focus:ring-white/20 transition-all outline-none shadow-lg hover:bg-white/20";
+  const iconClass = "absolute left-4 top-1/2 -translate-y-1/2 text-white/70 pointer-events-none";
+
+  return (
+    <div className="p-6 rounded-[2rem] bg-white/10 backdrop-blur-md border border-white/20 shadow-xl mb-10 w-full">
+      <div className="flex flex-col xl:flex-row gap-4 items-stretch">
+
+        <div className="flex-1 relative group">
+          <Search className={`${iconClass} w-5 h-5 group-focus-within:text-purple-500`} />
+          <input
+            type="text"
+            placeholder="Buscar por título..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={`${baseClass} pl-12`}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full xl:w-auto">
+
+          <div className="relative w-full group">
+            <ListFilter className={`${iconClass} w-4 h-4 group-focus-within:text-purple-500`} />
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value as ValidationType)}
+              className={`${baseClass} pl-10 cursor-pointer appearance-none`}
+            >
+              <option value="Todos" className="text-slate-800">Todos los tipos</option>
+              {PUBLICATION_TYPES.map(t => (
+                <option key={t.value} value={t.value} className="text-slate-800">{t.text}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="relative w-full group">
+            <ArrowUpDown className={`${iconClass} w-4 h-4 group-focus-within:text-purple-500`} />
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortType)}
+              className={`${baseClass} pl-10 cursor-pointer appearance-none`}
+            >
+              <option value="CreatedAt" className="text-slate-800">Por fecha</option>
+              <option value="Title" className="text-slate-800">Por título</option>
+            </select>
+          </div>
+
+          <Button
+            variant="outline"
+            onClick={toggleSortOrder}
+            className="w-full h-[53px] bg-white/20 text-white hover:bg-white/30 border-white/50 text-sm font-black rounded-full"
+          >
+            {sortOrder === "asc" ? "↑ A-Z" : "↓ Z-A"}
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={clearFilters}
+            className="w-full h-[53px] bg-white/20 text-white hover:bg-white/30 border-white/50 text-sm font-black rounded-full"
+          >
+            Limpiar
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function ValidationView() {
-  const {
-    pendingPublications,
-    totalCount,
-    isLoading,
-    error,
-    hasOffers,
-    filters,
-    actions,
-  } = useValidationView();
-
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const { notification, isVisible, show, close } = useNotification();
+  const searchParams = useSearchParams();
 
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
+  const [filterType, setFilterType] = useState<ValidationType>((searchParams.get("type") as ValidationType) || "Todos");
+  const [sort, setSort] = useState<SortType>((searchParams.get("sort") as SortType) || "CreatedAt");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">((searchParams.get("order") as "asc" | "desc") || "desc");
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get("page") || "1", 10));
+  const pageSize = 9;
+
+  // Update URL when filters change
   useEffect(() => {
-    const notificationParam = searchParams.get("notification");
-    if (notificationParam === "published") {
-      show(
-        "¡Publicación Aceptada con exito!",
-        "La oferta ha sido validada y ahora es visible para todos los usuarios.",
-        "success"
-      );
-      router.replace("/admin/publications/validate", { scroll: false });
-    } 
-    else if (notificationParam === "rejected") {
-      show(
-        "Publicación Descartada con exito",
-        "La publicación ha sido rechazada y eliminada de la lista de pendientes.",
-        "error"
-      );
-      router.replace("/admin/publications/validate", { scroll: false });
+    const params = new URLSearchParams();
+    if (searchTerm) params.set("search", searchTerm);
+    if (filterType !== "Todos") params.set("type", filterType);
+    if (sort !== "CreatedAt") params.set("sort", sort);
+    if (sortOrder !== "desc") params.set("order", sortOrder);
+    if (currentPage > 1) params.set("page", currentPage.toString());
+
+    const newUrl = params.toString() ? `?${params.toString()}` : "";
+    router.replace(`/admin/publications/validate${newUrl}`, { scroll: false });
+  }, [searchTerm, filterType, sort, sortOrder, currentPage, router]);
+
+  const filterByType = filterType !== "Todos" ? filterType : undefined;
+  const sortBy = sort;
+
+  const {
+    data,
+    isFetching,
+    error: apiError,
+    refetch,
+  } = useGetPendingPublicationsForAdmin({
+    searchTerm: searchTerm || undefined,
+    filterByType,
+    sortBy,
+    sortOrder,
+    pageNumber: currentPage,
+    pageSize,
+  });
+
+  const isViewLoading = isFetching && !data;
+  const publications = data?.publications || [];
+  const totalCount = data?.totalCount || 0;
+  const totalPages = data?.totalPages || 1;
+
+  const handleViewDetail = (item: PublicationForValidationDTO) => {
+    router.push(`/admin/publications/validate/${item.publicationId}`);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [searchParams, show, router]);
-  const apiErrorDetails = error ? handleApiError(error).details : null;
+  };
+
+  const toggleSortOrder = () => {
+    setSortOrder(prev => prev === "asc" ? "desc" : "asc");
+    setCurrentPage(1);
+  };
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setFilterType('Todos');
+    setSort('CreatedAt');
+    setSortOrder('desc');
+    setCurrentPage(1);
+  };
+
+  const apiErrorDetails = apiError ? handleApiError(apiError).details : null;
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex justify-center items-center gap-2 flex-wrap">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className={`px-4 py-2 rounded-full font-bold transition-all ${currentPage === 1
+              ? "bg-white/5 text-white/30 cursor-not-allowed"
+              : "bg-white/10 text-white hover:bg-white/20"
+            }`}
+        >
+          ←
+        </button>
+
+        {/* First Page + Left Ellipsis */}
+        {currentPage > 3 && totalPages > 5 && (
+          <>
+            <button
+              onClick={() => handlePageChange(1)}
+              className="px-4 py-2 rounded-full font-bold transition-all bg-white/10 text-white hover:bg-white/20"
+            >
+              1
+            </button>
+            {currentPage > 4 && (
+              <span className="px-2 text-white/50">...</span>
+            )}
+          </>
+        )}
+
+        {/* Page Numbers (current ± 2) */}
+        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+          const pageOffset = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
+          const page = pageOffset + i;
+
+          if (page < 1 || page > totalPages) return null;
+
+          return (
+            <button
+              key={page}
+              onClick={() => handlePageChange(page)}
+              className={`px-4 py-2 rounded-full font-bold transition-all ${page === currentPage
+                  ? "bg-white text-purple-900"
+                  : "bg-white/10 text-white hover:bg-white/20"
+                }`}
+            >
+              {page}
+            </button>
+          );
+        })}
+
+        {/* Right Ellipsis + Last Page */}
+        {currentPage < totalPages - 2 && totalPages > 5 && (
+          <>
+            {currentPage < totalPages - 3 && (
+              <span className="px-2 text-white/50">...</span>
+            )}
+            <button
+              onClick={() => handlePageChange(totalPages)}
+              className="px-4 py-2 rounded-full font-bold transition-all bg-white/10 text-white hover:bg-white/20"
+            >
+              {totalPages}
+            </button>
+          </>
+        )}
+
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className={`px-4 py-2 rounded-full font-bold transition-all ${currentPage === totalPages
+              ? "bg-white/5 text-white/30 cursor-not-allowed"
+              : "bg-white/10 text-white hover:bg-white/20"
+            }`}
+        >
+          →
+        </button>
+      </div>
+    );
+  };
+
   const renderContent = () => {
-    if (pendingPublications === null || isLoading) {
+    if (isViewLoading) {
       return (
-        <section className="mt-8 grid gap-4 pb-20">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <ListSkeleton key={index} />
+        <section className="mt-8 flex flex-col gap-6 pb-20">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <CardSkeleton key={index} />
           ))}
         </section>
       );
     }
 
-    if (error) {
+    if (apiError) {
       return (
-        <div className="flex justify-center items-center p-8 bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2rem] mx-5 text-white shadow-2xl">
+        <div className="flex justify-center items-center p-8 bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2rem] text-white shadow-2xl">
           <div className="text-center">
             <AlertCircle className="h-10 w-10 mx-auto mb-4 text-purple-300" />
-            <div className="font-extrabold text-xl mb-2">
-              Ups, algo salió mal
-            </div>
+            <div className="font-extrabold text-xl mb-2">Ups, algo salió mal</div>
             <div className="text-white/80 mb-4">{apiErrorDetails}</div>
             <Button
-              onClick={() => actions.handleRetry()}
+              onClick={() => refetch()}
               className="bg-white text-purple-900 hover:bg-purple-100 rounded-full font-bold px-6"
             >
               Reintentar conexión
@@ -91,55 +380,64 @@ export default function ValidationView() {
       );
     }
 
-    if (!hasOffers && totalCount === 0) {
+    if (publications.length === 0) {
       return (
-        <div className="mt-12 p-12 text-center bg-white/10 backdrop-blur-md rounded-[2.5rem] border border-white/20 text-white shadow-xl">
+        <div className="mt-12 p-12 text-center bg-white/10 backdrop-blur-md rounded-[2.5rem] border border-white/20 text-white shadow-xl w-full">
           <div className="bg-white/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-10 h-10 text-white" />
+            {totalCount === 0 ? (
+              <CheckCircle2 className="w-10 h-10 text-white" />
+            ) : (
+              <AlertCircle className="w-10 h-10 text-white" />
+            )}
           </div>
-          <h3 className="text-2xl font-black mb-2">¡Todo al día!</h3>
+          <h3 className="text-2xl font-black mb-2">
+            {totalCount === 0 ? "Todo al día" : "Sin resultados"}
+          </h3>
           <p className="text-lg text-purple-200">
-            No hay publicaciones pendientes de revisión.
+            {totalCount === 0
+              ? "No hay publicaciones pendientes de revisión."
+              : "No hay publicaciones que coincidan con los filtros seleccionados."}
           </p>
+          {totalCount > 0 && (
+            <Button
+              onClick={clearFilters}
+              className="mt-4 bg-yellow-400 text-slate-900 hover:bg-yellow-300 rounded-full font-bold px-6"
+            >
+              Limpiar Filtros
+            </Button>
+          )}
         </div>
       );
     }
 
     return (
-      <section className="mt-8 grid gap-4 pb-20">
-        {pendingPublications.map((o) => (
-          <ValidationRowLink
-            key={o.id}
-            itemId={o.id}
-            item={o.item as any}
-          />
-        ))}
-      </section>
+      <>
+        <section className="mt-8 flex flex-col gap-6 pb-12 w-full">
+          {publications.map((publication) => (
+            <ValidationCard
+              key={publication.publicationId}
+              item={publication}
+              onClick={() => handleViewDetail(publication)}
+            />
+          ))}
+        </section>
+
+        {totalPages > 1 && (
+          <div className="mt-8 flex justify-center">
+            {renderPagination()}
+          </div>
+        )}
+      </>
     );
   };
 
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#6D5EF7]" />}>
-      <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-slate-900">
-        <div className="fixed inset-0 z-0">
-          <img
-            src="/fondo.png"
-            alt="Fondo UCN"
-            className="w-full h-full object-cover opacity-60"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-violet-900/90 via-purple-800/90 to-fuchsia-800/80 mix-blend-hard-light" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/50 to-purple-950/90" />
-        </div>
+    <Suspense fallback={<div className="min-h-screen bg-slate-900" />}>
+      <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-ucn-purple">
 
-        <NotificationBanner
-          data={notification}
-          isVisible={isVisible}
-          onClose={close}
-        />
-
-        <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
+        <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 max-w-7xl">
           <header className="mb-10">
-            <Link href="/admin/publications">
+            <Link href="/landing/admin">
               <button className="mb-8 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all font-bold text-sm backdrop-blur-sm border border-white/10">
                 <ArrowLeft className="h-4 w-4" />
                 Volver al Panel
@@ -147,33 +445,49 @@ export default function ValidationView() {
             </Link>
 
             <div className="flex flex-col items-start gap-2">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold uppercase tracking-wider shadow-lg transform -rotate-1">
-                <Sparkles className="w-3.5 h-3.5" /> Zona de Control
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold uppercase tracking-wider shadow-lg transform">
+                Validación
               </div>
               <h1 className="text-5xl md:text-6xl font-black tracking-tight drop-shadow-lg leading-tight mt-2">
                 Validar <br className="md:hidden" /> Publicaciones
               </h1>
-              <p className="text-purple-100 text-lg md:text-xl font-medium mt-3 max-w-2xl drop-shadow-md">
-                Revisa y aprueba las oportunidades enviadas por la comunidad.
-                Tienes{" "}
-                <span className="text-yellow-300 font-black text-2xl align-middle">
-                  {totalCount}
-                </span>{" "}
-                pendientes.
+              <p className="text-purple-100 text-lg md:text-xl font-medium mt-3 drop-shadow-md">
+                {totalCount === 1
+                  ? (
+                    <>
+                      Hay <span className="text-yellow-300 font-black text-2xl align-middle">1</span> publicación pendiente
+                    </>
+                  )
+                  : (
+                    <>
+                      Hay un total de <span className="text-yellow-300 font-black text-2xl align-middle">{totalCount}</span> publicaciones pendientes
+                    </>
+                  )
+                }
               </p>
             </div>
           </header>
 
-          <div className="mb-8">
-            <FilterBar
-              text={filters.text}
-              setText={actions.setText}
-              type={filters.type as any}
-              setType={actions.setType as any}
-              sort={filters.sort as any}
-              setSort={actions.setSort as any}
-            />
-          </div>
+          <FilterBar
+            searchTerm={searchTerm}
+            setSearchTerm={(text) => {
+              setSearchTerm(text);
+              setCurrentPage(1);
+            }}
+            filterType={filterType}
+            setFilterType={(type) => {
+              setFilterType(type);
+              setCurrentPage(1);
+            }}
+            sort={sort}
+            setSort={(newSort) => {
+              setSort(newSort);
+              setCurrentPage(1);
+            }}
+            sortOrder={sortOrder}
+            toggleSortOrder={toggleSortOrder}
+            clearFilters={clearFilters}
+          />
 
           {renderContent()}
         </main>

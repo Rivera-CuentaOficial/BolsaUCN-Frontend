@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Phone } from "lucide-react";
 import { registerCompany } from "@/services/authService";
 import { CompanyAdapter } from "@/services/adapters/authAdapter";
 import { formatRut } from "@/utils/Util"
@@ -10,8 +10,7 @@ import { useFormValidation } from "@/hooks/auth/useFormValidation";
 import { validators } from "@/utils/AuthValidatorsUtil";
 import { FormField } from "@/components/forms/FormField";
 import { PasswordField } from "@/components/forms/PasswordField";
-import { NotificationBanner } from "@/components/ui";
-import { useNotification } from "@/hooks/common/use-notification";
+import { toast } from "sonner";
 
 const PRIMARY_COLOR = "#2C3E90";
 const OVERLAY_COLOR = "rgba(44, 114, 175, 0.4)";
@@ -54,7 +53,14 @@ export default function RegisterCompanyPage() {
     },
     individualValidationRules
   );
-  const {notification, isVisible, show, close} = useNotification();
+
+  // Format phone number for display (9 1234 5678)
+  const formatPhoneDisplay = (phone: string): string => {
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length <= 1) return digits;
+    if (digits.length <= 5) return `${digits.slice(0, 1)} ${digits.slice(1)}`;
+    return `${digits.slice(0, 1)} ${digits.slice(1, 5)} ${digits.slice(5, 9)}`;
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.target.name === "rutEmpresa") {
@@ -62,6 +68,19 @@ export default function RegisterCompanyPage() {
       e.target.value = formatted;
     }
     baseHandleChange(e);
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 9); // Only 9 digits
+    const syntheticEvent = {
+      ...e,
+      target: {
+        ...e.target,
+        name: "telefono",
+        value: digits,
+      },
+    } as React.ChangeEvent<HTMLInputElement>;
+    baseHandleChange(syntheticEvent);
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -80,15 +99,13 @@ export default function RegisterCompanyPage() {
     try {
       const payload = CompanyAdapter.toDTO(formData);
       const response = await registerCompany(payload);
-        
-      show(
-        "Registro Exitoso",
-        response.message ||"Se ha enviado un correo de verificación a la dirección proporcionada.",
-        "success"
-      );
+
+      toast.success("Registro exitoso.", {
+        description: "Se ha enviado un correo de verificación a la dirección proporcionada."
+      });
 
       setSuccess(true);
-      
+
       setTimeout(() => {
         router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
       }, 2000);
@@ -116,18 +133,15 @@ export default function RegisterCompanyPage() {
         }
       }
 
-      show(
-        "Error de Registro", 
-        errorMessage, 
-        "error"
-      );
+      toast.error("Error de Registro", {
+        description: errorMessage
+      });
       setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col">
-      <NotificationBanner data={notification} isVisible={isVisible} onClose={close} />
       <main
         className="flex-grow flex items-center justify-center bg-cover bg-center"
         style={{ backgroundImage: "url('/ucnferia.png')" }}
@@ -215,16 +229,41 @@ export default function RegisterCompanyPage() {
                   description="Sin puntos, con guión (ej: 12345678-9)"
                 />
 
-                <FormField
-                  id="telefono"
-                  label="Teléfono"
-                  placeholder="+56912345678"
-                  value={formData.telefono}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur("telefono")}
-                  error={errors.telefono ?? undefined}
-                  touched={touched.telefono}
-                />
+                {/* Phone Number Field */}
+                <div>
+                  <label htmlFor="telefono" className="text-sm font-medium text-gray-700 block mb-1">
+                    Teléfono *
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="telefono"
+                      name="telefono"
+                      type="tel"
+                      value={formatPhoneDisplay(formData.telefono)}
+                      onChange={handlePhoneChange}
+                      onBlur={() => handleBlur("telefono")}
+                      placeholder="9 1234 5678"
+                      maxLength={11}
+                      className={`w-full border ${
+                        touched.telefono && errors.telefono ? "border-red-500" : "border-gray-300"
+                      } rounded-md p-2 pl-20 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                    />
+                    <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center gap-1 text-gray-600 bg-gray-50 px-2 py-1 rounded border border-gray-200 pointer-events-none">
+                      <Phone size={14} />
+                      <span className="text-sm font-semibold">+56</span>
+                    </div>
+                  </div>
+                  {touched.telefono && errors.telefono && (
+                    <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                      {errors.telefono}
+                    </p>
+                  )}
+                  {!errors.telefono && formData.telefono && (
+                    <p className="text-gray-500 text-xs mt-1">
+                      Tu teléfono completo: <span className="font-medium">+56{formData.telefono}</span>
+                    </p>
+                  )}
+                </div>
                 
                 <PasswordField
                   id="password"
