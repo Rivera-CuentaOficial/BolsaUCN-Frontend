@@ -106,7 +106,8 @@ export default function RegisterStudentPage() {
       setSuccess(true);
 
       setTimeout(() => {
-        router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
+        const fullEmail = `${formData.email.replace(/@.*/g, "")}@alumnos.ucn.cl`;
+        router.push(`/auth/verify-email?email=${encodeURIComponent(fullEmail)}`);
       }, 2000);
     } catch (error: any) {
       console.error("Error en el registro:", error);
