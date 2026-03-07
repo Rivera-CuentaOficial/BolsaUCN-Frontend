@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ArrowLeft, User, Settings, Briefcase, Building2, UserCog, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Button, NotificationBanner } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useUnifiedProfile } from "./hooks";
 import { useDownloadMyReviewsPdf } from "@/hooks/common/use-reviews";
 
@@ -33,10 +33,6 @@ export function UnifiedProfileView() {
         handleCancel,
         handlePhotoUpload,
         handleCVUploadSuccess,
-        notification,
-        isVisible,
-        close,
-        show,
         refetch,
     } = useUnifiedProfile();
 
@@ -92,16 +88,6 @@ export function UnifiedProfileView() {
 
     return (
         <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-ucn-purple">
-
-            <NotificationBanner
-                data={{
-                    title: notification?.title || "",
-                    message: notification?.message || "",
-                    type: notification?.type || "success"
-                }}
-                isVisible={isVisible}
-                onClose={close}
-            />
 
             <main className="grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
                 {/* Header Flotante */}
@@ -169,7 +155,6 @@ export function UnifiedProfileView() {
                                 <CVUploadSection
                                     hasCV={profile.hasCV}
                                     onUploadSuccess={handleCVUploadSuccess}
-                                    showNotification={show}
                                 />
                             )}
                         </div>

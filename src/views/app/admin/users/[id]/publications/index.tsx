@@ -7,8 +7,6 @@ import {
   Briefcase, ShoppingBag, Search, ListFilter, 
   ArrowUpDown, ArrowRight, FileWarning
 } from "lucide-react";
-import { NotificationBanner } from "@/components/ui/notification";
-import { useNotification } from "@/hooks/common/use-notification";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib";
 import { useQuery } from "@tanstack/react-query";
@@ -225,7 +223,6 @@ export interface UserPublicationsViewProps {
 
 export function UserPublicationsView({ userId }: UserPublicationsViewProps) {
   const router = useRouter();
-  const { notification, isVisible, show, close } = useNotification();
 
   // Fetch user details to get the name
   const { data: userDetail } = useQuery({
@@ -375,8 +372,6 @@ export function UserPublicationsView({ userId }: UserPublicationsViewProps) {
   return (
     <Suspense fallback={<div className="min-h-screen bg-slate-900" />}>
       <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-ucn-purple">
-
-        <NotificationBanner data={notification} isVisible={isVisible} onClose={close} />
 
         <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 max-w-7xl">
           <button

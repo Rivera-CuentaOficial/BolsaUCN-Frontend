@@ -7,10 +7,9 @@ import type { NotificationType } from "@/hooks/common/use-notification";
 interface CVUploadSectionProps {
     hasCV: boolean;
     onUploadSuccess: (url: string | undefined) => void;
-    showNotification: (title: string, message: string, type?: NotificationType) => void;
 }
 
-export function CVUploadSection({ hasCV, onUploadSuccess, showNotification }: CVUploadSectionProps) {
+export function CVUploadSection({ hasCV, onUploadSuccess }: CVUploadSectionProps) {
     return (
         <div className="pt-4 border-t border-slate-200">
             <div className="flex items-center gap-2 mb-4">
@@ -24,7 +23,6 @@ export function CVUploadSection({ hasCV, onUploadSuccess, showNotification }: CV
                 <CVUpload 
                     hasCV={hasCV}
                     onUploadSuccess={onUploadSuccess}
-                    showNotification={showNotification}
                 />
             </div>
         </div>

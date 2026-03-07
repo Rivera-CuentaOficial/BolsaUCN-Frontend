@@ -4,4 +4,5 @@ export { ApplicantsDialog } from "./dialog-applicants"
 export { StatusReasonBanner } from "./status-reason-banner";
 export { AppealFormDialog } from "./appeal-form-dialog";
 export { EditBuySellDialog } from "./edit-buysell-dialog";
-export { PublicationActionsMenu } from "./publication-actions-menu";
+export { BuySellActionsMenu } from "./buysell-actions-menu";
+export { OfferActionsMenu } from "./offer-actions-menu";

@@ -8,12 +8,12 @@ import {
   useDownloadSystemReviewsPdf,
 } from "@/hooks/common/use-reviews";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { NotificationBanner } from "@/components/ui/notification";
-import { useNotification } from "@/hooks/common/use-notification";
 import type { GetReviewDTO, HideReviewInfoDTO } from "@/models/responses/review";
 import { Search, ArrowUpDown, ArrowRight, Download, Shield } from "lucide-react";
 import { cn } from "@/lib";
 import type { GetReviewsSearchParamsDTO } from "@/models/responses";
+import { toast } from "sonner";
+import { validators } from "@/utils/AuthValidatorsUtil";
 
 export function AdminReviewsPage() {
   // ========================================
@@ -34,9 +34,7 @@ export function AdminReviewsPage() {
   const [selectedReviewId, setSelectedReviewId] = useState<number | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showHideModal, setShowHideModal] = useState(false);
-
-  // Notification
-  const { notification, isVisible: isNotificationVisible, show, close } = useNotification();
+  const [showHideConfirm, setShowHideConfirm] = useState(false);
 
   // Hide form state
   const [hideOfferorReview, setHideOfferorReview] = useState(false);
@@ -98,26 +96,78 @@ export function AdminReviewsPage() {
     if (!selectedReviewId) return;
     if (!hideOfferorReview && !hideApplicantReview) return;
 
+    if (hideOfferorReview && offerorHideReason.trim() === "") {
+      toast.error("Motivo requerido", {
+        description: "Debes proporcionar un motivo para ocultar la evaluacion del oferente."
+      });
+      return;
+    }
+    if (hideOfferorReview && offerorHideReason.trim().length < 10) {
+      toast.error("Motivo inválido", {
+        description: "El motivo para ocultar la evaluacion del oferente debe tener al menos 10 caracteres."
+      });
+      return;
+    }
+    if (hideOfferorReview && offerorHideReason.trim().length > 500) {
+      toast.error("Motivo inválido", {
+        description: "El motivo para ocultar la evaluacion del oferente no puede exceder los 500 caracteres."
+      });
+      return;
+    }
+    const formatErrorOfferor = validators.comment(offerorHideReason.trim(), "El motivo");
+    if (formatErrorOfferor) {
+      toast.error("Motivo inválido", {
+        description: formatErrorOfferor
+      });
+      return;
+    }
+
+    if (hideApplicantReview && applicantHideReason.trim() === ""){
+      toast.error("Motivo requerido", {
+        description: "Debes proporcionar un motivo para ocultar la evaluacion del postulante."
+      });
+      return;
+    }
+    if (hideApplicantReview && applicantHideReason.trim().length < 10) {
+      toast.error("Motivo inválido", {
+        description: "El motivo para ocultar la evaluacion del postulante debe tener al menos 10 caracteres."
+      });
+      return;
+    }
+    if (hideApplicantReview && applicantHideReason.trim().length > 500) {
+      toast.error("Motivo inválido", {
+        description: "El motivo para ocultar la evaluacion del postulante no puede exceder los 500 caracteres."
+      });
+      return;
+    }
+    const formatErrorApplicant = validators.comment(applicantHideReason.trim(), "El motivo");
+    if (formatErrorApplicant) {
+      toast.error("Motivo inválido", {
+        description: formatErrorApplicant
+      });
+      return;
+    }
+
+    setShowHideConfirm(true);
+  };
+
+  const confirmHideSubmit = async () => {
+    if (!selectedReviewId) return;
+ 
     const data: HideReviewInfoDTO = {};
 
     if (hideOfferorReview) {
       data.hideOfferorReviewForApplicant = true;
-      data.offerorReviewHiddenReason = offerorHideReason.trim() || "Contenido inapropiado";
+      data.offerorReviewHiddenReason = offerorHideReason.trim();
     }
 
     if (hideApplicantReview) {
       data.hideApplicantReviewForOfferor = true;
-      data.applicantReviewHiddenReason = applicantHideReason.trim() || "Contenido inapropiado";
+      data.applicantReviewHiddenReason = applicantHideReason.trim();
     }
 
     try {
       await hideReviewInfo.mutateAsync({ reviewId: selectedReviewId, data });
-
-      show(
-        "Evaluacion ocultada",
-        "La informacion de la evaluacion ha sido ocultada correctamente.",
-        "success"
-      );
 
       closeHideModal();
       refetch();
@@ -382,8 +432,6 @@ export function AdminReviewsPage() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-slate-900" />}>
       <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-ucn-purple">
-
-        <NotificationBanner data={notification} isVisible={isNotificationVisible} onClose={close} />
 
         <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 max-w-7xl">
           {/* Header */}
@@ -757,6 +805,19 @@ export function AdminReviewsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {showHideConfirm && (
+        <ConfirmDialog
+          open={showHideConfirm}
+          onOpenChange={setShowHideConfirm}
+          onConfirm={confirmHideSubmit}
+          onCancel={() => setShowHideConfirm(false)}
+          title="Confirmar moderacion"
+          description="Esta accion ocultara las revisiones seleccionadas."
+          confirmText="Si, ocultar"
+          cancelText="Cancelar"
+        />
       )}
     </Suspense>
   );

@@ -1,88 +1,74 @@
 # Bolsa FEUCN - Frontend
-Frontend del proyecto Bolsa FECN, desarrollado con Next.js 14, React 18 y TypeScript, utilizando Tailwind CSS para estilos y Axios para la comunicación con el backend.
-La aplicación sigue una arquitectura modular, organizada por componentes, vistas, servicios y hooks personalizados, asegurando escalabilidad y mantenibilidad.
 
-## 🚀 Tecnologías utilizadas
-- Next.js 14
-- React 18
-- TypeScript
-- Tailwind CSS
-- Axios
-- ESLint / Prettier
-- Node.js 20+
-- Visual Studio Code
+Frontend del proyecto Bolsa FEUCN, desarrollado con Next.js 15, React 19 y TypeScript, utilizando Tailwind CSS para estilos y Axios para la comunicacion con el backend.
 
-## 🛠️ Configuración inicial
-### 1️⃣ Clonar el repositorio
+La aplicacion sigue una arquitectura modular, organizada por componentes, vistas, servicios y hooks personalizados.
+
+---
+
+## Tecnologias utilizadas
+
+| Categoria | Tecnologia |
+|---|---|
+| Framework | Next.js 15 / React 19 |
+| Lenguaje | TypeScript |
+| Estilos | Tailwind CSS |
+| Componentes UI | Radix UI + shadcn/ui |
+| Cliente HTTP | Axios |
+| Estado del servidor | TanStack React Query |
+| Autenticacion | NextAuth v4 |
+| Runtime | Node.js 20+ |
+
+---
+
+## Requisitos previos
+
+- [Node.js 20+](https://nodejs.org/)
+- Backend corriendo en `http://localhost:5185` (ver instrucciones del backend)
+
+---
+
+## Configuracion inicial
+
+### 1. Extraer el codigo fuente
+
+Descomprimir el archivo `.zip` recibido y navegar a la carpeta del frontend:
+
 ```bash
-git clone github.com/ProMDFK123/frontend-PIS
+cd BolsaFeUCN/frontend
 ```
-### 2️⃣ Instalar dependencias
+
+### 2. Instalar dependencias
+
 ```bash
 npm install
 ```
-### 3️⃣ Instalar js-cookie (si no lo tienes instalado)
-```bash
-npm install js-cookie
+
+### 3. Configurar variables de entorno
+
+Crear un archivo `.env.local` en la raiz de la carpeta `frontend/` con el siguiente contenido:
+
+```ini
+NEXT_PUBLIC_API_URL=http://localhost:PORT/api
+NEXTAUTH_SECRET=<cadena_secreta_aleatoria>
+NEXTAUTH_URL=http://localhost:3000
 ```
-### 4️⃣ Ejecutar en modo desarrollo
+> `PORT` es el puerto donde corre el backend (5185 por defecto). Asegurarse de que coincida con la configuracion del backend.
+> `NEXTAUTH_SECRET` puede ser cualquier cadena larga y aleatoria. Se puede generar una con: `openssl rand -base64 32`
+
+### 4. Ejecutar en modo desarrollo
+
 ```bash
 npm run dev
 ```
-Luego abre http://localhost:3000 para ver la aplicación en tu navegador.
 
-## ⚙️ Variables de entorno
-Crea un archivo .env.local en la raíz del proyecto con el siguiente contenido:
-```ini
-NEXT_PUBLIC_API_URL=http://localhost:5185
+Abrir http://localhost:3000 en el navegador.
+
+---
+
+## Construccion para produccion
+
+```bash
+npm run build
+npm start
 ```
-
-## 🌐 Configuración de Axios
-Archivo: src/services/api.ts
-```ts
-// src/services/Service.ts
-import axios from "axios";
-import Cookies from "js-cookie";
-import { buildLoginUrl } from "@/lib/auth";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5185/api";
-
-const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-api.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token = Cookies.get("token");
-    if (token) {
-      config.headers = config.headers ?? {};
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
-
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    const status = error?.response?.status;
-
-    if (typeof window !== "undefined" && status === 401) {
-      const currentPath = window.location.pathname + window.location.search;
-      window.location.href = buildLoginUrl(currentPath, "login_required");
-    }
-
-    return Promise.reject(error);
-  }
-);
-
-export default api;
-```
-
-## 🧠 Autor
-Estudiantes de Proyecto Integrador Software II - 2025  
-Proyecto académico - Universidad Católica del Norte  
-Facultad de Ingeniería y Ciencias Geológicas

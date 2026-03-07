@@ -1,115 +1,6 @@
 import { get } from "http";
 import api from "./Service";
 
-/* Deprecated DTOs
-export interface StudentProfileDTO {
-  userName: string;
-  name: string;
-  lastName: string;
-  rut: string;
-  email: string;
-  phoneNumber: string;
-  rating: number;
-  aboutMe: string;
-  curriculumVitae?: string;
-  profilePhoto?: string;
-};
-
-export interface UpdateStudentProfileDTO {
-  userName?: string;
-  name?: string;
-  lastName?: string;
-  rut?: string;
-  email?: string;
-  phoneNumber?: string;
-  aboutMe?: string;
-};
-
-export interface IndividualProfileDTO {
-  userName: string;
-  name: string;
-  lastName: string;
-  rut: string;
-  email: string;
-  phoneNumber: string;
-  rating: number;
-  aboutMe: string;
-  profilePhoto?: string;
-};
-
-export interface UpdateIndividualProfileDTO {
-  userName?: string;
-  name?: string;
-  lastName?: string;
-  rut?: string;
-  email?: string;
-  phoneNumber?: string;
-  aboutMe?: string;
-};
-
-export interface CompanyProfileDTO {
-  userName: string;
-  companyName: string;
-  legalName: string;
-  rut: string;
-  email: string;
-  phoneNumber: string;
-  rating: number;
-  aboutMe: string;
-  profilePhoto?: string;
-};
-
-export interface UpdateCompanyProfileDTO {
-  userName?: string;
-  companyName?: string;
-  legalName?: string;
-  rut?: string;
-  email?: string;
-  phoneNumber?: string;
-  aboutMe?: string;
-};
-
-export interface AdminProfileDTO {
-  userName: string;
-  name: string;
-  lastName: string;
-  rut: string;
-  email: string;
-  phoneNumber: string;
-  aboutMe: string;
-  superAdmin?: boolean;
-  profilePhoto?: string;
-};
-
-export interface UpdateAdminProfileDTO {
-  userName?: string;
-  name?: string;
-  lastName?: string;
-  rut?: string;
-  email?: string;
-  phoneNumber?: string;
-  aboutMe?: string;
-  superAdmin?: boolean;
-};
-
-export interface StudentResponse {
-    message: string;
-    data: StudentProfileDTO;
-};
-export interface IndividualResponse {
-    message: string;
-    data: IndividualProfileDTO;
-};
-export interface CompanyResponse {
-    message: string;
-    data: CompanyProfileDTO;
-};
-export interface AdminResponse {
-    message: string;
-    data: AdminProfileDTO;
-};
-*/
-
 // Nuevos DTOs
 export interface GetUserProfileDTO {
     userName: string;
@@ -378,6 +269,14 @@ export const profileService = {
     async resendEmailVerification(): Promise<UpdateResponse> {
         const response = await api.post<UpdateResponse>(
             "/user/profile/change-email/resend-verification"
+        );
+        return response.data;
+    },
+
+    
+    async toggleAllowNotifications(): Promise<UpdateResponse> {
+        const response = await api.patch<UpdateResponse>(
+            "/user/profile/toggle-notifications"
         );
         return response.data;
     }

@@ -9,8 +9,6 @@ import {
   ArrowUpDown, ArrowRight, CheckCircle2, Eye, EyeOff 
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { NotificationBanner } from "@/components/ui/notification";
-import { useNotification } from "@/hooks/common/use-notification";
 import { Skeleton } from "@/components/ui/skeleton";
 import { handleApiError, cn, getUserFromToken } from "@/lib";
 import { useGetMyPublications } from "./hooks";
@@ -238,7 +236,6 @@ const FilterBar = ({
 export default function YourPublicationsView() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { notification, isVisible, show, close } = useNotification();
   
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [filterType, setFilterType] = useState<PublicationType>((searchParams.get("type") as PublicationType) || "Todos");
@@ -279,6 +276,7 @@ export default function YourPublicationsView() {
     pageSize,
   });
 
+  /* Codigo comentado en caso que se quierea cambiar a notificaciones en vez de toasts para mostrar mensajes en base a query params
   useEffect(() => {
     const successParam = searchParams.get("success");
     const closeNotificationParam = searchParams.get("notification");
@@ -298,7 +296,7 @@ export default function YourPublicationsView() {
       );
       router.replace("/offerer/your-publications", { scroll: false });
     }
-  }, [searchParams, show, router]);
+  }, [searchParams, show, router]);*/
 
   const isViewLoading = isFetching && !data;
   const publications = data?.publications || [];
@@ -500,8 +498,6 @@ export default function YourPublicationsView() {
     <Suspense fallback={<div className="min-h-screen bg-slate-900" />}>
       <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-ucn-purple">
         
-        <NotificationBanner data={notification} isVisible={isVisible} onClose={close} />
-
         <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 max-w-7xl">
           <header className="mb-10">
             <Link href="/offers">

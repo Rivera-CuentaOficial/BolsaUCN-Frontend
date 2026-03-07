@@ -10,8 +10,7 @@ import { useFormValidation } from "@/hooks/auth/useFormValidation";
 import { validators } from "@/utils/AuthValidatorsUtil";
 import { FormField } from "@/components/forms/FormField";
 import { PasswordField } from "@/components/forms/PasswordField";
-import { NotificationBanner } from "@/components/ui";
-import { useNotification } from "@/hooks/common/use-notification";
+import { toast } from "sonner";
 
 const PRIMARY_COLOR = "#2C3E90";
 const OVERLAY_COLOR = "rgba(64, 64, 48, 0.4)";
@@ -53,7 +52,6 @@ export default function RegisterStudentPage() {
     },
     studentValidationRules
   );
-  const { notification, isVisible, show, close } = useNotification();
 
   // Format phone number for display (9 1234 5678)
   const formatPhoneDisplay = (phone: string): string => {
@@ -101,16 +99,15 @@ export default function RegisterStudentPage() {
       const payload = StudentAdapter.toDTO(formData);
       const response = await registerStudent(payload);
 
-      show(
-        "Registro Exitoso",
-        response.message || "Se ha enviado un correo de verificación a la dirección proporcionada.",
-        "success"
-      );
+      toast.success("Registro exitoso.", {
+        description: "Se ha enviado un correo de verificación a la dirección proporcionada."
+      });
 
       setSuccess(true);
 
       setTimeout(() => {
-        router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
+        const fullEmail = `${formData.email.replace(/@.*/g, "")}@alumnos.ucn.cl`;
+        router.push(`/auth/verify-email?email=${encodeURIComponent(fullEmail)}`);
       }, 2000);
     } catch (error: any) {
       console.error("Error en el registro:", error);
@@ -132,18 +129,15 @@ export default function RegisterStudentPage() {
         }
       }
 
-      show(
-        "Error de Registro",
-        errorMessage,
-        "error"
-      );
+      toast.error("Error de Registro", {
+        description: errorMessage
+      });
       setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col">
-      <NotificationBanner data={notification} isVisible={isVisible} onClose={close} />
       <main
         className="flex-grow flex items-center justify-center bg-cover bg-center"
         style={{ backgroundImage: "url('/ucnferia.png')" }}

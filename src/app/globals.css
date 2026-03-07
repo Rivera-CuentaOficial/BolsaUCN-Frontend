@@ -34,6 +34,24 @@ html {
   accent-color: #6D5EF7 !important;
 }
 
+.notification-banner-success {
+  background-color: #D1FAE5;
+  color: #065F46;
+  border: 1px solid #065F46;
+}
+
+.notification-banner-error {
+  background-color: #FECACA;
+  color: #DC2626;
+  border: 1px solid #DC2626;
+}
+
+.notification-banner-info {
+  background-color: #DBEAFE;
+  color: #1E40AF;
+  border: 1px solid #1E40AF;
+}
+
 .bg-ucn-purple {
   min-height: 100vh;
 

@@ -4,16 +4,15 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Briefcase, ShoppingBag, Heart, Users, Trash2, ArrowRight, XCircle, Edit2, Eye, EyeOff, Settings } from 'lucide-react';
 import { useYourPublicationDetailView } from './hooks/use-publication-detail-view'; 
-import { useNotification } from '@/hooks/common/use-notification'; 
 import { 
     PublicationDetailSection, 
     ApplicantsDialog, 
     StatusReasonBanner,
     AppealFormDialog,
     EditBuySellDialog,
-    PublicationActionsMenu
+    BuySellActionsMenu,
+    OfferActionsMenu
 } from './components'; 
-import { NotificationBanner } from "@/components/ui/notification";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from 'sonner';
 import { cn } from '@/lib';
@@ -59,7 +58,6 @@ export default function OffererPublicationDetailView() {
         refetch
     } = useYourPublicationDetailView(publicationId);
 
-    const { notification, isVisible, close, show } = useNotification();
     const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
     const [isAdvanceDialogOpen, setIsAdvanceDialogOpen] = useState(false);
     const [isApplicantsDialogOpen, setIsApplicantsDialogOpen] = useState(false);
@@ -70,6 +68,7 @@ export default function OffererPublicationDetailView() {
     const [isCancelBuySellDialogOpen, setIsCancelBuySellDialogOpen] = useState(false);
     const [isTogglingVisibility, setIsTogglingVisibility] = useState(false);
     const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
+    const [isOfferActionsMenuOpen, setIsOfferActionsMenuOpen] = useState(false);
 
     const handleCloseMenu = () => {
         setIsApplicantsDialogOpen(false);
@@ -86,7 +85,7 @@ export default function OffererPublicationDetailView() {
         } catch (e: any) {
             toast.dismiss(toastId);
             const errorMessage = e?.response?.data?.details || e?.details || "Hubo un error al cancelar la oferta.";
-            show("Error al Cancelar Oferta", errorMessage, "error");
+            toast.error("Error al Cancelar Oferta", { description: errorMessage });
         }
     };
 
@@ -102,13 +101,11 @@ export default function OffererPublicationDetailView() {
             const errorMessage = e?.response?.data?.details || e?.details || "Hubo un error al avanzar el estado.";
             
             if (errorMessage.includes('postulantes aceptados') || errorMessage.includes('No puedes avanzar sin haber aceptado')) {
-                show(
-                    "No se puede avanzar", 
-                    "Debes aceptar al menos un postulante antes de avanzar al siguiente estado. Revisa la lista de postulantes y acepta al menos uno, o cancela la oferta si ya no es necesaria.",
-                    "error"
-                );
+                toast.error("No se puede avanzar", {
+                    description: "Debes aceptar al menos un postulante antes de avanzar al siguiente estado. Revisa la lista de postulantes y acepta al menos uno, o cancela la oferta si ya no es necesaria."
+                });
             } else {
-                show("Error al Avanzar Estado", errorMessage, "error");
+                toast.error("Error al Avanzar Estado", { description: errorMessage });
             }
         }
     };
@@ -151,7 +148,7 @@ export default function OffererPublicationDetailView() {
         } catch (e: any) {
             toast.dismiss(toastId);
             const errorMessage = e?.response?.data?.message || e?.message || "Error al enviar la apelación.";
-            show("Error al Apelar", errorMessage, "error");
+            toast.error("Error al Apelar", { description: errorMessage });
             throw e; // Re-lanzar para que el componente de apelación también pueda manejarlo si lo necesita
         }
     };
@@ -165,12 +162,12 @@ export default function OffererPublicationDetailView() {
         try {
             await offererPublicationService.editBuySell(publication.id, editData);
             toast.success("Publicación actualizada exitosamente", { id: toastId });
-            await refetch(); // Refresh publication data
+            refetch(); // Refresh publication data
             return true;
         } catch (e: any) {
             toast.dismiss(toastId);
             const errorMessage = e?.response?.data?.message || e?.message || "Error al actualizar la publicación.";
-            show("Error al Actualizar", errorMessage, "error");
+            toast.error("Error al Actualizar", { description: errorMessage });
             return false;
         } finally {
             setIsSavingEdit(false);
@@ -190,7 +187,7 @@ export default function OffererPublicationDetailView() {
         } catch (e: any) {
             toast.dismiss(toastId);
             const errorMessage = e?.response?.data?.message || e?.message || "Error al cancelar la publicación.";
-            show("Error al Cancelar", errorMessage, "error");
+            toast.error("Error al Cancelar", { description: errorMessage });
         }
     };
 
@@ -203,11 +200,11 @@ export default function OffererPublicationDetailView() {
         try {
             await offererPublicationService.toggleBuySellVisibility(publication.id);
             toast.success("Visibilidad actualizada exitosamente", { id: toastId });
-            await refetch(); // Refresh publication data
+            refetch(); // Refresh publication data
         } catch (e: any) {
             toast.dismiss(toastId);
             const errorMessage = e?.response?.data?.message || e?.message || "Error al cambiar la visibilidad.";
-            show("Error al Cambiar Visibilidad", errorMessage, "error");
+            toast.error("Error al Cambiar Visibilidad", { description: errorMessage });
         } finally {
             setIsTogglingVisibility(false);
         }
@@ -283,8 +280,6 @@ export default function OffererPublicationDetailView() {
 
     return (
         <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white overflow-hidden bg-ucn-purple">
-
-            <NotificationBanner data={notification} isVisible={isVisible} onClose={close} />
             
             <ConfirmDialog
                 open={isAdvanceDialogOpen}
@@ -384,38 +379,16 @@ export default function OffererPublicationDetailView() {
                             </div>
                         </div>
 
-                        {/* Action Buttons */}
+                        {/* Offer Action Buttons */}
                         {isPublished && isJobOffer && (canCancel || canAdvance) && (
-                            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                            <div className="flex gap-3">
                                 <button
-                                    onClick={() => setIsApplicantsDialogOpen(true)}
-                                    className="w-full sm:w-auto px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white rounded-full font-bold transition shadow-lg flex items-center justify-center gap-2 whitespace-nowrap"
+                                    onClick={() => setIsOfferActionsMenuOpen(true)}
+                                    className="px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white rounded-full font-bold transition shadow-lg flex items-center justify-center gap-2"
                                 >
-                                    <Users className="w-5 h-5 flex-shrink-0" />
-                                    <span>Postulantes ({publication.applicationsCount || 0})</span>
+                                    <Settings className="w-5 h-5 flex-shrink-0" />
+                                    <span>Acciones</span>
                                 </button>
-                                
-                                {canAdvance && (
-                                    <button
-                                        onClick={() => setIsAdvanceDialogOpen(true)}
-                                        disabled={isMutating}
-                                        className="w-full sm:w-auto px-6 py-3 bg-blue-600/80 hover:bg-blue-600 backdrop-blur-md border border-blue-500/50 disabled:bg-blue-900/50 disabled:cursor-not-allowed text-white rounded-full font-bold transition shadow-lg flex items-center justify-center gap-2"
-                                    >
-                                        <ArrowRight className="w-5 h-5 flex-shrink-0" />
-                                        <span>{isMutating ? "Avanzando..." : "Avanzar Estado"}</span>
-                                    </button>
-                                )}
-                                
-                                {canCancel && (
-                                    <button
-                                        onClick={() => setIsCancelDialogOpen(true)}
-                                        disabled={isMutating}
-                                        className="w-full sm:w-auto px-6 py-3 bg-red-600/80 hover:bg-red-600 backdrop-blur-md border border-red-500/50 disabled:bg-red-900/50 disabled:cursor-not-allowed text-white rounded-full font-bold transition shadow-lg flex items-center justify-center gap-2"
-                                    >
-                                        <XCircle className="w-5 h-5 flex-shrink-0" />
-                                        <span>{isMutating ? "Cancelando..." : "Cancelar Oferta"}</span>
-                                    </button>
-                                )}
                             </div>
                         )}
 
@@ -482,7 +455,7 @@ export default function OffererPublicationDetailView() {
                 {/* Edit BuySell Dialog */}
                 {publication?.publicationType === "CompraVenta" && (
                     <>
-                        <PublicationActionsMenu
+                        <BuySellActionsMenu
                             isOpen={isActionsMenuOpen}
                             onClose={() => setIsActionsMenuOpen(false)}
                             publication={publication}
@@ -499,6 +472,21 @@ export default function OffererPublicationDetailView() {
                             isSaving={isSavingEdit}
                         />
                     </>
+                )}
+
+                {isJobOffer && (
+                    <OfferActionsMenu
+                        isOpen={isOfferActionsMenuOpen}
+                        onClose={() => setIsOfferActionsMenuOpen(false)}
+                        publication={publication}
+                        canAdvance={canAdvance}
+                        canCancel={canCancel}
+                        isMutating={isMutating}
+                        setIsApplicantsDialogOpen={setIsApplicantsDialogOpen}
+                        setIsAdvanceDialogOpen={setIsAdvanceDialogOpen}
+                        setIsCancelDialogOpen={setIsCancelDialogOpen}
+                        setIsOfferActionsMenuOpen={setIsOfferActionsMenuOpen}
+                    />  
                 )}
             </main>
         </div>

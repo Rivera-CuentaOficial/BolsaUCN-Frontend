@@ -10,12 +10,11 @@ import {
   ArrowUpDown, ArrowRight, CheckCircle2, User, Mail 
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { NotificationBanner } from "@/components/ui/notification";
-import { useNotification } from "@/hooks/common/use-notification";
 import { Skeleton } from "@/components/ui/skeleton";
 import { handleApiError, cn } from "@/lib";
 import { useGetManagePublications } from "./hooks";
 import type { PublicationForAdmin } from "@/models/responses";
+import { toast } from "sonner";
 
 type SortType = "Title" | "CreatedAt";
 type PublicationType = "Oferta" | "CompraVenta" | "Todos";
@@ -300,7 +299,6 @@ const FilterBar = ({
 export default function ManageView() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { notification, isVisible, show, close } = useNotification();
   
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [filterType, setFilterType] = useState<PublicationType>((searchParams.get("type") as PublicationType) || "Todos");
@@ -342,10 +340,10 @@ export default function ManageView() {
   useEffect(() => {
     const notificationParam = searchParams.get("notification");
     if (notificationParam === "closed") {
-      show("Publicación Cerrada", "La publicación ha sido cerrada exitosamente.", "success");
+      toast.success("Publicación Cerrada", { description: "La publicación ha sido cerrada exitosamente." });
       router.replace("/admin/publications/manage", { scroll: false });
     }
-  }, [searchParams, show, router]);
+  }, [searchParams, toast, router]);
 
   const isViewLoading = isFetching && !data;
   const publications = data?.publications || [];
@@ -551,8 +549,6 @@ export default function ManageView() {
     <Suspense fallback={<div className="min-h-screen bg-slate-900" />}>
       <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-ucn-purple">
         
-        <NotificationBanner data={notification} isVisible={isVisible} onClose={close} />
-
         <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10 max-w-7xl">
           <header className="mb-10">
             <Link href="/landing/admin">

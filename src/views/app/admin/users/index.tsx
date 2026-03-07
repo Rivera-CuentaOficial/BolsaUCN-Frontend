@@ -4,7 +4,6 @@ import { AlertCircle, Users as UsersIcon, ArrowLeft, LayoutGrid, List } from "lu
 import Link from "next/link";
 import { Button } from "@/components/ui";
 import { UserCard, FilterBar, UserCardLoading, UserListItem, UserListLoading} from "./components";
-import { NotificationBanner } from "@/components/ui";
 import { useAdminUsers } from "./hooks";
 
 export function AdminUsersView() {
@@ -30,9 +29,6 @@ export function AdminUsersView() {
         setCurrentPage,
         handleToggleBlock,
         refetch,
-        notification,
-        isVisible,
-        close,
     } = useAdminUsers();
 
     const renderContent = () => {
@@ -108,12 +104,6 @@ export function AdminUsersView() {
 
     return (
         <div className="flex flex-col min-h-screen relative text-white selection:bg-pink-500 selection:text-white bg-ucn-purple">
-
-            <NotificationBanner
-                data={{ title: notification?.title || "", message: notification?.message || "", type: notification?.type || "success" }}
-                isVisible={isVisible}
-                onClose={close}
-            />
 
             <div className="relative z-10 flex-1 flex flex-col">
                 <header className="pt-12 pb-6 px-5">

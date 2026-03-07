@@ -3,13 +3,12 @@
 import { useState, useEffect } from "react";
 import { AdminUsersService } from "@/services/adminUserService";
 import { UserProfileForAdminDto } from "@/services/dtos/adminDto";
-import { useNotification } from "@/hooks/common/use-notification";
+import { toast } from "sonner";
 
 export const useUserDetail = (userId: string) => {
     const [user, setUser] = useState<UserProfileForAdminDto | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
-    const { notification, isVisible, show, close } = useNotification();
 
     const fetchUserDetail = async () => {
         try {
@@ -42,21 +41,15 @@ export const useUserDetail = (userId: string) => {
             await AdminUsersService.toggleUserBan(user.id);
             
             // Success notification
-            show(
-                "Éxito",
-                `Usuario ${user.banned ? "desbloqueado" : "bloqueado"} correctamente`,
-                "success"
+            toast.success(
+                `Usuario ${user.banned ? "desbloqueado" : "bloqueado"} correctamente`
             );
         } catch (err) {
             // Revert optimistic update
             setUser(prev => prev ? { ...prev, banned: user.banned } : null);
             
             // Error notification
-            show(
-                "Error",
-                "No se pudo cambiar el estado del usuario",
-                "error"
-            );
+            toast.error("No se pudo cambiar el estado del usuario");
             console.error("Error toggling block status:", err);
         }
     };
@@ -67,8 +60,5 @@ export const useUserDetail = (userId: string) => {
         error,
         handleToggleBlock,
         refetch: fetchUserDetail,
-        notification,
-        isVisible,
-        close,
     };
 };

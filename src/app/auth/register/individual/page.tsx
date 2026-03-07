@@ -10,8 +10,7 @@ import { useFormValidation } from "@/hooks/auth/useFormValidation";
 import { validators } from "@/utils/AuthValidatorsUtil";
 import { FormField } from "@/components/forms/FormField";
 import { PasswordField } from "@/components/forms/PasswordField";
-import { NotificationBanner } from "@/components/ui";
-import { useNotification } from "@/hooks/common/use-notification";
+import { toast } from "sonner";
 
 const PRIMARY_COLOR = "#2C3E90";
 const OVERLAY_COLOR = "rgba(44, 114, 175, 0.4)";
@@ -52,7 +51,6 @@ export default function RegisterIndividualPage() {
     },
     individualValidationRules
   );
-  const {notification, isVisible, show, close} = useNotification();
 
   // Format phone number for display (9 1234 5678)
   const formatPhoneDisplay = (phone: string): string => {
@@ -100,11 +98,9 @@ export default function RegisterIndividualPage() {
       const payload = IndividualAdapter.toDTO(formData);
       const response = await registerIndividual(payload);
 
-      show(
-        "Registro Exitoso",
-        response.message ||"Se ha enviado un correo de verificación a la dirección proporcionada.",
-        "success"
-      );
+      toast.success("Registro exitoso.", {
+        description: "Se ha enviado un correo de verificación a la dirección proporcionada."
+      });
       
       setSuccess(true);
 
@@ -135,18 +131,15 @@ export default function RegisterIndividualPage() {
         }
       }
 
-      show(
-        "Error de Registro", 
-        errorMessage, 
-        "error"
-      );
+      toast.error("Error de Registro", {
+        description: errorMessage
+      });
       setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col">
-      <NotificationBanner data={notification} isVisible={isVisible} onClose={close} />
       <main
         className="flex-grow flex items-center justify-center bg-cover bg-center"
         style={{ backgroundImage: "url('/ucnferia.png')" }}

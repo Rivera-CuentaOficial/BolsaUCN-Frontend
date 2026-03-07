@@ -12,6 +12,7 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { validators } from "@/utils/AuthValidatorsUtil";
 import { Label } from "@/components/ui/label";
 
 interface RejectPublicationDialogProps {
@@ -41,6 +42,12 @@ export function RejectPublicationDialog({
     
     if (trimmedReason.length < 10) {
       setError("La razón debe tener al menos 10 caracteres");
+      return;
+    }
+
+    const formatError = validators.comment(trimmedReason, "Razón de rechazo");
+    if (formatError) {
+      setError(formatError);
       return;
     }
 

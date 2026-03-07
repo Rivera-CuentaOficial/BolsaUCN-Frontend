@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { AxiosError } from "axios";
+import { toast } from "sonner";
 import { validators } from "@/utils/AuthValidatorsUtil"
 import { offererPublicationService } from "@/services/offererPublicationService"; // Asegúrate de importar la interfaz
 import { buildLoginUrl, extractUserFromJwt } from "@/lib/auth";
 import { CreateBuySellData } from "@/models/responses";
-import { useNotification } from "@/hooks/common/use-notification";
 
 /**
  * Interfaz que define la estructura de los datos del formulario de publicación.
@@ -51,7 +51,6 @@ export const usePublicationForm = () => {
   const [errors, setErrors] = useState<
     Partial<Record<keyof PublicationFormData, string>>
   >({});
-  const { notification, isVisible, show, close } = useNotification();
 
   // Estado inicial del formulario con valores por defecto
   const [formData, setFormData] = useState<PublicationFormData>({
@@ -207,7 +206,7 @@ export const usePublicationForm = () => {
 
     // Validaciones Comunes
     if (!formData.title.trim()) newErrors.title = "El título es requerido";
-    if (!formData.description.trim())
+    if (!formData.description)
       newErrors.description = "La descripción es requerida";
 
     // Validación de email adicional (opcional pero debe ser válido si se ingresa)
@@ -402,7 +401,7 @@ export const usePublicationForm = () => {
         }
       }
 
-      show("¡Éxito!", "Publicación creada exitosamente.", "success");
+      toast.success("Publicación creada exitosamente");
       setTimeout(() => {
         // Corrección: Usar backticks ` para que funcione la interpolación ${rolePath}
         router.push(`/${rolePath}/your-publications?success=true`);
@@ -421,7 +420,7 @@ export const usePublicationForm = () => {
           error instanceof AxiosError
             ? error.response?.data?.message || "Error al conectar"
             : "Error inesperado";
-        show("Error", msg, "error");
+        toast.error(msg);
       }
       setIsSubmitting(false);
     }
@@ -439,8 +438,5 @@ export const usePublicationForm = () => {
     handleRemoveImage,
     handleClearImages,
     handleSubmit,
-    notification,
-    isVisible,
-    closeNotification: close,
   };
 };
