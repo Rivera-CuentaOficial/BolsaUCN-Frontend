@@ -52,7 +52,7 @@ export function middleware(req: NextRequest) {
 
   // Si intenta registrar admin sin autorizacion => home
   if (pathname === "/auth/register/admin" && token) {
-    if (hasRole("Admin") || hasRole("SuperAdmin")) {
+    if (hasRole("SuperAdmin")) {
       // eslint-disable-next-line no-console
       console.log("[middleware] visiting /auth/register/admin without admin role -> redirect to / (home)");
       return NextResponse.redirect(new URL("/", req.url));
