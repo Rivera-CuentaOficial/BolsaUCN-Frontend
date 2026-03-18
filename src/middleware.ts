@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getRoleFromToken } from "@/lib/auth";
+import { hasRole } from "./lib";
 
 export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value || null;
@@ -52,11 +52,9 @@ export function middleware(req: NextRequest) {
 
   // Si intenta registrar admin sin autorizacion => home
   if (pathname === "/auth/register/admin" && token) {
-    const role = getRoleFromToken(token);
-    if (!role || role.trim() !== "Admin") {
+    if (hasRole("SuperAdmin")) {
       // eslint-disable-next-line no-console
       console.log("[middleware] visiting /auth/register/admin without admin role -> redirect to / (home)");
-      console.log("[middleware] user role:", role ? role : "no role found");
       return NextResponse.redirect(new URL("/", req.url));
     }
   } // si intenta ir a /auth/register teniendo token => home
