@@ -117,6 +117,7 @@ export interface VerifyResetCodeDto{
     Email: string;
     verificationCode: string;
     password: string;
+    confirmPassword: string;
 }
 // Response
 export interface VerifyResetCodeResponseDto{
