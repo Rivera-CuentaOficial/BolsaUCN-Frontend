@@ -74,7 +74,7 @@ export async function sendCode(payload: ResetPasswordDto) {
 }
 
 export async function verifyResetCode(payload: VerifyResetCodeDto) {
-  const response = await api.post<VerifyResetCodeResponseDto>("/auth/reset-code/verify", payload);
+  const response = await api.post<VerifyResetCodeResponseDto>("/auth/reset-password/verify", payload);
   return PasswordResetAdapter.fromVerificationResponse(response.data);
 }
 

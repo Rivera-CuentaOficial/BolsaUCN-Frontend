@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation"
 import { sendCode, verifyResetCode, resendCode } from "@/services/authService";
 import type { ResetPasswordDto, VerifyResetCodeDto } from "@/services/dtos/authDto";
 
@@ -13,6 +14,8 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const router = useRouter();
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +53,7 @@ export default function ResetPasswordPage() {
       Email,
       verificationCode,
       password,
+      confirmPassword,
     };
 
     try {
@@ -65,6 +69,7 @@ export default function ResetPasswordPage() {
       setError("El código es incorrecto o ha expirado.");
     } finally {
       setLoading(false);
+      router.push("/auth/login");
     }
   };
 

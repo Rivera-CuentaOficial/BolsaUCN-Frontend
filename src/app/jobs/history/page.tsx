@@ -120,7 +120,7 @@ const FilterBar = ({
 
   return (
     <div className="p-6 rounded-[2rem] bg-white/10 backdrop-blur-md border border-white/20 shadow-xl mb-10 w-full">
-      <div className="flex flex-col xl:flex-row gap-4 items-stretch">
+      <div className="flex flex-col gap-4 items-stretch">
         
         <div className="flex-1 relative group">
           <Search className={`${iconClass} w-5 h-5 group-focus-within:text-purple-500`} />
@@ -133,7 +133,7 @@ const FilterBar = ({
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full xl:w-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
           
           <div className="relative w-full group">
             <ListFilter className={`${iconClass} w-4 h-4 group-focus-within:text-purple-500`} />
